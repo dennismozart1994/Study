@@ -3,6 +3,8 @@
 #include "Pickup.h"
 #include "StudyPC.h"
 #include "StudyCharacter.h"
+#include "StudyPlayerState.h"
+#include "Engine/Engine.h"
 #include "Engine/Classes/Kismet/GameplayStatics.h"
 #include "Engine/Classes/Kismet/KismetSystemLibrary.h"
 
@@ -11,6 +13,9 @@ APickup::APickup()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates = true;
+	bReplicateMovement = false;
+	bAlwaysRelevant = false;
 	RootC = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = RootC;
 	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Colision"));
@@ -43,40 +48,62 @@ void APickup::BeginPlay()
 
 void APickup::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
+	// If it's the client
+	if(Role < ROLE_Authority)
+	{
+		SERVER_BeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+		return;
+	}
+
+	// server func
 	if(OtherComp && OtherComp->ComponentHasTag("Player"))
 	{
-		AStudyPC* ControllerRef = Cast<AStudyPC>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
-		if(ControllerRef)
+		AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(OtherActor);
+		if(CharacterRef)
 		{
-			for(int i=0; i<ControllerRef->Inventory.Num(); i++)
+			AStudyPlayerState* PlayerStateRef = Cast<AStudyPlayerState>(CharacterRef->GetPlayerState());
+			if(PlayerStateRef)
 			{
-				// check if the current item is the last and is valid
-				if(UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]) && i == 35)
+				APawn* PawnRef = PlayerStateRef->GetPawn();
+				if(PawnRef)
 				{
-					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Inventory is full");
-				}
-				// if not the last item of the array
-				// check if it's not a valid class on the index
-				// if it's a valid class then do nothing and go to the next step
-				// if it's not a valid class, add this item to inventory into that array index
-				else if(!UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]))
-				{
-					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "Added to Inventory");
-					ControllerRef->Inventory[i] = this->GetClass();
-					Destroy();
-					break;
-				}
-			}
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Controller not found");
-		}
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "No Player Overlapped");
-	}
+					AStudyPC* ControllerRef = Cast<AStudyPC>(PawnRef->GetController());
+					if(ControllerRef)
+					{
+						for(int i=0; i<ControllerRef->Inventory.Num(); i++)
+						{
+							// check if the current item is the last and is valid
+							if(UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]) && i == 35)
+							{
+								GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Inventory is full");
+							}
+							// if not the last item of the array
+							// check if it's not a valid class on the index
+							// if it's a valid class then do nothing and go to the next step
+							// if it's not a valid class, add this item to inventory into that array index
+							else if(!UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]))
+							{
+								GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "Added to Inventory");
+								ControllerRef->Inventory[i] = this->GetClass();
+								Destroy();
+								break;
+							}
+						}
+					}else{GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Controller not found");}
+				}else{GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error Casting to Private Pawn");}
+			}else{GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error Casting tom PlayerState");}
+		}else{GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error Casting to the Character");}
+	}else{GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "No Player Overlapped");}
+}
+
+void APickup::SERVER_BeginOverlap_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+{
+	BeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
+}
+
+bool APickup::SERVER_BeginOverlap_Validate(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
+{
+	return true;
 }
 
 

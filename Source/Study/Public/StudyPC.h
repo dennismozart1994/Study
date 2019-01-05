@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Net/UnrealNetwork.h"
+#include "CustomVariables.h"
 #include "StudyPC.generated.h"
 
 /**
@@ -15,9 +17,11 @@ class STUDY_API AStudyPC : public APlayerController
 	GENERATED_BODY()
 
 	public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Gameplay")
+	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere, Category="Gameplay")
 	TArray<TSubclassOf<AActor>> Inventory;
 
 	AStudyPC();
 	
+	protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };

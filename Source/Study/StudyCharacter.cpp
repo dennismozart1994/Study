@@ -16,7 +16,8 @@ AStudyCharacter::AStudyCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
+	bReplicates = true;
+	bReplicateMovement = true;
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
@@ -57,24 +58,35 @@ AStudyCharacter::AStudyCharacter()
 
 	// Clothing System
 	HeadMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Head"));
-	HeadMesh->SetupAttachment(GetMesh());
+	HeadMesh->SetIsReplicated(true);
+	HeadMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	ChestMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Chest"));
-	ChestMesh->SetupAttachment(GetMesh());
+	ChestMesh->SetIsReplicated(true);
+	ChestMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	HandsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Gloves"));
-	HandsMesh->SetupAttachment(GetMesh());
+	HandsMesh->SetIsReplicated(true);
+	HandsMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	LegsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Trousers"));
-	LegsMesh->SetupAttachment(GetMesh());
+	LegsMesh->SetIsReplicated(true);
+	LegsMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	FootsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Boots"));
-	FootsMesh->SetupAttachment(GetMesh());
+	FootsMesh->SetIsReplicated(true);
+	FootsMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
 
 //////////////////////////////////////////////////////////////////////////
+void AStudyCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+ {
+     Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+ 
+     DOREPLIFETIME(AStudyCharacter, ArmorSet);
+ }
 
 void AStudyCharacter::BeginPlay()
 {

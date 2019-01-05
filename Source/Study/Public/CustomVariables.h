@@ -81,13 +81,13 @@ struct FMyStats
 	float ActualLife;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
 	float FullLife;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
+	UPROPERTY(NotReplicated, EditAnywhere, BlueprintReadWrite, Category=Stats)
 	float ActualMana;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
+	UPROPERTY(NotReplicated, EditAnywhere, BlueprintReadWrite, Category=Stats)
 	float FullMana;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
+	UPROPERTY(NotReplicated, EditAnywhere, BlueprintReadWrite, Category=Stats)
 	float ActualStamina;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
+	UPROPERTY(NotReplicated, EditAnywhere, BlueprintReadWrite, Category=Stats)
 	float FullStamina;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
 	float CurrentLevel;

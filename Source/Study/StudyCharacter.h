@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Net/UnrealNetwork.h"
 #include "CustomVariables.h"
 #include "StudyCharacter.generated.h"
 
@@ -33,11 +34,11 @@ public:
 	float BaseLookUpRate;
 
 	// Gameplay Variables
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="Gameplay")
 	TArray<TSubclassOf<AActor>> ArmorSet;
 
-	 UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay")
-	 FMyStats CharacterStats;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay")
+	FMyStats CharacterStats;
 	
 	// Clothing System
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -49,7 +50,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMeshComponent* HandsMesh;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY( EditAnywhere, BlueprintReadWrite)
 	USkeletalMeshComponent* LegsMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -88,6 +89,7 @@ protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	// End of APawn interface
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
 	/** Returns CameraBoom subobject **/
