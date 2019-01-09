@@ -43,18 +43,6 @@ AStudyCharacter::AStudyCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-	
-	// Gameplay Variables
-	 CharacterStats.CharacterName =  "TEST CHARACTER";
-	 CharacterStats.ActualLife = 100.f;
-	 CharacterStats.FullLife = 100.f;
-	 CharacterStats.ActualMana = 1000.f;
-	 CharacterStats.FullMana = 1000.f;
-	 CharacterStats.ActualStamina = 100.f;
-	 CharacterStats.FullStamina = 100.f;
-	 CharacterStats.CurrentLevel = 1;
-	 CharacterStats.GoldAmount = 1;
-	 CharacterStats.GoNextLevelWhen = 100;
 
 	// Clothing System
 	HeadMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Head"));
