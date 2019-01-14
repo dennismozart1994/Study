@@ -7,6 +7,8 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine/World.h"
 #include "GameFramework/SpringArmComponent.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -16,8 +18,11 @@ AStudyCharacter::AStudyCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+	GetCharacterMovement()->MaxWalkSpeed = 200.f;
+	// replication setup
 	bReplicates = true;
 	bReplicateMovement = true;
+
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
@@ -86,6 +91,12 @@ void AStudyCharacter::BeginPlay()
 	HandsMesh->SetMasterPoseComponent(GetMesh());
 	LegsMesh->SetMasterPoseComponent(GetMesh());
 	FootsMesh->SetMasterPoseComponent(GetMesh());
+
+	CurrentPlayerState = Cast<AStudyPlayerState>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->PlayerState);
+	if(CurrentPlayerState)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = float(CurrentPlayerState->CharacterStats.Speed);
+	}
 }
 
 // Input

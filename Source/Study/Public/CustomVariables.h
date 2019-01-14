@@ -55,17 +55,17 @@ struct FItemDetails
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Thumbnails")
 	UTexture2D* ArmorThumbnail;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Properties")
-	float Speed;
+	int32 Speed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Properties")
-	float MagicPoints;
+	int32 MagicPoints;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Properties")
-	float Constitution;
+	int32 Stamina;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Properties")
-	float Strenght;
+	int32 Strenght;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Properties")
-	float GoldLevel;
+	int32 GoldLevel;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Properties")
-	float Life;
+	int32 Life;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Properties")
 	int32 amount;
 };
@@ -78,23 +78,28 @@ struct FMyStats
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
 	FString CharacterName;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
-	float ActualLife;
+	int32 Strenght;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
-	float FullLife;
-	UPROPERTY(NotReplicated, EditAnywhere, BlueprintReadWrite, Category=Stats)
-	float ActualMana;
-	UPROPERTY(NotReplicated, EditAnywhere, BlueprintReadWrite, Category=Stats)
-	float FullMana;
-	UPROPERTY(NotReplicated, EditAnywhere, BlueprintReadWrite, Category=Stats)
-	float ActualStamina;
-	UPROPERTY(NotReplicated, EditAnywhere, BlueprintReadWrite, Category=Stats)
-	float FullStamina;
+	int32 Speed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
-	float CurrentLevel;
+	int32 ActualLife;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
-	float GoldAmount;
+	int32 FullLife;
+	// add NotReplicated, on uproperty when you desired to some member not replicates
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
-	float GoNextLevelWhen;
+	int32 ActualMana;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
+	int32 FullMana;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
+	int32 ActualStamina;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
+	int32 FullStamina;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
+	int32 CurrentLevel;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
+	int32 GoldAmount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category=Stats)
+	int32 GoNextLevelWhen;
 };
 
 UCLASS()

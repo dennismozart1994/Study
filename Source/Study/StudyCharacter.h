@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Net/UnrealNetwork.h"
 #include "CustomVariables.h"
+#include "StudyPlayerState.h"
 #include "StudyCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -32,6 +33,9 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseLookUpRate;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Replication")
+	AStudyPlayerState* CurrentPlayerState;
 
 	// Gameplay Variables
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="Gameplay")

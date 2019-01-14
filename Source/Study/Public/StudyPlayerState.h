@@ -16,13 +16,18 @@ class STUDY_API AStudyPlayerState : public APlayerState
 {
 	GENERATED_BODY()
 	
+	// Variables
+	public:
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="Gameplay")
+	FMyStats CharacterStats;
+
+	// Functions 
 	public:
 	AStudyPlayerState();
 
 	protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	protected:
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="Gameplay")
-	FMyStats CharacterStats;
+	
+	UFUNCTION(BlueprintCallable, Category = "Gameplay")
+	void updateCharacterStats(FItemDetails Actual, FItemDetails New);
 };
