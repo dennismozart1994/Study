@@ -23,26 +23,23 @@ AStudyPlayerState::AStudyPlayerState()
 
 void AStudyPlayerState::updateCharacterStats(FItemDetails CurrentArmor, FItemDetails NewArmorSet)
 {
-	if(Role == ROLE_Authority)
+	CharacterStats.ActualLife += NewArmorSet.Life - CurrentArmor.Life;
+	CharacterStats.FullLife += NewArmorSet.Life - CurrentArmor.Life;
+
+	CharacterStats.ActualMana += NewArmorSet.MagicPoints - CurrentArmor.MagicPoints;
+	CharacterStats.FullMana += NewArmorSet.MagicPoints - CurrentArmor.MagicPoints;
+
+	CharacterStats.ActualStamina += NewArmorSet.Stamina - CurrentArmor.Stamina;
+	CharacterStats.FullStamina += NewArmorSet.Stamina - CurrentArmor.Stamina;
+
+	CharacterStats.Speed += NewArmorSet.Speed - CurrentArmor.Speed;
+	AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(this->GetPawn());
+	if(CharacterRef)
 	{
-			CharacterStats.ActualLife += NewArmorSet.Life - CurrentArmor.Life;
-			CharacterStats.FullLife += NewArmorSet.Life - CurrentArmor.Life;
-
-			CharacterStats.ActualMana += NewArmorSet.MagicPoints - CurrentArmor.MagicPoints;
-			CharacterStats.FullMana += NewArmorSet.MagicPoints - CurrentArmor.MagicPoints;
-
-			CharacterStats.ActualStamina += NewArmorSet.Stamina - CurrentArmor.Stamina;
-			CharacterStats.FullStamina += NewArmorSet.Stamina - CurrentArmor.Stamina;
-
-			CharacterStats.Speed += NewArmorSet.Speed - CurrentArmor.Speed;
-			AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(this->GetPawn());
-			if(CharacterRef)
-			{
-				CharacterRef->GetCharacterMovement()->MaxWalkSpeed = float(CharacterStats.Speed);
-			}
-
-			CharacterStats.Strenght += NewArmorSet.Strenght - CurrentArmor.Strenght;
+		CharacterRef->GetCharacterMovement()->MaxWalkSpeed = float(CharacterStats.Speed);
 	}
+
+	CharacterStats.Strenght += NewArmorSet.Strenght - CurrentArmor.Strenght;
 }
 
 void AStudyPlayerState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
