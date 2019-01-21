@@ -31,7 +31,4 @@ class STUDY_API AStudyPlayerState : public APlayerState
 	
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 	void updateCharacterStats(FItemDetails Actual, FItemDetails New);
-
-	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-	void updateCharacterStats_newTry(UClass* Actual, UClass* New);
 };
