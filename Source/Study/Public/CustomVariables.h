@@ -43,7 +43,12 @@ USTRUCT(BlueprintType)
 struct FItemDetails
 {
 	GENERATED_BODY()
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Description")
+	FText Name;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Description")
+	FText Description;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Description")
+	FVector DesiredThumbSize;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item")
 	USkeletalMesh* Mesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay Config")
