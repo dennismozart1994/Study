@@ -8,6 +8,7 @@
 #include "Components/SceneComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/DataTable.h"
 #include "CustomVariables.h"
 #include "StudyPC.h"
 #include "Pickup.generated.h"
@@ -19,8 +20,11 @@ class STUDY_API APickup : public AActor
 public: 
 	// Gameplay
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup Info", meta = (AllowPrivateAccess = "true"))
-	FItemDetails ItemInfo;
-	
+	UDataTable* ItemDataTable;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pickup Info", meta = (AllowPrivateAccess = "true"))
+	FName ItemIndexDataTable;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	USceneComponent* RootC;

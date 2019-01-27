@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Engine/Classes/Engine/SkeletalMesh.h"
+#include "Engine/DataTable.h"
 #include "CustomVariables.generated.h"
 
 UENUM(BlueprintType)
@@ -39,22 +40,24 @@ enum class EArmorType : uint8
 	AT_Shoes		UMETA(DisplayName="Shoes")
 };
 
+// data tale structs
 USTRUCT(BlueprintType)
-struct FItemDetails
+struct FItemDetailsDataTable : public FTableRowBase
 {
 	GENERATED_BODY()
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Description")
 	FText Name;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Description")
 	FText Description;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Description")
 	FVector DesiredThumbSize;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Skeletal Mesh")
 	USkeletalMesh* Mesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay Config")
-	EArmorType ArmorType;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay Config")
 	EItemType ItemType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay Config")
+	EArmorType ArmorType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Thumbnails")
 	UTexture2D* Thumbnail;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Thumbnails")
@@ -67,14 +70,17 @@ struct FItemDetails
 	int32 Stamina;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Properties")
 	int32 Strenght;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Properties")
-	int32 GoldLevel;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="$")
+	int32 GoldLevelRequired;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Properties")
 	int32 Life;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Properties")
-	int32 amount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="$")
+	int32 Amount;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="$")
+	int32 SellingPrice;
 };
 
+// simple struct
 USTRUCT(BlueprintType)
 struct FMyStats
 {

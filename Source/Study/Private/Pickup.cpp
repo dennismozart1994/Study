@@ -12,20 +12,29 @@
 APickup::APickup()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
+
+	// replication setup
 	bReplicates = true;
 	bReplicateMovement = true;
 	bAlwaysRelevant = false;
+
+	// create root component
 	RootC = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
 	RootComponent = RootC;
+
+	// create trigger box and bind begin overlap function
 	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Colision"));
 	TriggerBox->SetupAttachment(RootComponent);
 	TriggerBox->SetRelativeScale3D(FVector(1.f, 1.f, 1.f));
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &APickup::BeginOverlap);
+
+	// create mesh and static mesh component
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(RootComponent);
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
 	SkeletalMesh->SetupAttachment(RootComponent);
+	
 	// mesh colisions
 	SkeletalMesh->SetSimulatePhysics(true);
 	SkeletalMesh->BodyInstance.SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -37,13 +46,21 @@ APickup::APickup()
 	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Block);
 	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Vehicle, ECollisionResponse::ECR_Block);
 	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Destructible, ECollisionResponse::ECR_Block);
+
+	// load data table
+	static ConstructorHelpers::FObjectFinder<UDataTable> PickupDataTableObject(TEXT("DataTable'/Game/DataTables/Pickups.Pickups'"));
+	if(PickupDataTableObject.Succeeded())
+	{
+		ItemDataTable = PickupDataTableObject.Object;
+	}
+
 }
 
 // Called when the game starts or when spawned
 void APickup::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	// ItemIndexDataTable = FName(*(UKismetSystemLibrary::GetClassDisplayName(UGameplayStatics::GetObjectClass(this))));
 }
 
 void APickup::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)

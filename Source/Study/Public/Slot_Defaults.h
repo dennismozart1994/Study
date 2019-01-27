@@ -28,7 +28,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EArmorType ArmorSetType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FItemDetails ItemDetails;
+	FItemDetailsDataTable ItemInfo;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Info")
 	TSubclassOf<AActor> Mesh;
 };

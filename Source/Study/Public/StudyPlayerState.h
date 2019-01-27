@@ -6,6 +6,7 @@
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/PlayerState.h"
 #include "CustomVariables.h"
+#include "Engine/DataTable.h"
 #include "Pickup.h"
 #include "StudyPlayerState.generated.h"
 
@@ -28,7 +29,7 @@ class STUDY_API AStudyPlayerState : public APlayerState
 
 	protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-	void updateCharacterStats(FItemDetails Actual, FItemDetails New);
+	void updateCharStats(UDataTable* DataTable, FName Actual, FName New);
 };

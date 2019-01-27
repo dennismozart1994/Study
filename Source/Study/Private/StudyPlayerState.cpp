@@ -21,25 +21,109 @@ AStudyPlayerState::AStudyPlayerState()
 	 CharacterStats.GoNextLevelWhen = 100;
 }
 
-void AStudyPlayerState::updateCharacterStats(FItemDetails CurrentArmor, FItemDetails NewArmorSet)
+void AStudyPlayerState::updateCharStats(UDataTable* TableRef, FName Actual, FName New)
 {
-	CharacterStats.ActualLife += NewArmorSet.Life - CurrentArmor.Life;
-	CharacterStats.FullLife += NewArmorSet.Life - CurrentArmor.Life;
+	static const FString ContextCurrent(TEXT("Current Armor Set Details"));
+	FItemDetailsDataTable* CurrentArmor = TableRef->FindRow<FItemDetailsDataTable>(Actual, ContextCurrent, true);
 
-	CharacterStats.ActualMana += NewArmorSet.MagicPoints - CurrentArmor.MagicPoints;
-	CharacterStats.FullMana += NewArmorSet.MagicPoints - CurrentArmor.MagicPoints;
-
-	CharacterStats.ActualStamina += NewArmorSet.Stamina - CurrentArmor.Stamina;
-	CharacterStats.FullStamina += NewArmorSet.Stamina - CurrentArmor.Stamina;
-
-	CharacterStats.Speed += NewArmorSet.Speed - CurrentArmor.Speed;
-	AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(this->GetPawn());
-	if(CharacterRef)
+	static const FString ContextNew(TEXT("New Armor Set Details"));
+	FItemDetailsDataTable* NewArmorSet = TableRef->FindRow<FItemDetailsDataTable>(New, ContextNew, true);
+	
+	if(TableRef)
 	{
-		CharacterRef->GetCharacterMovement()->MaxWalkSpeed = float(CharacterStats.Speed);
-	}
+		// swap between armorsets
+		if(Actual != "None" && New != "None")
+		{
+			if(CurrentArmor && NewArmorSet)
+			{
+				CharacterStats.ActualLife += NewArmorSet->Life - CurrentArmor->Life;
+				CharacterStats.FullLife += NewArmorSet->Life - CurrentArmor->Life;
 
-	CharacterStats.Strenght += NewArmorSet.Strenght - CurrentArmor.Strenght;
+				CharacterStats.ActualMana += NewArmorSet->MagicPoints - CurrentArmor->MagicPoints;
+				CharacterStats.FullMana += NewArmorSet->MagicPoints - CurrentArmor->MagicPoints;
+
+				CharacterStats.ActualStamina += NewArmorSet->Stamina - CurrentArmor->Stamina;
+				CharacterStats.FullStamina += NewArmorSet->Stamina - CurrentArmor->Stamina;
+
+				CharacterStats.Speed += NewArmorSet->Speed - CurrentArmor->Speed;
+				AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(this->GetPawn());
+				if(CharacterRef)
+				{
+					CharacterRef->GetCharacterMovement()->MaxWalkSpeed = float(CharacterStats.Speed);
+				}
+
+				CharacterStats.Strenght += NewArmorSet->Strenght - CurrentArmor->Strenght;
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error trying to find items on data table");
+			}
+		}
+		// Add new Item to Armor Set
+		else if(Actual == "None" && New != "None")
+		{
+			if(NewArmorSet)
+			{
+				CharacterStats.ActualLife += NewArmorSet->Life;
+				CharacterStats.FullLife += NewArmorSet->Life;
+
+				CharacterStats.ActualMana += NewArmorSet->MagicPoints;
+				CharacterStats.FullMana += NewArmorSet->MagicPoints;
+
+				CharacterStats.ActualStamina += NewArmorSet->Stamina;
+				CharacterStats.FullStamina += NewArmorSet->Stamina;
+
+				CharacterStats.Speed += NewArmorSet->Speed;
+				AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(this->GetPawn());
+				if(CharacterRef)
+				{
+					CharacterRef->GetCharacterMovement()->MaxWalkSpeed = float(CharacterStats.Speed);
+				}
+
+				CharacterStats.Strenght += NewArmorSet->Strenght;
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error trying to find new item on data table");
+			}
+		}
+		// Remove Item from Armor Set
+		else if(Actual != "None" && New == "None")
+		{
+			if(CurrentArmor)
+			{
+				CharacterStats.ActualLife -= CurrentArmor->Life;
+				CharacterStats.FullLife -= CurrentArmor->Life;
+
+				CharacterStats.ActualMana -= CurrentArmor->MagicPoints;
+				CharacterStats.FullMana -= CurrentArmor->MagicPoints;
+
+				CharacterStats.ActualStamina -= CurrentArmor->Stamina;
+				CharacterStats.FullStamina -= CurrentArmor->Stamina;
+
+				CharacterStats.Speed -= CurrentArmor->Speed;
+				AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(this->GetPawn());
+				if(CharacterRef)
+				{
+					CharacterRef->GetCharacterMovement()->MaxWalkSpeed = float(CharacterStats.Speed);
+				}
+
+				CharacterStats.Strenght -= CurrentArmor->Strenght;
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "OOps");
+			}
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Actual: " + Actual.ToString() + ", New: " + New.ToString());
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Data Table not found");
+	}
 }
 
 void AStudyPlayerState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
