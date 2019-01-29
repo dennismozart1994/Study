@@ -8,6 +8,12 @@ AStudyPC::AStudyPC()
     bReplicates = true;
 }
 
+AStudyPlayerState* AStudyPC::GetPersonalPlayerState()
+{
+    AStudyPlayerState* MyPlayerState = Cast<AStudyPlayerState>(PlayerState);
+    return MyPlayerState;
+}
+
 void AStudyPC::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
  {
      Super::GetLifetimeReplicatedProps(OutLifetimeProps);

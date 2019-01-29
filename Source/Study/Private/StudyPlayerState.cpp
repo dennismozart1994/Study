@@ -2,6 +2,7 @@
 
 #include "StudyPlayerState.h"
 #include "StudyCharacter.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AStudyPlayerState::AStudyPlayerState()
@@ -19,6 +20,7 @@ AStudyPlayerState::AStudyPlayerState()
 	 CharacterStats.CurrentLevel = 1;
 	 CharacterStats.GoldAmount = 1;
 	 CharacterStats.GoNextLevelWhen = 100;
+	 bIsAlive = true;
 }
 
 void AStudyPlayerState::updateCharStats(UDataTable* TableRef, FName Actual, FName New)
@@ -126,9 +128,20 @@ void AStudyPlayerState::updateCharStats(UDataTable* TableRef, FName Actual, FNam
 	}
 }
 
+// everytime the is alive change it checks if its still alive
+void AStudyPlayerState::OnRep_IsAlive()
+{
+	AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(this->GetPawn());
+	if(!bIsAlive && CharacterRef)
+	{
+		CharacterRef->DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+	}
+}
+
 void AStudyPlayerState::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
  {
      Super::GetLifetimeReplicatedProps(OutLifetimeProps);
  
      DOREPLIFETIME(AStudyPlayerState, CharacterStats);
+	 DOREPLIFETIME(AStudyPlayerState, bIsAlive);
  }

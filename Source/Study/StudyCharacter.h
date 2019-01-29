@@ -21,6 +21,7 @@ class AStudyCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+	
 public:
 	AStudyCharacter();
 
@@ -41,9 +42,6 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="Gameplay")
 	TArray<TSubclassOf<AActor>> ArmorSet;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay")
-	FMyStats CharacterStats;
-	
 	// Clothing System
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMeshComponent* HeadMesh;
@@ -95,6 +93,17 @@ protected:
 	// End of APawn interface
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UFUNCTION()
+	void DealDamage(AStudyPlayerState* PlayerToDamage, float Damage);
+
+	UFUNCTION(Category = Life)
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_TakeDamage(AStudyPlayerState* PlayerToDamage, float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
+
+	UFUNCTION(Client, Reliable, WithValidation)
+	void Client_TakeDamage(AStudyPlayerState* PlayerToDamage, float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }

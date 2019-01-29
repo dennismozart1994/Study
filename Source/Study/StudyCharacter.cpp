@@ -12,13 +12,13 @@
 #include "GameFramework/SpringArmComponent.h"
 
 //////////////////////////////////////////////////////////////////////////
-// AStudyCharacter
-
+// AStudyCharacter Constructor
 AStudyCharacter::AStudyCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 	GetCharacterMovement()->MaxWalkSpeed = 200.f;
+	
 	// replication setup
 	bReplicates = true;
 	bReplicateMovement = true;
@@ -69,18 +69,81 @@ AStudyCharacter::AStudyCharacter()
 	FootsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Boots"));
 	FootsMesh->SetIsReplicated(true);
 	FootsMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+
+	// Setup Gameplay Variables
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
 
+///////////////////////////////////////// Functions /////////////////////////////////////////////
+void AStudyCharacter::DealDamage(AStudyPlayerState* PlayerToDamage, float Damage)
+{
+	if(PlayerToDamage)
+	{
+		if(PlayerToDamage->CharacterStats.ActualLife <= 0)
+		{
+			PlayerToDamage->bIsAlive = false;
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "Character Died!");
+		}
+		else
+		{
+			PlayerToDamage->CharacterStats.ActualLife -= Damage;
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Character is Alive!");
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error trying to get Player State");
+	}
+}
+
 //////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////// replication /////////////////////////////////////
 void AStudyCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
  {
      Super::GetLifetimeReplicatedProps(OutLifetimeProps);
  
      DOREPLIFETIME(AStudyCharacter, ArmorSet);
  }
+ 
 
+ // Deal Damage on Server
+ bool AStudyCharacter::Server_TakeDamage_Validate(AStudyPlayerState* PlayerToDamage, float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+ {
+	 return true;
+ }
+
+ void AStudyCharacter::Server_TakeDamage_Implementation(AStudyPlayerState* PlayerToDamage, float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+ {
+	if(Role == ROLE_Authority)
+	{
+		Client_TakeDamage(PlayerToDamage, Damage, DamageEvent, EventInstigator, DamageCauser);
+		// Apply Damage
+		DealDamage(PlayerToDamage, Damage);
+	}
+	else
+	{
+		Server_TakeDamage(PlayerToDamage, Damage, DamageEvent, EventInstigator, DamageCauser);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Client Called Take Damage");
+	}
+ }
+
+// Replicate actor health to other players
+ bool AStudyCharacter::Client_TakeDamage_Validate(AStudyPlayerState* PlayerToDamage, float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+ {
+	 return true;
+ }
+
+  void AStudyCharacter::Client_TakeDamage_Implementation(AStudyPlayerState* PlayerToDamage, float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+ {
+	// Apply Damage
+	if(Role != ROLE_Authority)
+	{
+		DealDamage(PlayerToDamage, Damage);
+	}
+ }
+
+//////////////////////////////////// Native events ////////////////////////////////////////////
 void AStudyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -92,15 +155,21 @@ void AStudyCharacter::BeginPlay()
 	LegsMesh->SetMasterPoseComponent(GetMesh());
 	FootsMesh->SetMasterPoseComponent(GetMesh());
 
-	CurrentPlayerState = Cast<AStudyPlayerState>(UGameplayStatics::GetPlayerController(GetWorld(), 0)->PlayerState);
+	CurrentPlayerState = Cast<AStudyPlayerState>(GetPlayerState());
 	if(CurrentPlayerState)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = float(CurrentPlayerState->CharacterStats.Speed);
 	}
 }
 
-// Input
+float AStudyCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	CurrentPlayerState = Cast<AStudyPlayerState>(GetPlayerState());
+	Server_TakeDamage(CurrentPlayerState, Damage, DamageEvent, EventInstigator, DamageCauser);
+	return Damage;
+}
 
+//////////////////////////////////////// Setup Inputs ///////////////////////////////////////////
 void AStudyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	// Set up gameplay key bindings
@@ -143,6 +212,7 @@ void AStudyCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Locati
 		StopJumping();
 }
 
+//////////////////////////////////////////// Camera effects ///////////////////////////////////////
 void AStudyCharacter::TurnAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
@@ -155,6 +225,7 @@ void AStudyCharacter::LookUpAtRate(float Rate)
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
+///////////////////////////////////////// Character Movement ///////////////////////////////////
 void AStudyCharacter::MoveForward(float Value)
 {
 	if ((Controller != NULL) && (Value != 0.0f))

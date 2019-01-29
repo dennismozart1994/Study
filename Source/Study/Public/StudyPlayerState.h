@@ -23,9 +23,15 @@ class STUDY_API AStudyPlayerState : public APlayerState
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="Gameplay")
 	FMyStats CharacterStats;
 
+	UPROPERTY(ReplicatedUsing=OnRep_IsAlive, VisibleAnywhere, BlueprintReadOnly, Category = "Gameplay")
+	bool bIsAlive;
+
 	// Functions 
 	public:
 	AStudyPlayerState();
+
+	UFUNCTION()
+	virtual void OnRep_IsAlive();
 
 	protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

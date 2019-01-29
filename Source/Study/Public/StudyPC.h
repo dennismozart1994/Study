@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "Net/UnrealNetwork.h"
+#include "StudyPlayerState.h"
 #include "CustomVariables.h"
 #include "StudyPC.generated.h"
 
@@ -19,6 +20,9 @@ class STUDY_API AStudyPC : public APlayerController
 	public:
 	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere, Category="Gameplay")
 	TArray<TSubclassOf<AActor>> Inventory;
+	
+	UFUNCTION()
+	AStudyPlayerState* GetPersonalPlayerState();
 
 	AStudyPC();
 	
