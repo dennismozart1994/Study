@@ -2,6 +2,7 @@
 
 #include "StudyGameMode.h"
 #include "StudyCharacter.h"
+#include "StudyPC.h"
 #include "UObject/ConstructorHelpers.h"
 
 AStudyGameMode::AStudyGameMode()

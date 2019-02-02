@@ -4,9 +4,14 @@
 #include "StudyPC.h"
 #include "StudyCharacter.h"
 #include "StudyPlayerState.h"
+#include "Engine/DataTable.h"
 #include "Engine/Engine.h"
 #include "Engine/Classes/Kismet/GameplayStatics.h"
 #include "Engine/Classes/Kismet/KismetSystemLibrary.h"
+#include "Components/BoxComponent.h"
+#include "Components/SceneComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 
 // Sets default values
 APickup::APickup()

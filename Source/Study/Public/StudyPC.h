@@ -4,8 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "Net/UnrealNetwork.h"
-#include "StudyPlayerState.h"
 #include "CustomVariables.h"
 #include "StudyPC.generated.h"
 

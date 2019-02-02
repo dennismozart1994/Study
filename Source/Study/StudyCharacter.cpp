@@ -1,13 +1,16 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "StudyCharacter.h"
+#include "StudyPlayerState.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "SHealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 #include "Engine/World.h"
 #include "GameFramework/SpringArmComponent.h"
 
@@ -49,6 +52,9 @@ AStudyCharacter::AStudyCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	// Health Component
+	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComponent"));
+
 	// Clothing System
 	HeadMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Head"));
 	HeadMesh->SetIsReplicated(true);
@@ -76,26 +82,7 @@ AStudyCharacter::AStudyCharacter()
 }
 
 ///////////////////////////////////////// Functions /////////////////////////////////////////////
-void AStudyCharacter::DealDamage(AStudyPlayerState* PlayerToDamage, float Damage)
-{
-	if(PlayerToDamage)
-	{
-		if(PlayerToDamage->CharacterStats.ActualLife <= 0)
-		{
-			PlayerToDamage->bIsAlive = false;
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, "Character Died!");
-		}
-		else
-		{
-			PlayerToDamage->CharacterStats.ActualLife -= Damage;
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Character is Alive!");
-		}
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error trying to get Player State");
-	}
-}
+
 
 //////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// replication /////////////////////////////////////
@@ -106,47 +93,12 @@ void AStudyCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & O
      DOREPLIFETIME(AStudyCharacter, ArmorSet);
  }
  
-
- // Deal Damage on Server
- bool AStudyCharacter::Server_TakeDamage_Validate(AStudyPlayerState* PlayerToDamage, float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
- {
-	 return true;
- }
-
- void AStudyCharacter::Server_TakeDamage_Implementation(AStudyPlayerState* PlayerToDamage, float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
- {
-	if(Role == ROLE_Authority)
-	{
-		Client_TakeDamage(PlayerToDamage, Damage, DamageEvent, EventInstigator, DamageCauser);
-		// Apply Damage
-		DealDamage(PlayerToDamage, Damage);
-	}
-	else
-	{
-		Server_TakeDamage(PlayerToDamage, Damage, DamageEvent, EventInstigator, DamageCauser);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Client Called Take Damage");
-	}
- }
-
-// Replicate actor health to other players
- bool AStudyCharacter::Client_TakeDamage_Validate(AStudyPlayerState* PlayerToDamage, float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
- {
-	 return true;
- }
-
-  void AStudyCharacter::Client_TakeDamage_Implementation(AStudyPlayerState* PlayerToDamage, float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
- {
-	// Apply Damage
-	if(Role != ROLE_Authority)
-	{
-		DealDamage(PlayerToDamage, Damage);
-	}
- }
-
 //////////////////////////////////// Native events ////////////////////////////////////////////
 void AStudyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	HealthComp->OnHealthChanged.AddDynamic(this, &AStudyCharacter::OnHealthChanged);
 
 	// Force the other skeletal meshes follows the root Skeletal movement
 	HeadMesh->SetMasterPoseComponent(GetMesh());
@@ -160,13 +112,6 @@ void AStudyCharacter::BeginPlay()
 	{
 		GetCharacterMovement()->MaxWalkSpeed = float(CurrentPlayerState->CharacterStats.Speed);
 	}
-}
-
-float AStudyCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
-{
-	CurrentPlayerState = Cast<AStudyPlayerState>(GetPlayerState());
-	Server_TakeDamage(CurrentPlayerState, Damage, DamageEvent, EventInstigator, DamageCauser);
-	return Damage;
 }
 
 //////////////////////////////////////// Setup Inputs ///////////////////////////////////////////
@@ -196,6 +141,27 @@ void AStudyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AStudyCharacter::OnResetVR);
 }
 
+
+void AStudyCharacter::OnHealthChanged(USHealthComponent* HealthComponent, int32 Health, int32 HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	AStudyPlayerState* PlayerStateRef = Cast<AStudyPlayerState>(GetPlayerState());
+	
+	// Died
+	if (PlayerStateRef->CharacterStats.ActualLife <= 0 && PlayerStateRef->bIsAlive)
+	{
+		PlayerStateRef->bIsAlive = false;
+		GetMovementComponent()->StopMovementImmediately();
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		// DetachFromControllerPendingDestroy();
+		// SetLifeSpan(10.f);
+		UE_LOG(LogTemp, Log, TEXT("Character Died"));
+	}
+	else
+	{
+		PlayerStateRef->bIsAlive = true;
+		UE_LOG(LogTemp, Log, TEXT("Health Changed: %s"), *FString::SanitizeFloat(float(PlayerStateRef->CharacterStats.ActualLife)));
+	}
+}
 
 void AStudyCharacter::OnResetVR()
 {

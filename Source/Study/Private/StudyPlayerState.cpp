@@ -2,8 +2,10 @@
 
 #include "StudyPlayerState.h"
 #include "StudyCharacter.h"
+#include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
 AStudyPlayerState::AStudyPlayerState()
 {

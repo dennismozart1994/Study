@@ -3,11 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Net/UnrealNetwork.h"
 #include "GameFramework/PlayerState.h"
 #include "CustomVariables.h"
-#include "Engine/DataTable.h"
-#include "Pickup.h"
 #include "StudyPlayerState.generated.h"
 
 /**

@@ -4,14 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Components/BoxComponent.h"
-#include "Components/SceneComponent.h"
-#include "Components/SkeletalMeshComponent.h"
-#include "Components/StaticMeshComponent.h"
-#include "Engine/DataTable.h"
 #include "CustomVariables.h"
-#include "StudyPC.h"
 #include "Pickup.generated.h"
+
+class UBoxComponent;
+class USceneComponent;
 
 UCLASS()
 class STUDY_API APickup : public AActor

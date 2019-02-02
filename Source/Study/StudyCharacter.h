@@ -4,9 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Net/UnrealNetwork.h"
 #include "CustomVariables.h"
-#include "StudyPlayerState.h"
 #include "StudyCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -21,9 +19,15 @@ class AStudyCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
+	class USHealthComponent* HealthComp;
 	
 public:
 	AStudyCharacter();
+
+	UFUNCTION()
+	void OnHealthChanged(USHealthComponent* HealthComponent, int32 Health, int32 HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	virtual void BeginPlay() override;
 
@@ -36,7 +40,7 @@ public:
 	float BaseLookUpRate;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Replication")
-	AStudyPlayerState* CurrentPlayerState;
+	class AStudyPlayerState* CurrentPlayerState;
 
 	// Gameplay Variables
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="Gameplay")
@@ -59,7 +63,6 @@ public:
 	USkeletalMeshComponent* FootsMesh;
 
 protected:
-
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
 
@@ -93,17 +96,6 @@ protected:
 	// End of APawn interface
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	UFUNCTION()
-	void DealDamage(AStudyPlayerState* PlayerToDamage, float Damage);
-
-	UFUNCTION(Category = Life)
-	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_TakeDamage(AStudyPlayerState* PlayerToDamage, float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
-
-	UFUNCTION(Client, Reliable, WithValidation)
-	void Client_TakeDamage(AStudyPlayerState* PlayerToDamage, float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
