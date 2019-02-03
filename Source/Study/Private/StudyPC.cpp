@@ -21,4 +21,5 @@ void AStudyPC::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifet
      Super::GetLifetimeReplicatedProps(OutLifetimeProps);
  
      DOREPLIFETIME(AStudyPC, Inventory);
+	 DOREPLIFETIME(AStudyPC, InventoryItems);
  }

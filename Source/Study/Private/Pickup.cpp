@@ -107,6 +107,8 @@ void APickup::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 							{
 								GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "Added to Inventory");
 								ControllerRef->Inventory[i] = this->GetClass();
+								static const FString ContextCurrent(TEXT("Current Item Details"));
+								ControllerRef->InventoryItems[i] = *(ItemDataTable->FindRow<FItemDetailsDataTable>(ItemIndexDataTable, ContextCurrent, true));
 								Destroy();
 								break;
 							}

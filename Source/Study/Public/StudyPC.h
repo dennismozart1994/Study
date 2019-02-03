@@ -10,6 +10,7 @@
 /**
  * 
  */
+
 UCLASS()
 class STUDY_API AStudyPC : public APlayerController
 {
@@ -18,6 +19,9 @@ class STUDY_API AStudyPC : public APlayerController
 	public:
 	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere, Category="Gameplay")
 	TArray<TSubclassOf<AActor>> Inventory;
+	
+	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere, Category = "Gameplay")
+	TArray<FItemDetailsDataTable> InventoryItems;
 	
 	UFUNCTION()
 	AStudyPlayerState* GetPersonalPlayerState();
