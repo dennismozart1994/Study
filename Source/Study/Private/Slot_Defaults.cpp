@@ -95,9 +95,16 @@ bool USlot_Defaults::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 			ArmorSetToInventory(Operation);
 			UE_LOG(LogTemp, Log, TEXT("Remove ArmorSet Called"));
 		}
+		UpdateSlots();
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Couldn't Cast to Custom operation"));
 	}
 	return Super::NativeOnDrop(InGeometry, InDragDropEvent, InOperation);
 }
+
+//////////////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// FUNCTIONS //////////////////////////////////////////////////////////////
 
 TArray<TSubclassOf<AActor>> USlot_Defaults::GetInventory()
 {
@@ -109,6 +116,20 @@ TArray<TSubclassOf<AActor>> USlot_Defaults::GetInventory()
 	else
 	{
 		TArray<TSubclassOf<AActor>> test;
+		return test;
+	}
+}
+
+TArray<FItemDetailsDataTable> USlot_Defaults::GetInventoryProperties()
+{
+	AStudyPC* PlayerControllerRef = Cast<AStudyPC>(GetOwningPlayer());
+	if (PlayerControllerRef)
+	{
+		return PlayerControllerRef->InventoryItems;
+	}
+	else
+	{
+		TArray<FItemDetailsDataTable> test;
 		return test;
 	}
 }
@@ -127,6 +148,20 @@ TArray<TSubclassOf<AActor>> USlot_Defaults::GetArmorSet()
 	}
 }
 
+TArray<FItemDetailsDataTable> USlot_Defaults::GetArmorSetProperties()
+{
+	AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(GetOwningPlayerPawn());
+	if (CharacterRef)
+	{
+		return CharacterRef->ArmorSetProperties;
+	}
+	else
+	{
+		TArray<FItemDetailsDataTable> test;
+		return test;
+	}
+}
+
 FMyStats USlot_Defaults::GetCharacterStats()
 {
 	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetOwningPlayer()->PlayerState);
@@ -137,7 +172,6 @@ FMyStats USlot_Defaults::GetCharacterStats()
 		MyPlayerStats = PSRef->CharacterStats;
 	}
 	return MyPlayerStats;
-
 }
 
 // Deal Inventory Swap between slots
@@ -159,14 +193,19 @@ void USlot_Defaults::InventorySwap(UInventoryDragDropOperation* CustomizeOperati
 		if (UKismetSystemLibrary::IsValidClass(ToActorClass))
 		{
 			GetInventory()[FromSlotIndex] = GetInventory()[SlotIndex];
+			GetInventoryProperties()[FromSlotIndex] = GetInventoryProperties()[SlotIndex];
+
 			GetInventory()[ToSlotIndex] = FromActorClass;
-			// @TODO Assign ItemStruct Inventory Later
+			GetInventoryProperties()[ToSlotIndex] = FromItemInfo;
 		}
 		else
 		{
 			GetInventory()[ToSlotIndex] = FromItem;
+			GetInventoryProperties()[ToSlotIndex] = FromItemInfo;
+
+			FItemDetailsDataTable nullstruct;
 			GetInventory()[FromSlotIndex] = NULL;
-			// @TODO Assign ItemStruct Inventory Later
+			GetInventoryProperties()[FromSlotIndex] = nullstruct;
 		}
 	}
 }
@@ -190,10 +229,48 @@ void USlot_Defaults::InventoryToArmorSet(UInventoryDragDropOperation* CustomizeO
 				TSubclassOf<AActor> ToItemClass = GetArmorSet()[ToSlotIndex];
 				FItemDetailsDataTable ToItemInfo = ItemInfo;
 
+				// Swap Armorset
 				if (UKismetSystemLibrary::IsValidClass(ToItemClass))
 				{
+					GetInventory()[FromSlotIndex] = ToItemClass;
+					GetInventoryProperties()[FromSlotIndex] = ToItemInfo;
+
+					GetArmorSet()[ToSlotIndex] = FromItemClass;
+					GetArmorSetProperties()[ToSlotIndex] = FromItemInfo;
 					
+					// Call Update Stats Custom Event Inside Main Character
+					AStudyPlayerState* CharStateRef = Cast<AStudyPlayerState>(GetOwningPlayerState());
+					if (CharStateRef)
+					{
+						CharStateRef->Server_updateCharacterStats(ToItemInfo, FromItemInfo);
+						UE_LOG(LogTemp, Log, TEXT("Called Server Update Stats"));
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Error trying to get Player State to update character stats"));
+					}
 				}
+				else
+				{
+					GetInventory()[FromSlotIndex] = NULL;
+					GetInventoryProperties()[FromSlotIndex] = ACustomVariables::createItemStruct();
+
+					GetArmorSet()[ToSlotIndex] = FromItemClass;
+					GetArmorSetProperties()[ToSlotIndex] = FromItemInfo;
+
+					// Call Update Stats Custom Event Inside Main Character
+					AStudyPlayerState* CharStateRef = Cast<AStudyPlayerState>(GetOwningPlayerState());
+					if (CharStateRef)
+					{
+						CharStateRef->Server_updateCharacterStats(ToItemInfo, FromItemInfo);
+						UE_LOG(LogTemp, Log, TEXT("Called Server Update Stats"));
+					}
+					else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Error trying to get Player State to update character stats"));
+					}
+				}
+				UE_LOG(LogTemp, Log, TEXT("Add Item to ArmorSet"));
 			}
 			else
 			{
@@ -207,9 +284,92 @@ void USlot_Defaults::InventoryToArmorSet(UInventoryDragDropOperation* CustomizeO
 	}
 }
 
+// Remove ArmorSet back to Inventory
 void USlot_Defaults::ArmorSetToInventory(UInventoryDragDropOperation* CustomizeOperation)
 {
+	if (CustomizeOperation)
+	{
+		// From Item Data
+		int32 FromSlotIndex = CustomizeOperation->SlotID;
+		TSubclassOf<AActor> FromItemClass = CustomizeOperation->ItemClass;
+		FItemDetailsDataTable FromItemInfo = CustomizeOperation->ItemDetails;
 
+		// To Item Data
+		int32 ToSlotIndex = SlotIndex;
+		TSubclassOf<AActor> ToItemClass = GetInventory()[ToSlotIndex];
+		FItemDetailsDataTable ToItemInfo = ItemInfo;
+
+		// Remove item from ArmorSet to Empty Inventory Slot
+		if (!UKismetSystemLibrary::IsValidClass(ToItemClass))
+		{
+			AStudyPlayerState* CharStateRef = Cast<AStudyPlayerState>(GetOwningPlayerState());
+			if (CharStateRef)
+			{
+				CharStateRef->Server_updateCharacterStats(FromItemInfo, ACustomVariables::createItemStruct());
+				GetInventory()[ToSlotIndex] = FromItemClass;
+				GetInventoryProperties()[ToSlotIndex] = FromItemInfo;
+
+				GetArmorSet()[FromSlotIndex] = NULL;
+				GetArmorSetProperties()[FromSlotIndex] = ACustomVariables::createItemStruct();
+
+				UE_LOG(LogTemp, Log, TEXT("Removed from ArmorSet and sent to Inventory"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("Error trying to get Player State to update character stats"));
+			}
+		}
+		// swap items on armorset if they are the same armor type
+		else if (GetInventoryProperties()[ToSlotIndex].ItemType == EItemType::IT_ArmorSet && GetArmorSetProperties()[FromSlotIndex].ArmorType == GetInventoryProperties()[ToSlotIndex].ArmorType)
+		{
+			AStudyPlayerState* CharStateRef = Cast<AStudyPlayerState>(GetOwningPlayerState());
+			if (CharStateRef)
+			{
+				CharStateRef->Server_updateCharacterStats(FromItemInfo, ToItemInfo);
+
+				GetArmorSet()[FromSlotIndex] = ToItemClass;
+				GetArmorSetProperties()[FromSlotIndex] = ToItemInfo;
+
+				GetInventory()[ToSlotIndex] = FromItemClass;
+				GetInventoryProperties()[ToSlotIndex] = FromItemInfo;
+
+				UE_LOG(LogTemp, Log, TEXT("Swaped ArmorSet Items"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Log, TEXT("Error trying to get Player State to update character stats"));
+			}
+		}
+		// Remove ArmorSet to an already assigned inventory slot of a different ArmorType (Try to find another slot to remove the armorSet)
+		else
+		{
+			bool bCanSendToInventory = false;
+			for (int32 i = 0; i < GetInventory().Num(); i++)
+			{
+				// only return to inventory if there's enough space
+				if (!UKismetSystemLibrary::IsValidClass(GetInventory()[i]))
+				{
+					bCanSendToInventory = true;
+					GetArmorSet()[FromSlotIndex] = ToItemClass;
+					GetArmorSetProperties()[FromSlotIndex] = ToItemInfo;
+					AStudyPlayerState* CharStateRef = Cast<AStudyPlayerState>(GetOwningPlayerState());
+					if (CharStateRef)
+					{
+						CharStateRef->Server_updateCharacterStats(FromItemInfo, ACustomVariables::createItemStruct());
+					}
+					break;
+				}
+			}
+			if (bCanSendToInventory)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Moved Successfully"));
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Your Inventory Is Full, so you can't move this item the item to the Inventory"));
+			}
+		}
+	}
 }
 
 void USlot_Defaults::SetFromItem()

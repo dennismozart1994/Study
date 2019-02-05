@@ -121,4 +121,6 @@ class STUDY_API ACustomVariables : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ACustomVariables();
+
+	static FItemDetailsDataTable createItemStruct();
 };

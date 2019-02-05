@@ -10,3 +10,18 @@ ACustomVariables::ACustomVariables()
 
 }
 
+FItemDetailsDataTable ACustomVariables::createItemStruct()
+{
+	FItemDetailsDataTable nullstruct;
+	nullstruct.Amount = 0;
+	nullstruct.Strenght = 0;
+	nullstruct.Speed = 0;
+	nullstruct.MagicPoints = 0;
+	nullstruct.Stamina = 0;
+	nullstruct.GoldLevelRequired = 0;
+	nullstruct.Life = 0;
+	nullstruct.SellingPrice = 0;
+
+	return nullstruct;
+}
+

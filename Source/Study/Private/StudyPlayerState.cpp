@@ -130,6 +130,45 @@ void AStudyPlayerState::updateCharStats(UDataTable* TableRef, FName Actual, FNam
 	}
 }
 
+void AStudyPlayerState::Client_updateCharacterStats_Implementation(FItemDetailsDataTable Actual, FItemDetailsDataTable New)
+{
+	Server_updateCharacterStats(Actual, New);
+}
+
+void AStudyPlayerState::Server_updateCharacterStats_Implementation(FItemDetailsDataTable Actual, FItemDetailsDataTable New)
+{
+	if (Role == ROLE_Authority)
+	{
+		CharacterStats.ActualLife += New.Life - Actual.Life;
+		CharacterStats.FullLife += New.Life - Actual.Life;
+
+		CharacterStats.ActualMana += New.MagicPoints - Actual.MagicPoints;
+		CharacterStats.FullMana += New.MagicPoints - Actual.MagicPoints;
+
+		CharacterStats.ActualStamina += New.Stamina - Actual.Stamina;
+		CharacterStats.FullStamina += New.Stamina - Actual.Stamina;
+
+		CharacterStats.Speed += New.Speed - Actual.Speed;
+
+		AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(this->GetPawn());
+		if (CharacterRef)
+		{
+			CharacterRef->GetCharacterMovement()->MaxWalkSpeed = float(CharacterStats.Speed);
+		}
+
+		CharacterStats.Strenght += New.Strenght - Actual.Strenght;
+	}
+	else
+	{
+		Client_updateCharacterStats(Actual, New);
+	}
+}
+
+bool AStudyPlayerState::Server_updateCharacterStats_Validate(FItemDetailsDataTable Actual, FItemDetailsDataTable New)
+{
+	return true;
+}
+
 // everytime the is alive change it checks if its still alive
 void AStudyPlayerState::OnRep_IsAlive()
 {

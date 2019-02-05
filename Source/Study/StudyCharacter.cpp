@@ -91,6 +91,7 @@ void AStudyCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & O
      Super::GetLifetimeReplicatedProps(OutLifetimeProps);
  
      DOREPLIFETIME(AStudyCharacter, ArmorSet);
+	 DOREPLIFETIME(AStudyCharacter, ArmorSetProperties);
  }
  
 //////////////////////////////////// Native events ////////////////////////////////////////////

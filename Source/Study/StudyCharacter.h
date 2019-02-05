@@ -46,6 +46,9 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="Gameplay")
 	TArray<TSubclassOf<AActor>> ArmorSet;
 
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	TArray<FItemDetailsDataTable> ArmorSetProperties;
+
 	// Clothing System
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMeshComponent* HeadMesh;

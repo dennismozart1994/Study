@@ -30,6 +30,12 @@ class STUDY_API AStudyPlayerState : public APlayerState
 	UFUNCTION()
 	virtual void OnRep_IsAlive();
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_updateCharacterStats(FItemDetailsDataTable Actual, FItemDetailsDataTable New);
+
+	UFUNCTION(Client, Reliable)
+	void Client_updateCharacterStats(FItemDetailsDataTable Actual, FItemDetailsDataTable New);
+
 	protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 

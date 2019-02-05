@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "CustomVariables.h"
 #include "Blueprint/UserWidget.h"
-#include "Delegates/DelegateCombinations.h"
 #include "Slot_Defaults.generated.h"
 
 /**
@@ -19,6 +18,8 @@ class STUDY_API USlot_Defaults : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
+	UFUNCTION(BlueprintImplementableEvent)
+	void UpdateSlots();
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data Table")
 	class UDataTable* DetailsTable;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Properties")
@@ -48,7 +49,9 @@ protected:
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
 	TArray<TSubclassOf<AActor>> GetInventory();
+	TArray<FItemDetailsDataTable> GetInventoryProperties();
 	TArray<TSubclassOf<AActor>> GetArmorSet();
+	TArray<FItemDetailsDataTable> GetArmorSetProperties();
 	FMyStats GetCharacterStats();
 
 	void InventorySwap(UInventoryDragDropOperation* CustomizeOperation);
