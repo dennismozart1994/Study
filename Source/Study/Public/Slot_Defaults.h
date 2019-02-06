@@ -18,8 +18,12 @@ class STUDY_API USlot_Defaults : public UUserWidget
 
 public:
 	virtual void NativeConstruct() override;
+
+	// called to implement update on blueprint
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateSlots();
+
+	// Data related to Drag and Drop Operations
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data Table")
 	class UDataTable* DetailsTable;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Properties")
@@ -48,11 +52,9 @@ protected:
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
-	TArray<TSubclassOf<AActor>> GetInventory();
-	TArray<FItemDetailsDataTable> GetInventoryProperties();
-	TArray<TSubclassOf<AActor>> GetArmorSet();
-	TArray<FItemDetailsDataTable> GetArmorSetProperties();
-	FMyStats GetCharacterStats();
+	class AStudyPC* GetCustomController();
+	class AStudyCharacter* GetCustomCharacter();
+	class AStudyPlayerState* GetCustomPlayerState();
 
 	void InventorySwap(UInventoryDragDropOperation* CustomizeOperation);
 	void InventoryToArmorSet(UInventoryDragDropOperation* CustomizeOperation);
