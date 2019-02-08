@@ -11,12 +11,40 @@
 #include "Engine/Classes/Engine/World.h"
 #include "UMG/Public/Blueprint/WidgetBlueprintLibrary.h"
 #include "InventoryDragDropOperation.h"
+#include "UMG/Public/Blueprint/WidgetTree.h"
+#include "UMG/Public/Components/Button.h"
+#include "Engine/Engine.h"
 
 void USlot_Defaults::NativeConstruct()
 {
 	Super::NativeConstruct();
-
+	TArray<UWidget*> ChildWidgets;
 	// Bind delegates here
+	if (WidgetTree)
+	{
+		if (WidgetTree->RootWidget)
+		{
+			UButton* SlotButton = Cast<UButton>(WidgetTree->RootWidget);
+			if (SlotButton)
+			{
+				SlotButton->OnClicked.AddDynamic(this, &USlot_Defaults::OnSlotClicked);
+				SlotButton->OnHovered.AddDynamic(this, &USlot_Defaults::OnSlotHovered);
+				SlotButton->OnUnhovered.AddDynamic(this, &USlot_Defaults::OnSlotUnHovered);
+			}
+			// WidgetTree->GetChildWidgets(WidgetTree->RootWidget, ChildWidgets);
+			// UE_LOG(LogTemp, Warning, TEXT("Get all childs from the root"));
+			// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, UKismetSystemLibrary::GetDisplayName(WidgetTree->RootWidget));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("WidgetTree Found, but no WidgetRoot found"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No WidgetTree found"));
+	}
+	
 }
 
 // Condition to Start Dragging
@@ -69,7 +97,6 @@ void USlot_Defaults::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Called Default On Drag Detected"));
-		Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
 	}
 }
 
@@ -147,7 +174,7 @@ void USlot_Defaults::InventorySwap(UInventoryDragDropOperation* CustomizeOperati
 		UE_LOG(LogTemp, Log, TEXT("Current From item is %s"), *UKismetSystemLibrary::GetDisplayName(FromActorClass));
 
 		// if moving to already filled widget
-		if (UKismetSystemLibrary::IsValidClass(ToActorClass))
+		if (UKismetSystemLibrary::IsValid(ToItemInfo.Mesh))
 		{
 			PCRef->Inventory[FromSlotIndex] = PCRef->Inventory[SlotIndex];
 			PCRef->InventoryItems[FromSlotIndex] = PCRef->InventoryItems[SlotIndex];
@@ -162,11 +189,15 @@ void USlot_Defaults::InventorySwap(UInventoryDragDropOperation* CustomizeOperati
 			PCRef->Inventory[ToSlotIndex] = FromActorClass;
 			PCRef->InventoryItems[ToSlotIndex] = FromItemInfo;
 
-			PCRef->Inventory[FromSlotIndex] = nullptr;
+			PCRef->Inventory[FromSlotIndex] = NULL;
 			PCRef->InventoryItems[FromSlotIndex] = ACustomVariables::createItemStruct();
 
-			UE_LOG(LogTemp, Warning, TEXT("Only the sender item is valid"));
+			UE_LOG(LogTemp, Log, TEXT("Only the sender item is valid"));
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Either the DraDropOperation or the Player Controller is null"));
 	}
 }
 
@@ -194,7 +225,7 @@ void USlot_Defaults::InventoryToArmorSet(UInventoryDragDropOperation* CustomizeO
 				FItemDetailsDataTable ToItemInfo = ItemInfo;
 
 				// Swap Armorset
-				if (UKismetSystemLibrary::IsValidClass(ToItemClass))
+				if (UKismetSystemLibrary::IsValid(ToItemInfo.Mesh))
 				{
 					PCRef->Inventory[FromSlotIndex] = ToItemClass;
 					PCRef->InventoryItems[FromSlotIndex] = ToItemInfo;
@@ -208,7 +239,7 @@ void USlot_Defaults::InventoryToArmorSet(UInventoryDragDropOperation* CustomizeO
 				}
 				else
 				{
-					PCRef->Inventory[FromSlotIndex] = nullptr;
+					PCRef->Inventory[FromSlotIndex] = NULL;
 					PCRef->InventoryItems[FromSlotIndex] = ACustomVariables::createItemStruct();
 
 					CharRef->ArmorSet[ToSlotIndex] = FromItemClass;
@@ -243,7 +274,7 @@ void USlot_Defaults::ArmorSetToInventory(UInventoryDragDropOperation* CustomizeO
 	AStudyCharacter* CharRef = GetCustomCharacter();
 	AStudyPlayerState* PSRef = GetCustomPlayerState();
 
-	if (CustomizeOperation && PCRef && CharRef && PSRef)
+	if (CustomizeOperation && PCRef && CharRef && PSRef )
 	{
 		// From Item Data
 		int32 FromSlotIndex = CustomizeOperation->SlotID;
@@ -256,17 +287,16 @@ void USlot_Defaults::ArmorSetToInventory(UInventoryDragDropOperation* CustomizeO
 		FItemDetailsDataTable ToItemInfo = ItemInfo;
 
 		// Remove item from ArmorSet to Empty Inventory Slot
-		if (!UKismetSystemLibrary::IsValidClass(ToItemClass))
+		if (!UKismetSystemLibrary::IsValid(ToItemInfo.Mesh))
 		{
+			UE_LOG(LogTemp, Log, TEXT("Removed from ArmorSet and sent to Inventory"));
 			PSRef->Server_updateCharacterStats(FromItemInfo, ACustomVariables::createItemStruct());
 
 			PCRef->Inventory[ToSlotIndex] = FromItemClass;
 			PCRef->InventoryItems[ToSlotIndex] = FromItemInfo;
 
-			CharRef->ArmorSet[FromSlotIndex] = nullptr;
+			CharRef->ArmorSet[FromSlotIndex] = NULL;
 			CharRef->ArmorSetProperties[FromSlotIndex] = ACustomVariables::createItemStruct();
-
-			UE_LOG(LogTemp, Log, TEXT("Removed from ArmorSet and sent to Inventory"));
 		}
 		// swap items on Armor set if they are the same armor type
 		else if (PCRef->InventoryItems[ToSlotIndex].ItemType == EItemType::IT_ArmorSet && CharRef->ArmorSetProperties[FromSlotIndex].ArmorType == PCRef->InventoryItems[ToSlotIndex].ArmorType)
@@ -288,7 +318,7 @@ void USlot_Defaults::ArmorSetToInventory(UInventoryDragDropOperation* CustomizeO
 			for (int32 i = 0; i < PCRef->Inventory.Num(); i++)
 			{
 				// only return to inventory if there's enough space
-				if (!UKismetSystemLibrary::IsValidClass(PCRef->Inventory[i]))
+				if (!UKismetSystemLibrary::IsValid(PCRef->InventoryItems[i].Mesh))
 				{
 					bCanSendToInventory = true;
 					CharRef->ArmorSet[FromSlotIndex] = ToItemClass;
@@ -335,4 +365,19 @@ void USlot_Defaults::SetFromItem()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Null pointers on SETFROMITEM() function"));
 	}
+}
+///////////////////////////////////////////// Components Delegates ///////////////////////////////////////////
+void USlot_Defaults::OnSlotClicked()
+{
+	UE_LOG(LogTemp, Log, TEXT("On Clicked Called"));
+}
+
+void USlot_Defaults::OnSlotHovered()
+{
+	UE_LOG(LogTemp, Log, TEXT("On Hovered Called"));
+}
+
+void USlot_Defaults::OnSlotUnHovered()
+{
+	UE_LOG(LogTemp, Log, TEXT("On UnHovered Called"));
 }

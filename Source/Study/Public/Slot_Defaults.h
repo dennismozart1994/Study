@@ -48,16 +48,27 @@ public:
 	class UInventoryDragDropOperation* CustomOperation;
 
 protected:
+	// Drag and Drop Operations
 	virtual FReply NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
+	// Get Custom pointers
 	class AStudyPC* GetCustomController();
 	class AStudyCharacter* GetCustomCharacter();
 	class AStudyPlayerState* GetCustomPlayerState();
 
+	// Inventory functions
 	void InventorySwap(UInventoryDragDropOperation* CustomizeOperation);
 	void InventoryToArmorSet(UInventoryDragDropOperation* CustomizeOperation);
 	void ArmorSetToInventory(UInventoryDragDropOperation* CustomizeOperation);
 	void SetFromItem();
+
+	// Button Events
+	UFUNCTION()
+	void OnSlotClicked();
+	UFUNCTION()
+	void OnSlotHovered();
+	UFUNCTION()
+	void OnSlotUnHovered();
 };
