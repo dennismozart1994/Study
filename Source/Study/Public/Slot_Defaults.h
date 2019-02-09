@@ -17,8 +17,6 @@ class STUDY_API USlot_Defaults : public UUserWidget
 	GENERATED_BODY()
 
 public:
-	virtual void NativeConstruct() override;
-
 	// called to implement update on blueprint
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateSlots();
@@ -47,12 +45,33 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Drag and Drop Operation")
 	class UInventoryDragDropOperation* CustomOperation;
 
+	// Data related to the 3D Preview 
+	UPROPERTY(EditDefaultsOnly, Category = "3D Preview")
+	TSubclassOf<class UItem3DDescription> wItemDescription;
+	UPROPERTY(BlueprintReadOnly, Category = "3D Preview")
+	class UItem3DDescription* ItemDescriptionWG;
+	UFUNCTION(BlueprintImplementableEvent)
+	void Call3DPreview();
+
 protected:
+	//////////////////////////////////////////////// Native Events //////////////////////////////////////////////
+	virtual void NativeConstruct() override;
+
 	// Drag and Drop Operations
 	virtual FReply NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
+	///////////////////////////////////////////// Components Delegates ///////////////////////////////////////////
+	// Button Events
+	UFUNCTION()
+	void OnSlotClicked();
+	UFUNCTION()
+	void OnSlotHovered();
+	UFUNCTION()
+	void OnSlotUnHovered();
+
+	//////////////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////////////////////
 	// Get Custom pointers
 	class AStudyPC* GetCustomController();
 	class AStudyCharacter* GetCustomCharacter();
@@ -63,12 +82,4 @@ protected:
 	void InventoryToArmorSet(UInventoryDragDropOperation* CustomizeOperation);
 	void ArmorSetToInventory(UInventoryDragDropOperation* CustomizeOperation);
 	void SetFromItem();
-
-	// Button Events
-	UFUNCTION()
-	void OnSlotClicked();
-	UFUNCTION()
-	void OnSlotHovered();
-	UFUNCTION()
-	void OnSlotUnHovered();
 };

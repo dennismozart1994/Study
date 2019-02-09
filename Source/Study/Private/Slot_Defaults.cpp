@@ -1,20 +1,27 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Slot_Defaults.h"
-#include "Engine/Classes/Kismet/KismetSystemLibrary.h"
-#include "Engine/Classes/Kismet/KismetMathLibrary.h"
+
+// Custom classes
 #include "StudyPC.h"
 #include "StudyCharacter.h"
 #include "StudyPlayerState.h"
 #include "Pickup.h"
-#include "Engine/DataTable.h"
-#include "Engine/Classes/Engine/World.h"
-#include "UMG/Public/Blueprint/WidgetBlueprintLibrary.h"
 #include "InventoryDragDropOperation.h"
+#include "Item3DDescription.h"
+
+// UserWidget includes like components, helpers, etc
+#include "UMG/Public/Blueprint/WidgetBlueprintLibrary.h"
 #include "UMG/Public/Blueprint/WidgetTree.h"
 #include "UMG/Public/Components/Button.h"
+
+// Math and debugging includes
+#include "Engine/Classes/Kismet/KismetSystemLibrary.h"
+#include "Engine/Classes/Kismet/KismetMathLibrary.h"
 #include "Engine/Engine.h"
 
+
+//////////////////////////////////////////////// Native Events //////////////////////////////////////////////
 void USlot_Defaults::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -135,6 +142,34 @@ bool USlot_Defaults::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 		UE_LOG(LogTemp, Warning, TEXT("Couldn't Cast to Custom operation"));
 	}
 	return true;
+}
+
+///////////////////////////////////////////// Components Delegates ///////////////////////////////////////////
+void USlot_Defaults::OnSlotClicked()
+{
+	UE_LOG(LogTemp, Log, TEXT("On Clicked Called"));
+	if (SlotType == ESlotType::ST_ArmorSet || SlotType == ESlotType::ST_Inventory)
+	{
+		// Show 3D Item preview
+		if (!ItemDescriptionWG)
+		{
+			ItemDescriptionWG = CreateWidget<UItem3DDescription>(this, wItemDescription);
+			ItemDescriptionWG->ItemDetails = ItemInfo;
+			ItemDescriptionWG->CurrentSlotRef = this;
+		}
+		ItemDescriptionWG->AddToViewport(1);
+		Call3DPreview();
+	}
+}
+
+void USlot_Defaults::OnSlotHovered()
+{
+	UE_LOG(LogTemp, Log, TEXT("On Hovered Called"));
+}
+
+void USlot_Defaults::OnSlotUnHovered()
+{
+	UE_LOG(LogTemp, Log, TEXT("On UnHovered Called"));
 }
 
 //////////////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// FUNCTIONS //////////////////////////////////////////////////////////////
@@ -365,19 +400,4 @@ void USlot_Defaults::SetFromItem()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Null pointers on SETFROMITEM() function"));
 	}
-}
-///////////////////////////////////////////// Components Delegates ///////////////////////////////////////////
-void USlot_Defaults::OnSlotClicked()
-{
-	UE_LOG(LogTemp, Log, TEXT("On Clicked Called"));
-}
-
-void USlot_Defaults::OnSlotHovered()
-{
-	UE_LOG(LogTemp, Log, TEXT("On Hovered Called"));
-}
-
-void USlot_Defaults::OnSlotUnHovered()
-{
-	UE_LOG(LogTemp, Log, TEXT("On UnHovered Called"));
 }
