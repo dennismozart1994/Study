@@ -17,6 +17,11 @@ void UItem3DPreview::SpawnPreview()
 	if (RecordingRef)
 	{
 		RecordingRef->SetNewMeshPreview(ItemDetails.Mesh, ItemDetails.DesiredThumbSize);
+		UE_LOG(LogTemp, Log, TEXT("Spawned preview with success"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Preview has~not been spawned"));
 	}
 }
 

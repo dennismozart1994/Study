@@ -41,8 +41,8 @@ void ARecording3DPreviewActor::SetNewMeshPreview(class USkeletalMesh* NewMesh, F
 	if (NewMesh)
 	{
 		Mesh->SetSkeletalMesh(NewMesh, true);
-		Mesh->SetRelativeLocation(FVector(0.f));
-		Scene3DComp->SetRelativeRotation(FRotator(0.f));
+		Mesh->SetRelativeLocation(FVector(0.f, 0.f, 0.f), false, nullptr, ETeleportType::None);
+		Scene3DComp->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));
 		DesiredExtend = DesireExtent;
 		UpdateScale();
 	}
@@ -71,8 +71,7 @@ void ARecording3DPreviewActor::UpdateScale()
 	UKismetMathLibrary::MinOfFloatArray(VectorSize, ArrayIndex, MinValue);
 	
 	Mesh->SetWorldScale3D(WorldScale * MinValue);
-	Mesh->AddLocalOffset(WorldScale - Origin, true);
-
+	Mesh->AddLocalOffset(WorldScale - Origin, false, nullptr, ETeleportType::None);
 }
 
 void ARecording3DPreviewActor::OnClickedStart(FVector2D MouseLocation)

@@ -9,6 +9,7 @@ void UItem3DDescription::OnCloseWidget()
 {
 	if (Item3DPreviewRef)
 	{
+		OnClickedClose();
 		Item3DPreviewRef->Close3D();
 		RemoveFromParent();
 	}
@@ -22,8 +23,9 @@ void UItem3DDescription::NativeConstruct()
 		UButton* CloseRef = Cast<UButton>(WidgetTree->FindWidget(FName("Close")));
 		if (Item3DPreviewRef && CloseRef)
 		{
-			Item3DPreviewRef->Close3D();
+			Item3DPreviewRef->SpawnPreview();
 			CloseRef->OnClicked.AddDynamic(this, &UItem3DDescription::OnCloseWidget);
+			UE_LOG(LogTemp, Log, TEXT("Preview and Close button found"));
 		}
 		else
 		{

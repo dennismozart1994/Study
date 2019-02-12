@@ -153,10 +153,11 @@ void USlot_Defaults::OnSlotClicked()
 		// Show 3D Item preview
 		if (!ItemDescriptionWG)
 		{
-			ItemDescriptionWG = CreateWidget<UItem3DDescription>(this, wItemDescription);
-			ItemDescriptionWG->ItemDetails = ItemInfo;
-			ItemDescriptionWG->CurrentSlotRef = this;
+			ItemDescriptionWG = CreateWidget<UItem3DDescription>(GetOwningPlayer(), wItemDescription);
 		}
+		// Update Mesh info
+		ItemDescriptionWG->ItemDetails = ItemInfo;
+		ItemDescriptionWG->CurrentSlotRef = this;
 		ItemDescriptionWG->AddToViewport(1);
 		Call3DPreview();
 	}
