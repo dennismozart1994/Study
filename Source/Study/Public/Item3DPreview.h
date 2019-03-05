@@ -20,7 +20,10 @@ public:
 	FItemDetailsDataTable ItemDetails;
 
 	UPROPERTY(BlueprintReadOnly, Category = "3D Preview")
-	class ARecording3DPreviewActor* RecordingRef;
+	class ARecording3DPreviewActor* ActorToSpawn;
+
+	UPROPERTY(EditAnywhere, Category = "3D Preview")
+	TSubclassOf<class ARecording3DPreviewActor> RecordingRef;
 
 	UFUNCTION()
 	FVector2D GetMousePosition();

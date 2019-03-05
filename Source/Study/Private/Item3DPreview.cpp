@@ -13,41 +13,42 @@ FVector2D UItem3DPreview::GetMousePosition()
 void UItem3DPreview::SpawnPreview()
 {
 	FActorSpawnParameters SpawnParams;
-	RecordingRef = GetWorld()->SpawnActor<ARecording3DPreviewActor>(ARecording3DPreviewActor::StaticClass(), FVector(0.f, 0.f, 5000000.0f), FRotator(0.f), SpawnParams);
-	if (RecordingRef)
+	ActorToSpawn = GetWorld()->SpawnActor<ARecording3DPreviewActor>(RecordingRef, FVector(0.f, 0.f, 5000000.0f), FRotator(0.f), SpawnParams);
+	if (ActorToSpawn)
 	{
-		RecordingRef->SetNewMeshPreview(ItemDetails.Mesh, ItemDetails.DesiredThumbSize);
+		UE_LOG(LogTemp, Log, TEXT("Spawned the Mesh %s with the size %s"), *ItemDetails.Mesh->GetName(), *ItemDetails.DesiredThumbSize.ToString());
+		ActorToSpawn->SetNewMeshPreview(ItemDetails.Mesh, ItemDetails.DesiredThumbSize);
 		UE_LOG(LogTemp, Log, TEXT("Spawned preview with success"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Preview has~not been spawned"));
+		UE_LOG(LogTemp, Warning, TEXT("Preview has not been spawned"));
 	}
 }
 
 void UItem3DPreview::Close3D()
 {
-	if (RecordingRef)
+	if (ActorToSpawn)
 	{
-		RecordingRef->Destroy();
+		ActorToSpawn->Destroy();
 	}
 }
 
 void UItem3DPreview::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseLeave(InMouseEvent);
-	if (RecordingRef)
+	if (ActorToSpawn)
 	{
-		RecordingRef->OnClickedEnd();
+		ActorToSpawn->OnClickedEnd();
 	}
 }
 
 FReply UItem3DPreview::NativeOnMouseMove(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseMove(InGeometry, InMouseEvent);
-	if (RecordingRef)
+	if (ActorToSpawn)
 	{
-		RecordingRef->OnMouseMove(GetMousePosition());
+		ActorToSpawn->OnMouseMove(GetMousePosition());
 	}
 	return FReply::Unhandled();
 }
@@ -55,9 +56,9 @@ FReply UItem3DPreview::NativeOnMouseMove(const FGeometry& InGeometry, const FPoi
 FReply UItem3DPreview::NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnPreviewMouseButtonDown(InGeometry, InMouseEvent);
-	if (RecordingRef)
+	if (ActorToSpawn)
 	{
-		RecordingRef->OnClickedStart(GetMousePosition());
+		ActorToSpawn->OnClickedStart(GetMousePosition());
 	}
 	return FReply::Handled();
 }
@@ -65,9 +66,9 @@ FReply UItem3DPreview::NativeOnPreviewMouseButtonDown(const FGeometry& InGeometr
 FReply UItem3DPreview::NativeOnMouseButtonUp(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	Super::NativeOnMouseButtonUp(InGeometry, InMouseEvent);
-	if (RecordingRef)
+	if (ActorToSpawn)
 	{
-		RecordingRef->OnClickedEnd();
+		ActorToSpawn->OnClickedEnd();
 	}
 	return FReply::Unhandled();
 }

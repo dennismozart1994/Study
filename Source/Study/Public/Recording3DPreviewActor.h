@@ -30,10 +30,10 @@ public:
 	// Sets default values for this actor's properties
 	ARecording3DPreviewActor();
 
-	UPROPERTY(BlueprintReadOnly, Category = "Size")
+	UPROPERTY(BlueprintReadWrite, Category = "Size")
 	FVector CurrentExtendedMesh;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Size")
+	UPROPERTY(BlueprintReadWrite, Category = "Size")
 	FVector DesiredExtend;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Size")
@@ -45,9 +45,6 @@ public:
 public:	
 	UFUNCTION()
 	void SetNewMeshPreview(class USkeletalMesh* NewMesh, FVector DesireExtent);
-	
-	UFUNCTION()
-	void UpdateScale();
 
 	UFUNCTION()
 	void OnClickedStart(FVector2D MouseLocation);

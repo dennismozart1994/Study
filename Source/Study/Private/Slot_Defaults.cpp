@@ -151,10 +151,7 @@ void USlot_Defaults::OnSlotClicked()
 	if (SlotType == ESlotType::ST_ArmorSet || SlotType == ESlotType::ST_Inventory)
 	{
 		// Show 3D Item preview
-		if (!ItemDescriptionWG)
-		{
-			ItemDescriptionWG = CreateWidget<UItem3DDescription>(GetOwningPlayer(), wItemDescription);
-		}
+		ItemDescriptionWG = CreateWidget<UItem3DDescription>(GetOwningPlayer(), wItemDescription);
 		// Update Mesh info
 		ItemDescriptionWG->ItemDetails = ItemInfo;
 		ItemDescriptionWG->CurrentSlotRef = this;

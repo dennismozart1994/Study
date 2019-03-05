@@ -5,6 +5,7 @@
 // Cool libraries include
 #include "Engine/Classes/Kismet/KismetSystemLibrary.h"
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
+#include "Runtime/Core/Public/Misc/OutputDeviceNull.h"
 
 // Components Include
 #include "Components/SceneComponent.h"
@@ -20,9 +21,14 @@ ARecording3DPreviewActor::ARecording3DPreviewActor()
 
 	SceneCapture2DComp = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Capture2D"));
 	SceneCapture2DComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+	SceneCapture2DComp->RelativeLocation = FVector(-50.f, 0.f, 0.f);
+	SceneCapture2DComp->FOVAngle = 60.f;
 	
 	PointLightComp = CreateDefaultSubobject<UPointLightComponent>(TEXT("Light"));
 	PointLightComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+	PointLightComp->Intensity = 1.f;
+	PointLightComp->AttenuationRadius = 500.f;
+	PointLightComp->RelativeLocation = FVector(0.f, -60.f, 110.f);
 
 	Scene3DComp = CreateDefaultSubobject<USceneComponent>(TEXT("MeshRoot"));
 	Scene3DComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
@@ -31,47 +37,30 @@ ARecording3DPreviewActor::ARecording3DPreviewActor()
 	Mesh->AttachToComponent(Scene3DComp, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	CurrentExtendedMesh = FVector(18.f);
-	DesiredExtend = FVector(18.f);
+	DesiredExtend = FVector(18.f, 18.f, 18.f);
 	OnStartRotateLocation = FVector2D(0.f, 0.f);
 	bRotationEnabled = false;
 }
 
 void ARecording3DPreviewActor::SetNewMeshPreview(class USkeletalMesh* NewMesh, FVector DesireExtent)
 {
-	if (NewMesh)
+	if (UKismetSystemLibrary::IsValid(NewMesh))
 	{
 		Mesh->SetSkeletalMesh(NewMesh, true);
 		Mesh->SetRelativeLocation(FVector(0.f, 0.f, 0.f), false, nullptr, ETeleportType::None);
 		Scene3DComp->SetRelativeRotation(FRotator(0.f, 0.f, 0.f));
 		DesiredExtend = DesireExtent;
-		UpdateScale();
+		UE_LOG(LogTemp, Log, TEXT("Called set mesh"));
+
+		// Calls a custom event on the BP named UpdateScale
+		// Not Done on c++ due to a glitch on the GetWorldScale functionality on c++, it's working properly on BP tough
+		FOutputDeviceNull ar;
+		this->CallFunctionByNameWithArguments(TEXT("UpdateScale"), ar, NULL, true);
 	}
-}
-
-void ARecording3DPreviewActor::UpdateScale()
-{
-	FVector BoxExtent;
-	FVector Origin;
-	float Radius;
-
-	UKismetSystemLibrary::GetComponentBounds(Mesh, Origin, BoxExtent, Radius);
-
-	CurrentExtendedMesh = BoxExtent;
-	TArray<float> VectorSize;
-	VectorSize[0] = DesiredExtend.X / CurrentExtendedMesh.X;
-	VectorSize[1] = (DesiredExtend.Y / CurrentExtendedMesh.Y);
-	VectorSize[2] = (DesiredExtend.Z / CurrentExtendedMesh.Z);
-
-	float MinValue;
-	int32 ArrayIndex;
-
-	FVector WorldScale = Mesh->GetComponentScale();
-
-
-	UKismetMathLibrary::MinOfFloatArray(VectorSize, ArrayIndex, MinValue);
-	
-	Mesh->SetWorldScale3D(WorldScale * MinValue);
-	Mesh->AddLocalOffset(WorldScale - Origin, false, nullptr, ETeleportType::None);
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Mesh is null"));
+	}
 }
 
 void ARecording3DPreviewActor::OnClickedStart(FVector2D MouseLocation)
