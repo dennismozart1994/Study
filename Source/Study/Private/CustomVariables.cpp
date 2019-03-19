@@ -21,11 +21,14 @@ FItemDetailsDataTable ACustomVariables::createItemStruct()
 	nullstruct.GoldLevelRequired = 0;
 	nullstruct.Life = 0;
 	nullstruct.SellingPrice = 0;
+	nullstruct.PickupClass = nullptr;
 	nullstruct.Mesh = nullptr;
 	nullstruct.Thumbnail = nullptr;
 	nullstruct.ArmorThumbnail = nullptr;
 	nullstruct.ItemType = EItemType::IT_Craft;
 	nullstruct.ArmorType = EArmorType::AT_None;
+	nullstruct.WeaponType.SocketToAttach = FName("");
+	nullstruct.WeaponType.WeaponType = EWeaponType::WT_None;
 	nullstruct.DesiredThumbSize = FVector(0.f);
 	return nullstruct;
 }

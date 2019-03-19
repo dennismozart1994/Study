@@ -40,6 +40,9 @@ class STUDY_API UAnimInstanceDefault : public UAnimInstance
 	UFUNCTION(BlueprintCallable, Category = "Animations")
 	virtual void UpdateAnimProperties();
 
+	UFUNCTION(BlueprintCallable, Category = "Animations")
+	virtual void ResetCanAttack();
+
 	UFUNCTION()
 	void DoOnce();
 

@@ -8,6 +8,8 @@
 USHealthComponent::USHealthComponent()
 {
 	SetIsReplicated(true);
+	DefaultLife = 100.f;
+	CurrentLife = 100.f;
 }
 
 
@@ -15,6 +17,7 @@ USHealthComponent::USHealthComponent()
 void USHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	CurrentLife = DefaultLife;
 
 	if (GetOwnerRole() == ROLE_Authority)
 	{
@@ -26,15 +29,6 @@ void USHealthComponent::BeginPlay()
 	}
 }
 
-
-// Called every frame
-void USHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
-{
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-}
-
 void USHealthComponent::DealDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
 	if (Damage <= 0.0f)
@@ -42,6 +36,7 @@ void USHealthComponent::DealDamage(AActor* DamagedActor, float Damage, const cla
 		return;
 	}
 
+	// Deal Damage on Player if it´s receiving damage
 	AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(MyOwner);
 	if (PlayerRef)
 	{
@@ -56,8 +51,11 @@ void USHealthComponent::DealDamage(AActor* DamagedActor, float Damage, const cla
 			UE_LOG(LogTemp, Log, TEXT("Player State is invalid"));
 		}
 	}
+	// otherwise deal damage to AI and anyother objects
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("Owner is not Main Character"));
+		CurrentLife = FMath::Clamp(CurrentLife - Damage, 0.f, DefaultLife);
+		OnHealthChanged.Broadcast(this, int32(CurrentLife), int32(Damage), DamageType, InstigatedBy, DamageCauser);
+		UE_LOG(LogTemp, Log, TEXT("Owner is not Main Character but the object or AI has suffered damage"));
 	}
 }

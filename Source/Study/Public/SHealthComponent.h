@@ -25,9 +25,13 @@ protected:
 	AActor* MyOwner;
 
 public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-	
+	// Life Variables for any ohter element on game to deal damage
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Life")
+	float DefaultLife;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Life")
+	float CurrentLife;
+
 	UFUNCTION()
 	void DealDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 	

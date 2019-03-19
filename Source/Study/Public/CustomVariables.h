@@ -40,7 +40,33 @@ enum class EArmorType : uint8
 	AT_Shoes		UMETA(DisplayName="Shoes")
 };
 
-// data tale structs
+UENUM(BlueprintType)
+enum class EWeaponType : uint8
+{
+	WT_None			UMETA(DisplayName = "None"),
+	WT_Sword	 	UMETA(DisplayName = "Sword"),
+	WT_DualBlade	UMETA(DisplayName = "Dual Blade"),
+	WT_Axe_OR_Blunt	UMETA(DisplayName = "Axe or Blunt"),
+	WT_Shield 		UMETA(DisplayName = "Shield"),
+	WT_Bow		 	UMETA(DisplayName = "Bow"),
+	WT_Quiver		UMETA(DisplayName = "Quiver"),
+	WT_Staff		UMETA(DisplayName = "Staff")
+};
+
+// simple struct
+USTRUCT(BlueprintType)
+struct FWeaponType
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Type")
+	EWeaponType WeaponType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Socket")
+	FName SocketToAttach;
+};
+
+// data table structs
 USTRUCT(BlueprintType)
 struct FItemDetailsDataTable : public FTableRowBase
 {
@@ -54,10 +80,14 @@ struct FItemDetailsDataTable : public FTableRowBase
 	FVector DesiredThumbSize;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Skeletal Mesh")
 	USkeletalMesh* Mesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Config")
+	TSubclassOf<class APickup> PickupClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay Config")
 	EItemType ItemType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay Config")
 	EArmorType ArmorType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Config")
+	FWeaponType WeaponType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Thumbnails")
 	UTexture2D* Thumbnail;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Thumbnails")

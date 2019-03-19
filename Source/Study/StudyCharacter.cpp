@@ -2,6 +2,7 @@
 
 #include "StudyCharacter.h"
 #include "StudyPlayerState.h"
+#include "Pickup.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -10,9 +11,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/World.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Blueprint/UserWidget.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AStudyCharacter Constructor
@@ -44,8 +47,18 @@ AStudyCharacter::AStudyCharacter()
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 300.0f; // The camera follows at this distance behind the character	
+	CameraBoom->SetRelativeRotation(FRotator(-40.f, 0.f, 0.f)); // The camera Rotation (Top Down Angle)	
+	CameraBoom->TargetArmLength = 1200.0f; // The camera follows at this distance behind the character	
+	CameraBoom->bDoCollisionTest = true;
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom->bInheritPitch = false;
+	CameraBoom->bInheritYaw = true;
+	CameraBoom->bInheritRoll = true;
+	CameraBoom->bEnableCameraLag = true;
+	CameraBoom->bEnableCameraRotationLag = true;
+	CameraBoom->CameraLagSpeed = 30.f;
+	CameraBoom->CameraRotationLagSpeed = 50.f;
+	CameraBoom->ProbeChannel = ECC_Visibility;
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -79,11 +92,10 @@ AStudyCharacter::AStudyCharacter()
 	// Setup Gameplay Variables
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+	bIsReceivingDamage = false;
+	bCanAttack = true;
+	bCanWalk = true;
 }
-
-///////////////////////////////////////// Functions /////////////////////////////////////////////
-
-
 //////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// replication /////////////////////////////////////
 void AStudyCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
@@ -113,6 +125,9 @@ void AStudyCharacter::BeginPlay()
 	{
 		GetCharacterMovement()->MaxWalkSpeed = float(CurrentPlayerState->CharacterStats.Speed);
 	}
+
+	// Create Life Boss Reference Widget but don´t add into the viewport
+	BossUIRef = CreateWidget<UUserWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0), LifeBossUI, NAME_None);
 }
 
 //////////////////////////////////////// Setup Inputs ///////////////////////////////////////////
@@ -122,6 +137,8 @@ void AStudyCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
+
+	PlayerInputComponent->BindAction("SimpleAttack", IE_Pressed, this, &AStudyCharacter::Server_SimpleAttack);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AStudyCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AStudyCharacter::MoveRight);
@@ -164,6 +181,99 @@ void AStudyCharacter::OnHealthChanged(USHealthComponent* HealthComponent, int32 
 	}
 }
 
+bool AStudyCharacter::isMovingOnGroundCheck()
+{
+	return GetCharacterMovement()->IsMovingOnGround();
+}
+
+float AStudyCharacter::GetSpeedMovement()
+{
+	return GetCharacterMovement()->MaxWalkSpeed;
+}
+
+void AStudyCharacter::Server_SimpleAttack_Implementation()
+{
+	if (Role == ROLE_Authority)
+	{
+		TArray<UAnimMontage*> MontagesToSort;
+		int32 Range = 0;
+
+		if (bCanAttack && !bIsReceivingDamage)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Server is executing simple Attack"));
+			// If there's a weapon on the slot, then use it to attack based on the type of it
+			EWeaponType WeaponType = ArmorSetProperties[3].WeaponType.WeaponType;
+
+			// Switch between primary weapon to chose the attack
+			switch (WeaponType)
+			{
+				// Sword and Shield Type
+			case EWeaponType::WT_Sword:
+				Range = WarriorBasicAttacks.Num() - 1;
+				MontagesToSort = WarriorBasicAttacks;
+				UE_LOG(LogTemp, Log, TEXT("Warrior Basic Attacks selected"));
+				break;
+				// Bow Type
+			case EWeaponType::WT_Bow:
+				Range = ArchierBasicAttacks.Num() - 1;
+				MontagesToSort = ArchierBasicAttacks;
+				UE_LOG(LogTemp, Log, TEXT("Archier Basic Attacks selected"));
+				break;
+				// Mage Type
+			case EWeaponType::WT_Staff:
+				Range = MageBasicAttacks.Num() - 1;
+				MontagesToSort = MageBasicAttacks;
+				UE_LOG(LogTemp, Log, TEXT("Magician Basic Attacks selected"));
+				break;
+				// No Weapon
+			default:
+				Range = NoWeaponBasicAttacks.Num() - 1;
+				MontagesToSort = NoWeaponBasicAttacks;
+				UE_LOG(LogTemp, Log, TEXT("No Weapon Basic Attacks selected"));
+				break;
+			}
+
+			int32 RandomIndex = UKismetMathLibrary::RandomIntegerInRange(0, Range);
+
+			if (MontagesToSort.IsValidIndex(RandomIndex))
+			{
+				bCanAttack = false;
+				Multicast_PlayMontage(MontagesToSort[RandomIndex]);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Montage is not valid"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Log, TEXT("Player Can't attack"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Not the server trying to play the animation"));
+	}
+
+}
+
+bool AStudyCharacter::Server_SimpleAttack_Validate()
+{
+	return true;
+}
+
+// Play on All clients(Including the Server) the animation
+void AStudyCharacter::Multicast_PlayMontage_Implementation(UAnimMontage* MontageToPlay)
+{
+	PlayAnimMontage(MontageToPlay, 1.f, FName("None"));
+	UE_LOG(LogTemp, Log, TEXT("Played the Montage"));
+}
+
+bool AStudyCharacter::Multicast_PlayMontage_Validate(UAnimMontage* MontageToPlay)
+{
+	return true;
+}
+
 void AStudyCharacter::OnResetVR()
 {
 	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
@@ -182,14 +292,28 @@ void AStudyCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Locati
 //////////////////////////////////////////// Camera effects ///////////////////////////////////////
 void AStudyCharacter::TurnAtRate(float Rate)
 {
-	// calculate delta for this frame from the rate information
-	AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+	AStudyPlayerState* StateRef = Cast<AStudyPlayerState>(GetPlayerState());
+	if (StateRef)
+	{
+		if (StateRef->CharacterStats.ActualLife > 0 && bCanWalk)
+		{
+			// calculate delta for this frame from the rate information
+			AddControllerYawInput(Rate * BaseTurnRate * GetWorld()->GetDeltaSeconds());
+		}
+	}
 }
 
 void AStudyCharacter::LookUpAtRate(float Rate)
 {
-	// calculate delta for this frame from the rate information
-	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+	AStudyPlayerState* StateRef = Cast<AStudyPlayerState>(GetPlayerState());
+	if (StateRef)
+	{
+		if (StateRef->CharacterStats.ActualLife > 0 && bCanWalk)
+		{
+			// calculate delta for this frame from the rate information
+			AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+		}
+	}
 }
 
 ///////////////////////////////////////// Character Movement ///////////////////////////////////
@@ -197,27 +321,41 @@ void AStudyCharacter::MoveForward(float Value)
 {
 	if ((Controller != NULL) && (Value != 0.0f))
 	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		AStudyPlayerState* StateRef = Cast<AStudyPlayerState>(GetPlayerState());
+		if (StateRef)
+		{
+			if (StateRef->CharacterStats.ActualLife > 0 && bCanWalk)
+			{
+				// find out which way is forward
+				const FRotator Rotation = Controller->GetControlRotation();
+				const FRotator YawRotation(0, Rotation.Yaw, 0);
 
-		// get forward vector
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-		AddMovementInput(Direction, Value);
+				// get forward vector
+				const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+				AddMovementInput(Direction, Value);
+			}
+		}
 	}
 }
 
 void AStudyCharacter::MoveRight(float Value)
 {
-	if ( (Controller != NULL) && (Value != 0.0f) )
+	if ((Controller != NULL) && (Value != 0.0f))
 	{
-		// find out which way is right
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-	
-		// get right vector 
-		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-		// add movement in that direction
-		AddMovementInput(Direction, Value);
+		AStudyPlayerState* StateRef = Cast<AStudyPlayerState>(GetPlayerState());
+		if (StateRef)
+		{
+			if (StateRef->CharacterStats.ActualLife > 0 && bCanWalk)
+			{
+				// find out which way is right
+				const FRotator Rotation = Controller->GetControlRotation();
+				const FRotator YawRotation(0, Rotation.Yaw, 0);
+
+				// get right vector 
+				const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+				// add movement in that direction
+				AddMovementInput(Direction, Value);
+			}
+		}
 	}
 }

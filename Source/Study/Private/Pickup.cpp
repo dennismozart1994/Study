@@ -16,7 +16,7 @@
 // Sets default values
 APickup::APickup()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = false;
 
 	// replication setup
@@ -39,7 +39,7 @@ APickup::APickup()
 	Mesh->SetupAttachment(RootComponent);
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
 	SkeletalMesh->SetupAttachment(RootComponent);
-	
+
 	// mesh colisions
 	SkeletalMesh->SetSimulatePhysics(true);
 	SkeletalMesh->BodyInstance.SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
@@ -54,7 +54,7 @@ APickup::APickup()
 
 	// load data table
 	static ConstructorHelpers::FObjectFinder<UDataTable> PickupDataTableObject(TEXT("DataTable'/Game/DataTables/Pickups.Pickups'"));
-	if(PickupDataTableObject.Succeeded())
+	if (PickupDataTableObject.Succeeded())
 	{
 		ItemDataTable = PickupDataTableObject.Object;
 	}
@@ -71,31 +71,31 @@ void APickup::BeginPlay()
 void APickup::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
 	// If it's the client
-	if(Role < ROLE_Authority)
+	if (Role < ROLE_Authority)
 	{
 		SERVER_BeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
 		return;
 	}
 
 	// server func
-	if(OtherComp && OtherComp->ComponentHasTag("Player"))
+	if (OtherComp && OtherComp->ComponentHasTag("Player"))
 	{
 		AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(OtherActor);
-		if(CharacterRef)
+		if (CharacterRef)
 		{
 			AStudyPlayerState* PlayerStateRef = Cast<AStudyPlayerState>(CharacterRef->GetPlayerState());
-			if(PlayerStateRef)
+			if (PlayerStateRef)
 			{
 				APawn* PawnRef = PlayerStateRef->GetPawn();
-				if(PawnRef)
+				if (PawnRef)
 				{
 					AStudyPC* ControllerRef = Cast<AStudyPC>(PawnRef->GetController());
-					if(ControllerRef)
+					if (ControllerRef)
 					{
-						for(int i=0; i<ControllerRef->Inventory.Num(); i++)
+						for (int i = 0; i < ControllerRef->Inventory.Num(); i++)
 						{
 							// check if the current item is the last and is valid
-							if(UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]) && i == 35)
+							if (UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]) && i == 35)
 							{
 								GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Inventory is full");
 							}
@@ -103,7 +103,7 @@ void APickup::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 							// check if it's not a valid class on the index
 							// if it's a valid class then do nothing and go to the next step
 							// if it's not a valid class, add this item to inventory into that array index
-							else if(!UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]))
+							else if (!UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]))
 							{
 								GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "Added to Inventory");
 								ControllerRef->Inventory[i] = this->GetClass();
@@ -113,11 +113,16 @@ void APickup::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Oth
 								break;
 							}
 						}
-					}else{GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Controller not found");}
-				}else{GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error Casting to Private Pawn");}
-			}else{GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error Casting tom PlayerState");}
-		}else{GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error Casting to the Character");}
-	}else{GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "No Player Overlapped");}
+					}
+					else { GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Controller not found"); }
+				}
+				else { GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error Casting to Private Pawn"); }
+			}
+			else { GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error Casting tom PlayerState"); }
+		}
+		else { GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error Casting to the Character"); }
+	}
+	else { GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "No Player Overlapped"); }
 }
 
 void APickup::SERVER_BeginOverlap_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)

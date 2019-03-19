@@ -7,6 +7,7 @@
 UAnimInstanceDefault::UAnimInstanceDefault()
 {
 	bDoOnce = true;
+	bIsAlive = true;
 }
 
 void UAnimInstanceDefault::UpdateAnimProperties()
@@ -20,6 +21,21 @@ void UAnimInstanceDefault::UpdateAnimProperties()
 		{
 			bIsAlive = PlayerStateRef->bIsAlive;
 		}
+	}
+}
+
+// Reset status so the player can attack again
+void UAnimInstanceDefault::ResetCanAttack()
+{
+	AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(TryGetPawnOwner());
+	if (PlayerRef)
+	{
+		PlayerRef->bIsReceivingDamage = false;
+		PlayerRef->bCanAttack = true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Error trying to get player reference during cast on function ResetCanAttack() at the Anim Instance"));
 	}
 }
 

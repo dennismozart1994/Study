@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "CustomVariables.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "StudyCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -43,11 +44,44 @@ public:
 	class AStudyPlayerState* CurrentPlayerState;
 
 	// Gameplay Variables
+	UPROPERTY(BlueprintReadWrite, Category = "Reactions")
+	bool bIsReceivingDamage;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Reactions")
+	bool bCanAttack;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Reactions")
+	bool bCanWalk;
+
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category="Gameplay")
 	TArray<TSubclassOf<AActor>> ArmorSet;
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	TArray<FItemDetailsDataTable> ArmorSetProperties;
+
+	// Boss Life UI bar to show when facing a new boss in the game.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+	TSubclassOf<UUserWidget> LifeBossUI;
+
+	// Bos UI Reference after creating the UI based on the last variable class selected on the Editor
+	UPROPERTY(BlueprintReadWrite, Category = "UI")
+	UUserWidget* BossUIRef;
+
+	// Basic Attacks with no Weapon
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Montages)
+	TArray<UAnimMontage*> NoWeaponBasicAttacks;
+
+	// Basic Sword and Shield Attacks
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Montages)
+	TArray<UAnimMontage*> WarriorBasicAttacks;
+
+	// Basic Archier Attacks
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Montages)
+	TArray<UAnimMontage*> ArchierBasicAttacks;
+
+	// Basic Mage Attacks
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Montages)
+	TArray<UAnimMontage*> MageBasicAttacks;
 
 	// Clothing System
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -64,6 +98,19 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMeshComponent* FootsMesh;
+
+	/* Gameplay Functions*/
+	UFUNCTION(Category = "Basics")
+	bool isMovingOnGroundCheck();
+
+	float GetSpeedMovement();
+
+	// Simple attack by clicking the mouse button
+	UFUNCTION(Server, Reliable, WithValidation, Category = "Attacks")
+	void Server_SimpleAttack();
+
+	UFUNCTION(NetMulticast, UnReliable, WithValidation, Category = "Attacks")
+	void Multicast_PlayMontage(UAnimMontage* MontageToPlay);
 
 protected:
 	/** Resets HMD orientation in VR. */
