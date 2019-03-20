@@ -58,6 +58,10 @@ USTRUCT(BlueprintType)
 struct FWeaponType
 {
 	GENERATED_BODY()
+	
+	// Weapon Projectile if there's is one.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+	TSoftClassPtr<AActor> Projectile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Type")
 	EWeaponType WeaponType;
@@ -80,8 +84,6 @@ struct FItemDetailsDataTable : public FTableRowBase
 	FVector DesiredThumbSize;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Skeletal Mesh")
 	USkeletalMesh* Mesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay Config")
-	TSubclassOf<class APickup> PickupClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay Config")
 	EItemType ItemType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Gameplay Config")

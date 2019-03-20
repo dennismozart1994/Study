@@ -3,6 +3,7 @@
 #include "StudyCharacter.h"
 #include "StudyPlayerState.h"
 #include "Pickup.h"
+#include "WeaponToSpawn.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -285,45 +286,44 @@ void AStudyCharacter::SpawnWeapon(int32 SlotIndex, FItemDetailsDataTable ItemDet
 	TArray<EWeaponType> SecondSlot = { EWeaponType::WT_DualBlade, EWeaponType::WT_Quiver, EWeaponType::WT_Sword };
 
 	// if there's a class to spawn
-	if (ItemDetails.PickupClass != NULL)
+	if (World)
 	{
-		if (World)
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		FVector Location = FVector(0.f, 0.f, 50000.f);
+		FRotator Rotation = FRotator(0.f, 0.f, 0.f);
+
+		AWeaponToSpawn* Weapon = World->SpawnActor<AWeaponToSpawn>(AWeaponToSpawn::StaticClass(), Location, Rotation, SpawnParams);
+
+		if (Weapon)
 		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this;
-			FVector Location = FVector(0.f, 0.f, 50000.f);
-			FRotator Rotation = FRotator(0.f, 0.f, 0.f);
-
-			APickup* Weapon = World->SpawnActor<APickup>(ItemDetails.PickupClass, Location, Rotation, SpawnParams);
-
-			if (Weapon)
+			// Set the Weapon Skeletal Mesh
+			Weapon->SetNewMesh(ItemDetails.Mesh, NULL);
+			// if is the first Weapon slot		
+			if (SlotIndex == 3 && FirstSlot.Contains(ItemDetails.WeaponType.WeaponType) && ItemDetails.WeaponType.SocketToAttach != "None")
 			{
-				// if is the first Weapon slot
-				if (SlotIndex == 3 && FirstSlot.Contains(ItemDetails.WeaponType.WeaponType) && ItemDetails.WeaponType.SocketToAttach != "None")
-				{
-					Weapon->SkeletalMesh->AttachTo(GetMesh(), ItemDetails.WeaponType.SocketToAttach, EAttachLocation::SnapToTargetIncludingScale, false);
-				}
-				// if is the second weapon slot
-				else if (SlotIndex == 5 && SecondSlot.Contains(ItemDetails.WeaponType.WeaponType) && ItemDetails.WeaponType.SocketToAttach != "None")
-				{
-					Weapon->SkeletalMesh->AttachTo(GetMesh(), ItemDetails.WeaponType.SocketToAttach, EAttachLocation::SnapToTargetIncludingScale, false);
-				}
-				// trying to spawn weapon on a different slot
-				else
-				{
-					Weapon->Destroy();
-					UE_LOG(LogTemp, Error, TEXT("Trying to spawn a weapon on the wrong slot"));
-				}
+				Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale,	ItemDetails.WeaponType.SocketToAttach);
 			}
+			// if is the second weapon slot
+			else if (SlotIndex == 5 && SecondSlot.Contains(ItemDetails.WeaponType.WeaponType) && ItemDetails.WeaponType.SocketToAttach != "None")
+			{
+				Weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, ItemDetails.WeaponType.SocketToAttach);
+			}
+			// trying to spawn weapon on a different slot
 			else
 			{
-				UE_LOG(LogTemp, Error, TEXT("Error trying to Spawn the weapon actor"));
+				Weapon->Destroy();
+				UE_LOG(LogTemp, Error, TEXT("Trying to spawn a weapon on the wrong slot"));
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("Error trying to get the UWorld"));
+			UE_LOG(LogTemp, Error, TEXT("Error trying to Spawn the weapon actor"));
 		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Error trying to get the UWorld"));
 	}
 }
 
