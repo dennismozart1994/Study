@@ -274,6 +274,59 @@ bool AStudyCharacter::Multicast_PlayMontage_Validate(UAnimMontage* MontageToPlay
 	return true;
 }
 
+// Spawn Weapon and attach to the user
+void AStudyCharacter::SpawnWeapon(int32 SlotIndex, FItemDetailsDataTable ItemDetails)
+{
+	// Get World
+	UWorld* World = GetWorld();
+
+	// Weapon types allowed for the slots
+	TArray<EWeaponType> FirstSlot = { EWeaponType::WT_Sword, EWeaponType::WT_Bow, EWeaponType::WT_Axe_OR_Blunt, EWeaponType::WT_Staff, EWeaponType::WT_DualBlade };
+	TArray<EWeaponType> SecondSlot = { EWeaponType::WT_DualBlade, EWeaponType::WT_Quiver, EWeaponType::WT_Sword };
+
+	// if there's a class to spawn
+	if (ItemDetails.PickupClass != NULL)
+	{
+		if (World)
+		{
+			FActorSpawnParameters SpawnParams;
+			SpawnParams.Owner = this;
+			FVector Location = FVector(0.f, 0.f, 50000.f);
+			FRotator Rotation = FRotator(0.f, 0.f, 0.f);
+
+			APickup* Weapon = World->SpawnActor<APickup>(ItemDetails.PickupClass, Location, Rotation, SpawnParams);
+
+			if (Weapon)
+			{
+				// if is the first Weapon slot
+				if (SlotIndex == 3 && FirstSlot.Contains(ItemDetails.WeaponType.WeaponType) && ItemDetails.WeaponType.SocketToAttach != "None")
+				{
+					Weapon->SkeletalMesh->AttachTo(GetMesh(), ItemDetails.WeaponType.SocketToAttach, EAttachLocation::SnapToTargetIncludingScale, false);
+				}
+				// if is the second weapon slot
+				else if (SlotIndex == 5 && SecondSlot.Contains(ItemDetails.WeaponType.WeaponType) && ItemDetails.WeaponType.SocketToAttach != "None")
+				{
+					Weapon->SkeletalMesh->AttachTo(GetMesh(), ItemDetails.WeaponType.SocketToAttach, EAttachLocation::SnapToTargetIncludingScale, false);
+				}
+				// trying to spawn weapon on a different slot
+				else
+				{
+					Weapon->Destroy();
+					UE_LOG(LogTemp, Error, TEXT("Trying to spawn a weapon on the wrong slot"));
+				}
+			}
+			else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Error trying to Spawn the weapon actor"));
+			}
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Error trying to get the UWorld"));
+		}
+	}
+}
+
 void AStudyCharacter::OnResetVR()
 {
 	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();

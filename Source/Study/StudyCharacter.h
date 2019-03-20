@@ -112,6 +112,10 @@ public:
 	UFUNCTION(NetMulticast, UnReliable, WithValidation, Category = "Attacks")
 	void Multicast_PlayMontage(UAnimMontage* MontageToPlay);
 
+	// Spawn Weapon and attach to the user
+	UFUNCTION(BlueprintCallable, Category = "Attachs")
+	void SpawnWeapon(int32 SlotIndex, FItemDetailsDataTable ItemDetails);
+
 protected:
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
