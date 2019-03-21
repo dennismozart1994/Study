@@ -8,6 +8,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "StudyCharacter.generated.h"
 
+class AWeaponToSpawn;
+
 UCLASS(config=Game)
 class AStudyCharacter : public ACharacter
 {
@@ -58,6 +60,12 @@ public:
 
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	TArray<FItemDetailsDataTable> ArmorSetProperties;
+
+	// Weapons Reference
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
+	AWeaponToSpawn* Weapon1;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
+	AWeaponToSpawn* Weapon2;
 
 	// Boss Life UI bar to show when facing a new boss in the game.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")

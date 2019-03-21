@@ -153,6 +153,7 @@ void AStudyPlayerState::Server_updateCharacterStats_Implementation(FItemDetailsD
 		AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(this->GetPawn());
 		if (CharacterRef)
 		{
+			// update the speed based on the item properties
 			CharacterRef->GetCharacterMovement()->MaxWalkSpeed = float(CharacterStats.Speed);
 		}
 
