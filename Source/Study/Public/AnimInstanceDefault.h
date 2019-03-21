@@ -6,6 +6,7 @@
 #include "Animation/AnimInstance.h"
 #include "StudyCharacter.h"
 #include "StudyPlayerState.h"
+#include "CustomVariables.h"
 #include "AnimInstanceDefault.generated.h"
 
 /**
@@ -15,6 +16,7 @@ UCLASS()
 class STUDY_API UAnimInstanceDefault : public UAnimInstance
 {
 	GENERATED_BODY()
+
 	public:
 	UAnimInstanceDefault();
 
@@ -36,6 +38,9 @@ class STUDY_API UAnimInstanceDefault : public UAnimInstance
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "References")
 	AStudyPlayerState* PlayerStateRef;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation Properties")
+	EWeaponType WeaponBeingUsed;
 
 	UFUNCTION(BlueprintCallable, Category = "Animations")
 	virtual void UpdateAnimProperties();

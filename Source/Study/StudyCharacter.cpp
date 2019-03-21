@@ -298,32 +298,37 @@ void AStudyCharacter::SpawnWeapon(int32 SlotIndex, FItemDetailsDataTable ItemDet
 		// if is the first Weapon slot		
 		if (SlotIndex == 3 && FirstSlot.Contains(ItemDetails.WeaponType.WeaponType) && ItemDetails.WeaponType.SocketToAttach != "None")
 		{
+			// spawn a new weapon
 			Weapon1 = World->SpawnActor<AWeaponToSpawn>(AWeaponToSpawn::StaticClass(), Location, Rotation, SpawnParams);
 			if (Weapon1)
 			{
 				// Set the Weapon Skeletal Mesh
 				Weapon1->SetNewMesh(ItemDetails.Mesh, NULL);
 				Weapon1->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, ItemDetails.WeaponType.SocketToAttach);
+				UE_LOG(LogTemp, Log, TEXT("Spawned a new offensive Weapon"));
 			}
 			else
 			{
-				UE_LOG(LogTemp, Error, TEXT("Error trying to Spawn the Weapon 1"));
+				UE_LOG(LogTemp, Error, TEXT("Error trying to Spawn an offensive Weapon"));
 			}
 				
 		}
 		// if is the second weapon slot
 		else if (SlotIndex == 5 && SecondSlot.Contains(ItemDetails.WeaponType.WeaponType) && ItemDetails.WeaponType.SocketToAttach != "None")
 		{
+			// spawn a new weapon
 			Weapon2 = World->SpawnActor<AWeaponToSpawn>(AWeaponToSpawn::StaticClass(), Location, Rotation, SpawnParams);
+			// check whether you need to just set the mesh, or if you need to spawn a new Weapon for the first Slot
 			if (Weapon2)
 			{
 				// Set the Weapon Skeletal Mesh
 				Weapon2->SetNewMesh(ItemDetails.Mesh, NULL);
 				Weapon2->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, ItemDetails.WeaponType.SocketToAttach);
+				UE_LOG(LogTemp, Log, TEXT("Spawned new second weapon"));
 			}
 			else
 			{
-				UE_LOG(LogTemp, Error, TEXT("Error trying to Spawn the Weapon 2"));
+				UE_LOG(LogTemp, Error, TEXT("Error Trying to spawn an Deffensive Weapon"));
 			}
 		}
 		// trying to spawn weapon on a different slot

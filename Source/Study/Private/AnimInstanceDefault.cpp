@@ -8,15 +8,17 @@ UAnimInstanceDefault::UAnimInstanceDefault()
 {
 	bDoOnce = true;
 	bIsAlive = true;
+	WeaponBeingUsed = EWeaponType::WT_None;
 }
 
 void UAnimInstanceDefault::UpdateAnimProperties()
 {
-	APawn* Pawn = TryGetPawnOwner();
+	AStudyCharacter* Pawn = Cast<AStudyCharacter>(TryGetPawnOwner());
 	
 	if (Pawn) {
 		CharacterSpeed = Pawn->GetVelocity().Size();
 		PlayerStateRef = Cast<AStudyPlayerState>(Pawn->GetPlayerState());
+		WeaponBeingUsed = Pawn->ArmorSetProperties[3].WeaponType.WeaponType;
 		if(PlayerStateRef)
 		{
 			bIsAlive = PlayerStateRef->bIsAlive;
