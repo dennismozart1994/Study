@@ -207,33 +207,17 @@ void AStudyCharacter::Server_SimpleAttack_Implementation()
 			// If there's a weapon on the slot, then use it to attack based on the type of it
 			EWeaponType WeaponType = ArmorSetProperties[3].WeaponType.WeaponType;
 
-			// Switch between primary weapon to chose the attack
-			switch (WeaponType)
+			// check if use basic attacks animations or the animations for the weapon
+			if (WeaponType == EWeaponType::WT_None)
 			{
-				// Sword and Shield Type
-			case EWeaponType::WT_Sword:
-				Range = WarriorBasicAttacks.Num() - 1;
-				MontagesToSort = WarriorBasicAttacks;
-				UE_LOG(LogTemp, Log, TEXT("Warrior Basic Attacks selected"));
-				break;
-				// Bow Type
-			case EWeaponType::WT_Bow:
-				Range = ArchierBasicAttacks.Num() - 1;
-				MontagesToSort = ArchierBasicAttacks;
-				UE_LOG(LogTemp, Log, TEXT("Archier Basic Attacks selected"));
-				break;
-				// Mage Type
-			case EWeaponType::WT_Staff:
-				Range = MageBasicAttacks.Num() - 1;
-				MontagesToSort = MageBasicAttacks;
-				UE_LOG(LogTemp, Log, TEXT("Magician Basic Attacks selected"));
-				break;
-				// No Weapon
-			default:
 				Range = NoWeaponBasicAttacks.Num() - 1;
 				MontagesToSort = NoWeaponBasicAttacks;
 				UE_LOG(LogTemp, Log, TEXT("No Weapon Basic Attacks selected"));
-				break;
+			}
+			else
+			{
+				Range = ArmorSetProperties[3].WeaponType.BasicAttacks.Num() - 1;
+				MontagesToSort = ArmorSetProperties[3].WeaponType.BasicAttacks;
 			}
 
 			int32 RandomIndex = UKismetMathLibrary::RandomIntegerInRange(0, Range);
@@ -273,6 +257,24 @@ void AStudyCharacter::Multicast_PlayMontage_Implementation(UAnimMontage* Montage
 }
 
 bool AStudyCharacter::Multicast_PlayMontage_Validate(UAnimMontage* MontageToPlay)
+{
+	return true;
+}
+
+// Drop item on UWorld
+void AStudyCharacter::DropItemOnWorld_Implementation(TSubclassOf<AActor> PickupClass, FTransform Location)
+{
+	UWorld* World = GetWorld();
+	if (HasAuthority() && World)
+	{
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		World->SpawnActor<APickup>(PickupClass, Location, SpawnParams);
+		UE_LOG(LogTemp, Log, TEXT("The item %s was Dropped"), *UKismetSystemLibrary::GetClassDisplayName(PickupClass));
+	}
+}
+
+bool AStudyCharacter::DropItemOnWorld_Validate(TSubclassOf<AActor> PickupClass, FTransform Location)
 {
 	return true;
 }

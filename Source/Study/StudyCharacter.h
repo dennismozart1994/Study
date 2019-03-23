@@ -79,18 +79,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Montages)
 	TArray<UAnimMontage*> NoWeaponBasicAttacks;
 
-	// Basic Sword and Shield Attacks
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Montages)
-	TArray<UAnimMontage*> WarriorBasicAttacks;
-
-	// Basic Archier Attacks
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Montages)
-	TArray<UAnimMontage*> ArchierBasicAttacks;
-
-	// Basic Mage Attacks
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Montages)
-	TArray<UAnimMontage*> MageBasicAttacks;
-
 	// Clothing System
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMeshComponent* HeadMesh;
@@ -123,6 +111,9 @@ public:
 	// Spawn Weapon and attach to the user
 	UFUNCTION(BlueprintCallable, Category = "Attachs")
 	void SpawnWeapon(int32 SlotIndex, FItemDetailsDataTable ItemDetails);
+
+	UFUNCTION(Server, Reliable, WithValidation, Category = "Inventory")
+	void DropItemOnWorld(TSubclassOf<AActor> PickupClass, FTransform Location);
 
 protected:
 	/** Resets HMD orientation in VR. */

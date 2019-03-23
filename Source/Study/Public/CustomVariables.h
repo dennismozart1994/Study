@@ -58,16 +58,20 @@ USTRUCT(BlueprintType)
 struct FWeaponType
 {
 	GENERATED_BODY()
-	
-	// Weapon Projectile if there's is one.
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
-	TSoftClassPtr<AActor> Projectile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Type")
 	EWeaponType WeaponType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Socket")
 	FName SocketToAttach;
+
+	// Basic attack animations with that weapon
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations")
+	TArray<UAnimMontage*> BasicAttacks;
+
+	// Weapon Projectile if there's is one.
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
+	TSoftClassPtr<AActor> Projectile;
 };
 
 // data table structs
