@@ -15,7 +15,7 @@ class STUDY_API UGameplayHUD : public UUserWidget
 	GENERATED_BODY()
 	
 	protected:
-	UFUNCTION(BlueprintImplementable)
+	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateSlots();
 
 	// Deal native OnDrop Process

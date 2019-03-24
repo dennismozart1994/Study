@@ -45,6 +45,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Replication")
 	class AStudyPlayerState* CurrentPlayerState;
 
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Replication")
+	EWeaponType WeaponBeingUsed;
+
 	// Gameplay Variables
 	UPROPERTY(BlueprintReadWrite, Category = "Reactions")
 	bool bIsReceivingDamage;
@@ -61,12 +64,6 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	TArray<FItemDetailsDataTable> ArmorSetProperties;
 
-	// Weapons Reference
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
-	AWeaponToSpawn* Weapon1;
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadOnly, Category = "Gameplay")
-	AWeaponToSpawn* Weapon2;
-
 	// Boss Life UI bar to show when facing a new boss in the game.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UUserWidget> LifeBossUI;
@@ -76,7 +73,7 @@ public:
 	UUserWidget* BossUIRef;
 
 	// Basic Attacks with no Weapon
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Montages)
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Montages)
 	TArray<UAnimMontage*> NoWeaponBasicAttacks;
 
 	// Clothing System
@@ -85,6 +82,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMeshComponent* ChestMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USkeletalMeshComponent* OffWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USkeletalMeshComponent* DeffWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMeshComponent* HandsMesh;
@@ -108,12 +111,8 @@ public:
 	UFUNCTION(NetMulticast, UnReliable, WithValidation, Category = "Attacks")
 	void Multicast_PlayMontage(UAnimMontage* MontageToPlay);
 
-	// Spawn Weapon and attach to the user
-	UFUNCTION(BlueprintCallable, Category = "Attachs")
-	void SpawnWeapon(int32 SlotIndex, FItemDetailsDataTable ItemDetails);
-
 	UFUNCTION(Server, Reliable, WithValidation, Category = "Inventory")
-	void DropItemOnWorld(TSubclassOf<AActor> PickupClass, FTransform Location);
+	void DropItemOnWorld(TSubclassOf<AActor> PickupClass, FTransform Location, ESlotType SlotType, int32 SlotID);
 
 protected:
 	/** Resets HMD orientation in VR. */

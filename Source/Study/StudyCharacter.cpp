@@ -3,7 +3,6 @@
 #include "StudyCharacter.h"
 #include "StudyPlayerState.h"
 #include "Pickup.h"
-#include "WeaponToSpawn.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -78,6 +77,14 @@ AStudyCharacter::AStudyCharacter()
 	ChestMesh->SetIsReplicated(true);
 	ChestMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
+	OffWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon1"));
+	OffWeapon->SetIsReplicated(true);
+	OffWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+
+	DeffWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon2"));
+	DeffWeapon->SetIsReplicated(true);
+	DeffWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+
 	HandsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Gloves"));
 	HandsMesh->SetIsReplicated(true);
 	HandsMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
@@ -96,6 +103,7 @@ AStudyCharacter::AStudyCharacter()
 	bIsReceivingDamage = false;
 	bCanAttack = true;
 	bCanWalk = true;
+	WeaponBeingUsed = EWeaponType::WT_None;
 }
 //////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// replication /////////////////////////////////////
@@ -105,8 +113,8 @@ void AStudyCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & O
  
      DOREPLIFETIME(AStudyCharacter, ArmorSet);
 	 DOREPLIFETIME(AStudyCharacter, ArmorSetProperties);
-	 DOREPLIFETIME(AStudyCharacter, Weapon1);
-	 DOREPLIFETIME(AStudyCharacter, Weapon2);
+	 DOREPLIFETIME(AStudyCharacter, NoWeaponBasicAttacks);
+	 DOREPLIFETIME(AStudyCharacter, WeaponBeingUsed);
  }
  
 //////////////////////////////////// Native events ////////////////////////////////////////////
@@ -204,11 +212,9 @@ void AStudyCharacter::Server_SimpleAttack_Implementation()
 		if (bCanAttack && !bIsReceivingDamage)
 		{
 			UE_LOG(LogTemp, Log, TEXT("Server is executing simple Attack"));
-			// If there's a weapon on the slot, then use it to attack based on the type of it
-			EWeaponType WeaponType = ArmorSetProperties[3].WeaponType.WeaponType;
 
 			// check if use basic attacks animations or the animations for the weapon
-			if (WeaponType == EWeaponType::WT_None)
+			if (WeaponBeingUsed == EWeaponType::WT_None)
 			{
 				Range = NoWeaponBasicAttacks.Num() - 1;
 				MontagesToSort = NoWeaponBasicAttacks;
@@ -262,87 +268,38 @@ bool AStudyCharacter::Multicast_PlayMontage_Validate(UAnimMontage* MontageToPlay
 }
 
 // Drop item on UWorld
-void AStudyCharacter::DropItemOnWorld_Implementation(TSubclassOf<AActor> PickupClass, FTransform Location)
+void AStudyCharacter::DropItemOnWorld_Implementation(TSubclassOf<AActor> PickupClass, FTransform Location, ESlotType SlotType, int32 SlotID)
 {
 	UWorld* World = GetWorld();
-	if (HasAuthority() && World)
+	if (HasAuthority() && PickupClass != NULL && World)
 	{
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 		World->SpawnActor<APickup>(PickupClass, Location, SpawnParams);
+		if (SlotType == ESlotType::ST_ArmorSet && SlotID == 3)
+		{
+			// Don't change if there's another dual blade on the second hand
+			if (ArmorSetProperties[5].WeaponType.WeaponType != EWeaponType::WT_DualBlade)
+			{
+				WeaponBeingUsed = EWeaponType::WT_None;
+			}
+		}
+
+		if (SlotType == ESlotType::ST_ArmorSet && SlotID == 5)
+		{
+			// only change if there's no dual blade on the other hand
+			if (ArmorSetProperties[5].WeaponType.WeaponType == EWeaponType::WT_DualBlade && ArmorSetProperties[3].WeaponType.WeaponType == EWeaponType::WT_None)
+			{
+				WeaponBeingUsed = EWeaponType::WT_None;
+			}
+		}
 		UE_LOG(LogTemp, Log, TEXT("The item %s was Dropped"), *UKismetSystemLibrary::GetClassDisplayName(PickupClass));
 	}
 }
 
-bool AStudyCharacter::DropItemOnWorld_Validate(TSubclassOf<AActor> PickupClass, FTransform Location)
+bool AStudyCharacter::DropItemOnWorld_Validate(TSubclassOf<AActor> PickupClass, FTransform Location, ESlotType SlotType, int32 SlotID)
 {
 	return true;
-}
-
-// Spawn Weapon and attach to the user
-void AStudyCharacter::SpawnWeapon(int32 SlotIndex, FItemDetailsDataTable ItemDetails)
-{
-	// Get World
-	UWorld* World = GetWorld();
-
-	// Weapon types allowed for the slots
-	TArray<EWeaponType> FirstSlot = { EWeaponType::WT_Sword, EWeaponType::WT_Bow, EWeaponType::WT_Axe_OR_Blunt, EWeaponType::WT_Staff, EWeaponType::WT_DualBlade };
-	TArray<EWeaponType> SecondSlot = { EWeaponType::WT_DualBlade, EWeaponType::WT_Quiver, EWeaponType::WT_Shield };
-
-	// if there's a class to spawn
-	if (World)
-	{
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		FVector Location = FVector(0.f, 0.f, 50000.f);
-		FRotator Rotation = FRotator(0.f, 0.f, 0.f);
-
-		// if is the first Weapon slot		
-		if (SlotIndex == 3 && FirstSlot.Contains(ItemDetails.WeaponType.WeaponType) && ItemDetails.WeaponType.SocketToAttach != "None")
-		{
-			// spawn a new weapon
-			Weapon1 = World->SpawnActor<AWeaponToSpawn>(AWeaponToSpawn::StaticClass(), Location, Rotation, SpawnParams);
-			if (Weapon1)
-			{
-				// Set the Weapon Skeletal Mesh
-				Weapon1->SetNewMesh(ItemDetails.Mesh, NULL);
-				Weapon1->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, ItemDetails.WeaponType.SocketToAttach);
-				UE_LOG(LogTemp, Log, TEXT("Spawned a new offensive Weapon"));
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("Error trying to Spawn an offensive Weapon"));
-			}
-				
-		}
-		// if is the second weapon slot
-		else if (SlotIndex == 5 && SecondSlot.Contains(ItemDetails.WeaponType.WeaponType) && ItemDetails.WeaponType.SocketToAttach != "None")
-		{
-			// spawn a new weapon
-			Weapon2 = World->SpawnActor<AWeaponToSpawn>(AWeaponToSpawn::StaticClass(), Location, Rotation, SpawnParams);
-			// check whether you need to just set the mesh, or if you need to spawn a new Weapon for the first Slot
-			if (Weapon2)
-			{
-				// Set the Weapon Skeletal Mesh
-				Weapon2->SetNewMesh(ItemDetails.Mesh, NULL);
-				Weapon2->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetIncludingScale, ItemDetails.WeaponType.SocketToAttach);
-				UE_LOG(LogTemp, Log, TEXT("Spawned new second weapon"));
-			}
-			else
-			{
-				UE_LOG(LogTemp, Error, TEXT("Error Trying to spawn an Deffensive Weapon"));
-			}
-		}
-		// trying to spawn weapon on a different slot
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("Trying to spawn a weapon on the wrong slot"));
-		}
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Error trying to get the UWorld"));
-	}
 }
 
 void AStudyCharacter::OnResetVR()

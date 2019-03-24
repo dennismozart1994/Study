@@ -22,14 +22,16 @@ bool UGameplayHUD::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 			FRotator Rotation = StudyCharacterRef->GetActorRotation();
 			FTransform LocationToSpawn = UKismetMathLibrary::MakeTransform(Location, Rotation, FVector(1.f));
 			// Spawn Item dropped on World
-			StudyCharacterRef->DropItemOnWorld(Operation->ItemClass, LocationToSpawn);
+			StudyCharacterRef->DropItemOnWorld(Operation->ItemClass, LocationToSpawn, Operation->SlotType, Operation->SlotID);
 
 			// Update Inventory if dropped from there
 			if (Operation->SlotType == ESlotType::ST_Inventory)
 			{
 				AStudyPC* PCRef = Cast<AStudyPC>(GetOwningPlayer());
-				// @TODO Remove items from Inventory
+				PCRef->Inventory[Operation->SlotID] = NULL;
+				PCRef->InventoryItems[Operation->SlotID] = ACustomVariables::createItemStruct();
 				UE_LOG(LogTemp, Log, TEXT("Dropped item from Inventory"));
+				UpdateSlots();
 			}
 
 			// update armorset if dropped from there
@@ -38,6 +40,7 @@ bool UGameplayHUD::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 				StudyCharacterRef->ArmorSet[Operation->SlotID] = NULL;
 				StudyCharacterRef->ArmorSetProperties[Operation->SlotID] = ACustomVariables::createItemStruct();
 				UE_LOG(LogTemp, Log, TEXT("Dropped item from Armor Set"));
+				UpdateSlots();
 			}
 		}
 		else

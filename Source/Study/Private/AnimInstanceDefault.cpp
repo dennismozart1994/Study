@@ -18,7 +18,7 @@ void UAnimInstanceDefault::UpdateAnimProperties()
 	if (Pawn) {
 		CharacterSpeed = Pawn->GetVelocity().Size();
 		PlayerStateRef = Cast<AStudyPlayerState>(Pawn->GetPlayerState());
-		WeaponBeingUsed = Pawn->ArmorSetProperties[3].WeaponType.WeaponType;
+		WeaponBeingUsed = Pawn->WeaponBeingUsed;
 		if(PlayerStateRef)
 		{
 			bIsAlive = PlayerStateRef->bIsAlive;
