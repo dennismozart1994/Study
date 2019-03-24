@@ -12,14 +12,42 @@
 
 // UserWidget includes like components, helpers, etc
 #include "UMG/Public/Blueprint/WidgetBlueprintLibrary.h"
+#include "Runtime/UMG/Public/Blueprint/WidgetLayoutLibrary.h"
 #include "UMG/Public/Blueprint/WidgetTree.h"
-#include "UMG/Public/Components/Button.h"
 
 // Math and debugging includes
 #include "Engine/Classes/Kismet/KismetSystemLibrary.h"
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
 #include "Engine/Engine.h"
 
+
+void USlot_Defaults::SetDefaultStyle(UButton* Button)
+{
+	FSlateBrush Normal;
+	Normal.DrawAs = ESlateBrushDrawType::Image;
+	Normal.Tiling = ESlateBrushTileType::NoTile;
+	Normal.Mirroring = ESlateBrushMirrorType::NoMirror;
+	Normal.ImageSize = FVector2D(32.f, 32.f);
+	Normal.SetResourceObject(SlotBackground);
+	Normal.TintColor = FSlateColor(FLinearColor(1.f, 1.f, 1.f, 1.f));
+	
+
+	FSlateBrush Hovered;
+	Hovered.DrawAs = ESlateBrushDrawType::Image;
+	Hovered.Tiling = ESlateBrushTileType::NoTile;
+	Hovered.Mirroring = ESlateBrushMirrorType::NoMirror;
+	Hovered.ImageSize = FVector2D(32.f, 32.f);
+	Hovered.SetResourceObject(SlotBackground);
+	Hovered.TintColor = FSlateColor(FLinearColor(0.447917f, 0.447917f, 0.447917f, 1.f));
+
+	FButtonStyle DefaultStyle;
+
+	DefaultStyle.Normal = Normal;
+	DefaultStyle.Hovered = Hovered;
+	DefaultStyle.Pressed = Normal;
+
+	Button->SetStyle(DefaultStyle);
+}
 
 //////////////////////////////////////////////// Native Events //////////////////////////////////////////////
 void USlot_Defaults::NativeConstruct()
@@ -31,12 +59,14 @@ void USlot_Defaults::NativeConstruct()
 	{
 		if (WidgetTree->RootWidget)
 		{
-			UButton* SlotButton = Cast<UButton>(WidgetTree->RootWidget);
+			SlotButton = Cast<UButton>(WidgetTree->RootWidget);
 			if (SlotButton)
 			{
 				SlotButton->OnClicked.AddDynamic(this, &USlot_Defaults::OnSlotClicked);
 				SlotButton->OnHovered.AddDynamic(this, &USlot_Defaults::OnSlotHovered);
 				SlotButton->OnUnhovered.AddDynamic(this, &USlot_Defaults::OnSlotUnHovered);
+
+				SetDefaultStyle(SlotButton);
 			}
 			// WidgetTree->GetChildWidgets(WidgetTree->RootWidget, ChildWidgets);
 			// UE_LOG(LogTemp, Warning, TEXT("Get all childs from the root"));
@@ -144,6 +174,24 @@ bool USlot_Defaults::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 	return true;
 }
 
+void USlot_Defaults::NativeOnDragEnter(const FGeometry & InGeometry, const FDragDropEvent & InDragDropEvent, UDragDropOperation * InOperation)
+{
+	Super::NativeOnDragEnter(InGeometry, InDragDropEvent, InOperation);
+	if (SlotButton)
+	{
+		SlotButton->SetStyle(DragStyle);
+	}
+}
+
+void USlot_Defaults::NativeOnDragLeave(const FDragDropEvent & InDragDropEvent, UDragDropOperation * InOperation)
+{
+	Super::NativeOnDragLeave(InDragDropEvent, InOperation);
+	if (SlotButton)
+	{
+		SetDefaultStyle(SlotButton);
+	}
+}
+
 ///////////////////////////////////////////// Components Delegates ///////////////////////////////////////////
 void USlot_Defaults::OnSlotClicked()
 {
@@ -162,12 +210,47 @@ void USlot_Defaults::OnSlotClicked()
 
 void USlot_Defaults::OnSlotHovered()
 {
-	UE_LOG(LogTemp, Log, TEXT("On Hovered Called"));
+	if (SlotType == ESlotType::ST_Inventory && ItemInfo.Thumbnail != NULL)
+	{
+		// Create Item Info Widget on BP
+		if (ItemInfo.ItemType == EItemType::IT_ArmorSet)
+		{
+			CreateComparisionUI(ESlateVisibility::Visible);
+		}
+		else
+		{
+			CreateComparisionUI(ESlateVisibility::Hidden);
+		}
+		
+		// After Creating add to ViewPort on the Position Calculated (Mouse + Offset)
+		UWidgetLayoutLibrary* WidgetLayoutLibrary;
+		WidgetLayoutLibrary = NewObject<UWidgetLayoutLibrary>(UWidgetLayoutLibrary::StaticClass());
+		if (WidgetLayoutLibrary)
+		{
+			FVector2D ViewportPosition = WidgetLayoutLibrary->GetMousePositionOnViewport(GetWorld());
+			if (UIComparisionRef)
+			{
+				UIComparisionRef->AddToViewport(0);
+				float Y;
+				float X;
+				UKismetMathLibrary::BreakVector2D(ViewportPosition, X, Y);
+				X += 70.f;
+				Y += -70.f;
+				FVector2D Position = UKismetMathLibrary::MakeVector2D(X, Y);
+
+				UIComparisionRef->SetPositionInViewport(Position, false);
+			}
+		}
+	}
 }
 
 void USlot_Defaults::OnSlotUnHovered()
 {
-	UE_LOG(LogTemp, Log, TEXT("On UnHovered Called"));
+	// Remove From Parent the Item Comparision UI when Unhovered
+	if (UIComparisionRef)
+	{
+		UIComparisionRef->RemoveFromParent();
+	}
 }
 
 //////////////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////////////////////////////////////////////////////////////////////////// FUNCTIONS //////////////////////////////////////////////////////////////

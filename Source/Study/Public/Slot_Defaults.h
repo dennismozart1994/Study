@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CustomVariables.h"
 #include "Blueprint/UserWidget.h"
+#include "UMG/Public/Components/Button.h"
 #include "Slot_Defaults.generated.h"
 
 /**
@@ -17,6 +18,9 @@ class STUDY_API USlot_Defaults : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Button Style")
+	FButtonStyle DragStyle;
+
 	// called to implement update on blueprint
 	UFUNCTION(BlueprintImplementableEvent)
 	void UpdateSlots();
@@ -44,6 +48,10 @@ public:
 	TSubclassOf<AActor> FromItem;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Drag and Drop Operation")
 	class UInventoryDragDropOperation* CustomOperation;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Comparision UI")
+	UUserWidget* UIComparisionRef;
+	UFUNCTION(BlueprintImplementableEvent)
+	void CreateComparisionUI(ESlateVisibility Visible);
 
 	// Data related to the 3D Preview 
 	UPROPERTY(EditDefaultsOnly, Category = "3D Preview")
@@ -52,6 +60,8 @@ public:
 	class UItem3DDescription* ItemDescriptionWG;
 	UFUNCTION(BlueprintImplementableEvent)
 	void Call3DPreview();
+	UFUNCTION(BlueprintCallable, Category = "Style")
+	void SetDefaultStyle(UButton* Button);
 
 protected:
 	//////////////////////////////////////////////// Native Events //////////////////////////////////////////////
@@ -61,6 +71,8 @@ protected:
 	virtual FReply NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	virtual void NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent, UDragDropOperation*& OutOperation) override;
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+	virtual void NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
+	virtual void NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 
 	///////////////////////////////////////////// Components Delegates ///////////////////////////////////////////
 	// Button Events
@@ -70,6 +82,8 @@ protected:
 	void OnSlotHovered();
 	UFUNCTION()
 	void OnSlotUnHovered();
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Slot Items")
+	UButton* SlotButton;
 
 	//////////////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////////////////////
 	// Get Custom pointers
