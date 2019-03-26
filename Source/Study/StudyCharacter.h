@@ -115,6 +115,12 @@ public:
 	void DropItemOnWorld(TSubclassOf<AActor> PickupClass, FTransform Location, ESlotType SlotType, int32 SlotID);
 
 protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Recovery")
+	FTimerHandle _delayhandler;
+
+	UFUNCTION(Server, Reliable, WithValidation, Category = "Recovery")
+	void RecoverStamina();
+
 	/** Resets HMD orientation in VR. */
 	void OnResetVR();
 

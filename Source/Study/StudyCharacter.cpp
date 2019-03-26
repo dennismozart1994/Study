@@ -204,39 +204,48 @@ float AStudyCharacter::GetSpeedMovement()
 
 void AStudyCharacter::Server_SimpleAttack_Implementation()
 {
+	UWorld* World = GetWorld();
+
 	if (Role == ROLE_Authority)
 	{
 		TArray<UAnimMontage*> MontagesToSort;
 		int32 Range = 0;
 
-		if (bCanAttack && !bIsReceivingDamage)
+		AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
+
+		if (bCanAttack && !bIsReceivingDamage && PSRef)
 		{
 			UE_LOG(LogTemp, Log, TEXT("Server is executing simple Attack"));
-
-			// check if use basic attacks animations or the animations for the weapon
-			if (WeaponBeingUsed == EWeaponType::WT_None)
+			if (PSRef->CharacterStats.ActualStamina >= 20)
 			{
-				Range = NoWeaponBasicAttacks.Num() - 1;
-				MontagesToSort = NoWeaponBasicAttacks;
-				UE_LOG(LogTemp, Log, TEXT("No Weapon Basic Attacks selected"));
+				// check if use basic attacks animations or the animations for the weapon
+				if (WeaponBeingUsed == EWeaponType::WT_None)
+				{
+					Range = NoWeaponBasicAttacks.Num() - 1;
+					MontagesToSort = NoWeaponBasicAttacks;
+					UE_LOG(LogTemp, Log, TEXT("No Weapon Basic Attacks selected"));
+				}
+
+				int32 RandomIndex = UKismetMathLibrary::RandomIntegerInRange(0, ArmorSetProperties[3].WeaponType.BasicAttacks.Num() - 1);
+
+				if (ArmorSetProperties[3].WeaponType.BasicAttacks.IsValidIndex(RandomIndex) && World)
+				{
+					bCanAttack = false;
+					Multicast_PlayMontage(ArmorSetProperties[3].WeaponType.BasicAttacks[RandomIndex]);
+					PSRef->CharacterStats.ActualStamina = FMath::Clamp(PSRef->CharacterStats.ActualStamina - 20, 0, PSRef->CharacterStats.FullStamina);
+					World->GetTimerManager().SetTimer(_delayhandler, this, &AStudyCharacter::RecoverStamina, 2.5f, false);
+					UE_LOG(LogTemp, Log, TEXT("Simple attack performed and started timer"));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Montage is not valid, Index %i"), RandomIndex);
+				}
 			}
 			else
 			{
-				Range = ArmorSetProperties[3].WeaponType.BasicAttacks.Num() - 1;
-				MontagesToSort = ArmorSetProperties[3].WeaponType.BasicAttacks;
+				UE_LOG(LogTemp, Warning, TEXT("Character doesn't have enough stamina to perform attack"));
 			}
-
-			int32 RandomIndex = UKismetMathLibrary::RandomIntegerInRange(0, Range);
-
-			if (MontagesToSort.IsValidIndex(RandomIndex))
-			{
-				bCanAttack = false;
-				Multicast_PlayMontage(MontagesToSort[RandomIndex]);
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Montage is not valid"));
-			}
+			
 		}
 		else
 		{
@@ -298,6 +307,43 @@ void AStudyCharacter::DropItemOnWorld_Implementation(TSubclassOf<AActor> PickupC
 }
 
 bool AStudyCharacter::DropItemOnWorld_Validate(TSubclassOf<AActor> PickupClass, FTransform Location, ESlotType SlotType, int32 SlotID)
+{
+	return true;
+}
+
+void AStudyCharacter::RecoverStamina_Implementation()
+{
+	UWorld* World = GetWorld();
+	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
+
+	if (Role == ROLE_Authority && PSRef && World)
+	{
+		if (!bIsReceivingDamage && bCanAttack && PSRef->CharacterStats.ActualStamina < PSRef->CharacterStats.FullStamina)
+		{
+			PSRef->CharacterStats.ActualStamina = FMath::Clamp(PSRef->CharacterStats.ActualStamina + 5, 0, PSRef->CharacterStats.FullStamina);
+			World->GetTimerManager().SetTimer(_delayhandler, this, &AStudyCharacter::RecoverStamina, 1.f, false);
+			UE_LOG(LogTemp, Log, TEXT("Recovered 5 points of stamina"));
+		}
+		else if(PSRef->CharacterStats.ActualStamina + 5 >= PSRef->CharacterStats.FullStamina)
+		{
+			World->GetTimerManager().ClearTimer(_delayhandler);
+			World->GetTimerManager().ClearAllTimersForObject(this);
+			UE_LOG(LogTemp, Log, TEXT("No need to recover stamina, Clearing out the timers"));
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Can't recover stamina because your attacking or taking damage, will retry"));
+			World->GetTimerManager().SetTimer(_delayhandler, this, &AStudyCharacter::RecoverStamina, 1.f, false);
+		}
+	}
+	else
+	{
+		RecoverStamina();
+		UE_LOG(LogTemp, Error, TEXT("Not the Server or Player State is Invalid or World is not valid"));
+	}
+}
+
+bool AStudyCharacter::RecoverStamina_Validate()
 {
 	return true;
 }
