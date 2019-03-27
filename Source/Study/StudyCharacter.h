@@ -72,9 +72,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "UI")
 	UUserWidget* BossUIRef;
 
-	// Basic Attacks with no Weapon
+	// Attacks replication variable
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Montages)
-	TArray<UAnimMontage*> NoWeaponBasicAttacks;
+	TArray<UAnimMontage*> MontagesToSort;
 
 	// Clothing System
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -115,6 +115,31 @@ public:
 	void DropItemOnWorld(TSubclassOf<AActor> PickupClass, FTransform Location, ESlotType SlotType, int32 SlotID);
 
 protected:
+
+	// Basic Attacks with no Weapon
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
+	TArray<UAnimMontage*> NoWeaponBasicAttacks;
+
+	// Basic Attacks with a Sword
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
+	TArray<UAnimMontage*> SwordBasicAttacks;
+
+	// Basic Attacks with a Dual Blade
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
+	TArray<UAnimMontage*> DualBladeBasicAttacks;
+
+	// Basic Attacks with an Axe Or a Blunt
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
+	TArray<UAnimMontage*> AxeOrBluntBasicAttacks;
+
+	// Basic Attacks with a Bow
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
+	TArray<UAnimMontage*> BowBasicAttacks;
+
+	// Basic Attacks with a Bow
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
+	TArray<UAnimMontage*> StaffAttacks;
+
 	UPROPERTY(BlueprintReadOnly, Category = "Recovery")
 	FTimerHandle _delayhandler;
 

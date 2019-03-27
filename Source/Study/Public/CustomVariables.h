@@ -65,10 +65,6 @@ struct FWeaponType
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Socket")
 	FName SocketToAttach;
 
-	// Basic attack animations with that weapon
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Animations")
-	TArray<UAnimMontage*> BasicAttacks;
-
 	// Weapon Projectile if there's is one.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile")
 	TSoftClassPtr<AActor> Projectile;

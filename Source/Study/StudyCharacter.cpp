@@ -113,7 +113,7 @@ void AStudyCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & O
  
      DOREPLIFETIME(AStudyCharacter, ArmorSet);
 	 DOREPLIFETIME(AStudyCharacter, ArmorSetProperties);
-	 DOREPLIFETIME(AStudyCharacter, NoWeaponBasicAttacks);
+	 DOREPLIFETIME(AStudyCharacter, MontagesToSort);
 	 DOREPLIFETIME(AStudyCharacter, WeaponBeingUsed);
  }
  
@@ -208,7 +208,6 @@ void AStudyCharacter::Server_SimpleAttack_Implementation()
 
 	if (Role == ROLE_Authority)
 	{
-		TArray<UAnimMontage*> MontagesToSort;
 		int32 Range = 0;
 
 		AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
@@ -219,19 +218,57 @@ void AStudyCharacter::Server_SimpleAttack_Implementation()
 			if (PSRef->CharacterStats.ActualStamina >= 20)
 			{
 				// check if use basic attacks animations or the animations for the weapon
-				if (WeaponBeingUsed == EWeaponType::WT_None)
+				switch (WeaponBeingUsed)
 				{
+				// Magician Weapon
+				case EWeaponType::WT_Staff:
+					Range = StaffAttacks.Num() - 1;
+					MontagesToSort = StaffAttacks;
+					UE_LOG(LogTemp, Log, TEXT("Staff Basic Attacks selected"));
+					break;
+				
+				// Sword Weapon
+				case EWeaponType::WT_Sword:
+					Range = SwordBasicAttacks.Num() - 1;
+					MontagesToSort = SwordBasicAttacks;
+					UE_LOG(LogTemp, Log, TEXT("Sword Basic Attacks selected"));
+					break;
+				
+				// Axe or Blunt Weapon
+				case EWeaponType::WT_Axe_OR_Blunt:
+					Range = AxeOrBluntBasicAttacks.Num() - 1;
+					MontagesToSort = AxeOrBluntBasicAttacks;
+					UE_LOG(LogTemp, Log, TEXT("Axe or Blunt Basic Attacks selected"));
+					break;
+
+				// Dual Blade Weapon
+				case EWeaponType::WT_DualBlade:
+					Range = DualBladeBasicAttacks.Num() - 1;
+					MontagesToSort = DualBladeBasicAttacks;
+					UE_LOG(LogTemp, Log, TEXT("Dual Blade Basic Attacks selected"));
+					break;
+
+				// Bow and Arrow Weapon
+				case EWeaponType::WT_Bow:
+					Range = BowBasicAttacks.Num() - 1;
+					MontagesToSort = BowBasicAttacks;
+					UE_LOG(LogTemp, Log, TEXT("Bow Basic Attacks selected"));
+					break;
+
+				// No Weapon was seletected
+				default:
 					Range = NoWeaponBasicAttacks.Num() - 1;
 					MontagesToSort = NoWeaponBasicAttacks;
 					UE_LOG(LogTemp, Log, TEXT("No Weapon Basic Attacks selected"));
+					break;
 				}
 
-				int32 RandomIndex = UKismetMathLibrary::RandomIntegerInRange(0, ArmorSetProperties[3].WeaponType.BasicAttacks.Num() - 1);
+				int32 RandomIndex = UKismetMathLibrary::RandomIntegerInRange(0, Range);
 
-				if (ArmorSetProperties[3].WeaponType.BasicAttacks.IsValidIndex(RandomIndex) && World)
+				if (MontagesToSort.IsValidIndex(Range) && World)
 				{
 					bCanAttack = false;
-					Multicast_PlayMontage(ArmorSetProperties[3].WeaponType.BasicAttacks[RandomIndex]);
+					Multicast_PlayMontage(MontagesToSort[RandomIndex]);
 					PSRef->CharacterStats.ActualStamina = FMath::Clamp(PSRef->CharacterStats.ActualStamina - 20, 0, PSRef->CharacterStats.FullStamina);
 					World->GetTimerManager().SetTimer(_delayhandler, this, &AStudyCharacter::RecoverStamina, 2.5f, false);
 					UE_LOG(LogTemp, Log, TEXT("Simple attack performed and started timer"));
@@ -267,8 +304,12 @@ bool AStudyCharacter::Server_SimpleAttack_Validate()
 // Play on All clients(Including the Server) the animation
 void AStudyCharacter::Multicast_PlayMontage_Implementation(UAnimMontage* MontageToPlay)
 {
-	PlayAnimMontage(MontageToPlay, 1.f, FName("None"));
-	UE_LOG(LogTemp, Log, TEXT("Played the Montage"));
+	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
+	if (PSRef)
+	{
+		PlayAnimMontage(MontageToPlay, PSRef->CharacterStats.Speed / 200, FName("None"));
+		UE_LOG(LogTemp, Log, TEXT("Played the Montage"));
+	}
 }
 
 bool AStudyCharacter::Multicast_PlayMontage_Validate(UAnimMontage* MontageToPlay)
