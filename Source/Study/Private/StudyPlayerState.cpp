@@ -12,7 +12,7 @@ AStudyPlayerState::AStudyPlayerState()
     // Gameplay Variables
 	 CharacterStats.CharacterName =  "TEST CHARACTER";
 	 CharacterStats.Strenght = 30;
-	 CharacterStats.Speed = 200;
+	 CharacterStats.Speed = 400;
 	 CharacterStats.ActualLife = 100;
 	 CharacterStats.FullLife = 100;
 	 CharacterStats.ActualMana = 1000;

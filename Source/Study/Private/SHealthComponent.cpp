@@ -48,7 +48,7 @@ void USHealthComponent::DealDamage(AActor* DamagedActor, float Damage, const cla
 		}
 		else
 		{
-			UE_LOG(LogTemp, Log, TEXT("Player State is invalid"));
+			UE_LOG(LogTemp, Error, TEXT("Player State is invalid"));
 		}
 	}
 	// otherwise deal damage to AI and anyother objects
@@ -56,6 +56,6 @@ void USHealthComponent::DealDamage(AActor* DamagedActor, float Damage, const cla
 	{
 		CurrentLife = FMath::Clamp(CurrentLife - Damage, 0.f, DefaultLife);
 		OnHealthChanged.Broadcast(this, int32(CurrentLife), int32(Damage), DamageType, InstigatedBy, DamageCauser);
-		UE_LOG(LogTemp, Log, TEXT("Owner is not Main Character but the object or AI has suffered damage"));
+		UE_LOG(LogTemp, Warning, TEXT("Owner is not Main Character but the object or AI has suffered damage"));
 	}
 }

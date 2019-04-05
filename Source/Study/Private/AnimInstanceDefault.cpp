@@ -3,6 +3,7 @@
 #include "AnimInstanceDefault.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "Runtime/Engine/Classes/Components/CapsuleComponent.h"
 
 UAnimInstanceDefault::UAnimInstanceDefault()
 {
@@ -34,6 +35,8 @@ void UAnimInstanceDefault::ResetCanAttack()
 	{
 		PlayerRef->bIsReceivingDamage = false;
 		PlayerRef->bCanAttack = true;
+		FRotator CurrentRotation = PlayerRef->GetCapsuleComponent()->RelativeRotation;
+		PlayerRef->GetCapsuleComponent()->SetRelativeRotation(FRotator(0.f, CurrentRotation.Yaw, 0.f));
 	}
 	else
 	{
