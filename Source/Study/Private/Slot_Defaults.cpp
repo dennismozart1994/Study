@@ -99,36 +99,43 @@ void USlot_Defaults::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 	Super::NativeOnDragDetected(InGeometry, InMouseEvent, OutOperation);
 	if (DetailsTable)
 	{
-		SetFromItem();
-		USlot_Defaults* Draggable = CreateWidget<USlot_Defaults, APlayerController>(GetOwningPlayer(), SlotDraggableWG, NAME_None);
-		if (Draggable)
+		if (ItemInfo.Thumbnail != NULL)
 		{
-			Draggable->SlotBackground = SlotBackground;
-			Draggable->ItemInfo = ItemInfo;
-			CustomOperation = Cast<UInventoryDragDropOperation>(UWidgetBlueprintLibrary::CreateDragDropOperation(UInventoryDragDropOperation::StaticClass()));
-			
-			if (CustomOperation && DetailsTable && UKismetSystemLibrary::IsValidClass(FromItem))
+			SetFromItem();
+			USlot_Defaults* Draggable = CreateWidget<USlot_Defaults, APlayerController>(GetOwningPlayer(), SlotDraggableWG, NAME_None);
+			if (Draggable)
 			{
-				CustomOperation->SlotID = SlotIndex;
-				CustomOperation->SlotType = SlotType;
-				CustomOperation->ItemClass = FromItem;
-				static const FString ContextCurrent(TEXT("Current Item Details"));
-				CustomOperation->ItemDetails = ItemInfo;
-				CustomOperation->DefaultDragVisual = Draggable;
-				CustomOperation->Pivot = EDragPivot::CenterCenter;
-				CustomOperation->Payload = this;
-				
-				OutOperation = CustomOperation;
-				UE_LOG(LogTemp, Log, TEXT("Called Custom On Drag Detected Operation"));
+				Draggable->SlotBackground = SlotBackground;
+				Draggable->ItemInfo = ItemInfo;
+				CustomOperation = Cast<UInventoryDragDropOperation>(UWidgetBlueprintLibrary::CreateDragDropOperation(UInventoryDragDropOperation::StaticClass()));
+
+				if (CustomOperation && DetailsTable && UKismetSystemLibrary::IsValidClass(FromItem))
+				{
+					CustomOperation->SlotID = SlotIndex;
+					CustomOperation->SlotType = SlotType;
+					CustomOperation->ItemClass = FromItem;
+					static const FString ContextCurrent(TEXT("Current Item Details"));
+					CustomOperation->ItemDetails = ItemInfo;
+					CustomOperation->DefaultDragVisual = Draggable;
+					CustomOperation->Pivot = EDragPivot::CenterCenter;
+					CustomOperation->Payload = this;
+
+					OutOperation = CustomOperation;
+					UE_LOG(LogTemp, Log, TEXT("Called Custom On Drag Detected Operation"));
+				}
+				else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Not a vlaid From class item"));
+				}
 			}
 			else
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Not a vlaid From class item"));
+				UE_LOG(LogTemp, Warning, TEXT("Error trying to create Draggable Widget"));
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Error trying to create Draggable Widget"));
+			UE_LOG(LogTemp, Warning, TEXT("There are no items to start dragging"));
 		}
 	}
 	else

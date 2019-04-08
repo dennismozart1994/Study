@@ -28,26 +28,20 @@ protected:
 	USkeletalMeshComponent* SkeletalMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UBoxComponent* TriggerBox;
+	void deactivatePhysics();
+	FTimerHandle _delayhandler;
 
 public:	
 	// Sets default values for this actor's properties
 	APickup();
 
-	UFUNCTION()
-	virtual void NotifyActorOnClicked(FKey ButtonPressed = EKeys::LeftMouseButton) override;
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void SERVER_OnClicked(FKey ButtonPressed);
+	UFUNCTION(BlueprintPure, Category = "Get Item Details")
+	FItemDetailsDataTable getItemInfo();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	UPROPERTY(Replicated)
-	bool bIsNearBy;
-	UPROPERTY(Replicated)
-	TArray<AActor*> ActorsNearBy;
-
+	
 	UFUNCTION()
 	void OnMouseOver(UPrimitiveComponent* TouchedActor);
 	UFUNCTION()
@@ -57,9 +51,4 @@ protected:
 	UFUNCTION()
 	void EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	UFUNCTION(Server, Reliable, WithValidation, Category = "Interactable Area")
-	void Server_ActivateItem(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult);
-	
-	UFUNCTION(Server, Reliable, WithValidation, Category = "Interactable Area")
-	void Server_DeactivateItem(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 };

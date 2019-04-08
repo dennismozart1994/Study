@@ -24,15 +24,18 @@ APickup::APickup()
 	bReplicates = true;
 	bReplicateMovement = true;
 	bAlwaysRelevant = false;
-	bIsNearBy = false;
+	NetUpdateFrequency = 100.f;
+	// NetDormancy = ENetDormancy::DORM_DormantAll;
+
+	
 
 	// create root component
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
+	RootComponent = SkeletalMesh;
 
 	// bind events
-	SkeletalMesh->OnBeginCursorOver.AddDynamic(this, &APickup::OnMouseOver);
-	SkeletalMesh->OnEndCursorOver.AddDynamic(this, &APickup::OnMouseLeave);
-	RootComponent = SkeletalMesh;
+	// SkeletalMesh->OnBeginCursorOver.AddDynamic(this, &APickup::OnMouseOver);
+	// SkeletalMesh->OnEndCursorOver.AddDynamic(this, &APickup::OnMouseLeave);
 
 	// create mesh and static mesh component
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
@@ -41,7 +44,12 @@ APickup::APickup()
 	// Create Trigger box to enable interactions with the object
 	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Interaction Range"));
 	TriggerBox->SetupAttachment(RootComponent);
-	TriggerBox->SetRelativeScale3D(FVector(4.f));
+	TriggerBox->BodyInstance.SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	TriggerBox->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Block);
+	TriggerBox->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
+	TriggerBox->SetRelativeScale3D(FVector(2.f));
+	TriggerBox->OnEndCursorOver.AddDynamic(this, &APickup::OnMouseLeave);
+	TriggerBox->OnBeginCursorOver.AddDynamic(this, &APickup::OnMouseOver);
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &APickup::BeginOverlap);
 	TriggerBox->OnComponentEndOverlap.AddDynamic(this, &APickup::EndOverlap);
 
@@ -49,13 +57,13 @@ APickup::APickup()
 	SkeletalMesh->SetSimulatePhysics(true);
 	SkeletalMesh->BodyInstance.SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
-	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Block);
+	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
 	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
-	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Block);
+	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
 	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Block);
+	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Ignore);
 	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Vehicle, ECollisionResponse::ECR_Ignore);
-	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Destructible, ECollisionResponse::ECR_Block);
+	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Destructible, ECollisionResponse::ECR_Ignore);
 
 	// load data table
 	static ConstructorHelpers::FObjectFinder<UDataTable> PickupDataTableObject(TEXT("DataTable'/Game/DataTables/Pickups.Pickups'"));
@@ -70,17 +78,33 @@ APickup::APickup()
 void APickup::BeginPlay()
 {
 	Super::BeginPlay();
-	// ItemIndexDataTable = FName(*(UKismetSystemLibrary::GetClassDisplayName(UGameplayStatics::GetObjectClass(this))));
+	GetWorld()->GetTimerManager().SetTimer(_delayhandler, this, &APickup::deactivatePhysics, 4.f, false);
+}
+
+void APickup::deactivatePhysics()
+{
+	SkeletalMesh->SetSimulatePhysics(false);
+	GetWorld()->GetTimerManager().ClearTimer(_delayhandler);
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+}
+
+FItemDetailsDataTable APickup::getItemInfo()
+{
+	if (ItemDataTable)
+	{
+		static const FString ContextCurrent(TEXT("Current Item Details"));
+		return *(ItemDataTable->FindRow<FItemDetailsDataTable>(ItemIndexDataTable, ContextCurrent, true));
+	}
+	else
+	{
+		return FItemDetailsDataTable();
+	}
 }
 
 void APickup::OnMouseOver(UPrimitiveComponent* TouchedActor)
 {
-	if (bIsNearBy)
-	{
-		SkeletalMesh->SetRenderCustomDepth(true);
-		// createOutline();
-		UE_LOG(LogTemp, Log, TEXT("On Mouse Over the Object inside the interactable area"));
-	}
+	SkeletalMesh->SetRenderCustomDepth(true);
+	UE_LOG(LogTemp, Log, TEXT("On Mouse Over the Object"));
 }
 
 void APickup::OnMouseLeave(UPrimitiveComponent* TouchedActor)
@@ -89,153 +113,37 @@ void APickup::OnMouseLeave(UPrimitiveComponent* TouchedActor)
 	UE_LOG(LogTemp, Log, TEXT("On Mouse Leave the Object"));
 }
 
-// On Clicked on Actor event
-void APickup::NotifyActorOnClicked(FKey ButtonPressed)
-{
-	UE_LOG(LogTemp, Log, TEXT("On Clicked has been called"));
-	// If it's the client
-	if (Role < ROLE_Authority)
-	{
-		SERVER_OnClicked(ButtonPressed);
-		return;
-	}
-
-	// server func
-	if (ButtonPressed == EKeys::LeftMouseButton)
-	{
-		// check if player is near by
-		if (bIsNearBy && ActorsNearBy.Contains(UGameplayStatics::GetPlayerPawn(GetWorld(), 0)))
-		{
-			AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(), 0));
-			if (CharacterRef)
-			{
-				AStudyPlayerState* PlayerStateRef = Cast<AStudyPlayerState>(CharacterRef->GetPlayerState());
-					if (PlayerStateRef)
-					{
-						APawn* PawnRef = PlayerStateRef->GetPawn();
-							if (PawnRef)
-							{
-								AStudyPC* ControllerRef = Cast<AStudyPC>(PawnRef->GetController());
-								if (ControllerRef)
-								{
-									for (int i = 0; i < ControllerRef->Inventory.Num(); i++)
-									{
-										// check if the current item is the last and is valid
-										if (UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]) && i == 35)
-										{
-											GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Inventory is full");
-										}
-										// if not the last item of the array
-										// check if it's not a valid class on the index
-										// if it's a valid class then do nothing and go to the next step
-										// if it's not a valid class, add this item to inventory into that array index
-										else if (!UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]))
-										{
-											GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "Added to Inventory");
-											ControllerRef->Inventory[i] = this->GetClass();
-											static const FString ContextCurrent(TEXT("Current Item Details"));
-											ControllerRef->InventoryItems[i] = *(ItemDataTable->FindRow<FItemDetailsDataTable>(ItemIndexDataTable, ContextCurrent, true));
-											Destroy();
-											break;
-										}
-									}
-								}
-								else { GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Controller not found"); }
-							}
-							else { GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error Casting to Private Pawn"); }
-					}
-					else { GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error Casting tom PlayerState"); }
-			}
-			else { GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Error Casting to the Character"); }
-		}
-		else { GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Item is not activated or player is not inside the near by array"); }
-	}
-	else { GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Click wasn't the Left Mouse Button"); }
-}
-
-void APickup::SERVER_OnClicked_Implementation(FKey ButtonPressed)
-{
-	NotifyActorOnClicked(ButtonPressed);
-}
-
-bool APickup::SERVER_OnClicked_Validate(FKey ButtonPressed)
-{
-	return true;
-}
-
 // begin overlap under the activation area
 void APickup::BeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	if (Role < ROLE_Authority)
-	{
-		Server_ActivateItem(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-		return;
-	}
-
-
 	if (OtherComp && OtherActor)
 	{
+		if (!OtherComp->ComponentHasTag("Player"))
+		{
+			return;
+		}
+
 		if (OtherComp->ComponentHasTag("Player"))
 		{
-			bIsNearBy = true;
-			if (!ActorsNearBy.Contains(OtherActor))
-			{
-				ActorsNearBy.Add(OtherActor);
-			}
+			UE_LOG(LogTemp, Warning, TEXT("Actor %s inside the bounds"), *UKismetSystemLibrary::GetDisplayName(OtherActor));
+			FlushNetDormancy();
 		}
 	}
-}
-
-void APickup::Server_ActivateItem_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
-{
-	BeginOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-}
-
-bool APickup::Server_ActivateItem_Validate(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
-{
-	return true;
 }
 
 // End Overlap the item
 void APickup::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (Role < ROLE_Authority)
+	if (OtherComp && OtherActor)
 	{
-		Server_DeactivateItem(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
-		return;
-	}
-
-	if (OtherActor && OtherComp)
-	{
-		if (OtherComp->ComponentHasTag("Player") && ActorsNearBy.Contains(OtherActor))
+		if (!OtherComp->ComponentHasTag("Player"))
 		{
-			ActorsNearBy.Remove(OtherActor);
+			return;
+		}
 
-			// If there's no players near by then disable the actor interaction
-			if (!ActorsNearBy.IsValidIndex(0))
-			{
-				bIsNearBy = false;
-			}
+		if (OtherComp->ComponentHasTag("Player"))
+		{
+			FlushNetDormancy();
 		}
 	}
 }
-
-void APickup::Server_DeactivateItem_Implementation(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	EndOverlap(OverlappedComponent, OtherActor, OtherComp, OtherBodyIndex);
-}
-
-bool APickup::Server_DeactivateItem_Validate(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	return true;
-}
-
-// replication properties
-void APickup::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(APickup, bIsNearBy);
-	DOREPLIFETIME(APickup, ActorsNearBy);
-}
-

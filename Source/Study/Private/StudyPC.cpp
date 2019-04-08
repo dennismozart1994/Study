@@ -8,6 +8,12 @@
 AStudyPC::AStudyPC()
 {
     bReplicates = true;
+	bEnableClickEvents = true;
+	bEnableMouseOverEvents = true;
+	bEnableTouchEvents = false;
+	ClickEventKeys.Add(EKeys::LeftMouseButton);
+	ClickEventKeys.Add(EKeys::RightMouseButton);
+	DefaultClickTraceChannel = ECollisionChannel::ECC_Camera;
 }
 
 AStudyPlayerState* AStudyPC::GetPersonalPlayerState()

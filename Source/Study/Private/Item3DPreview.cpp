@@ -14,7 +14,7 @@ void UItem3DPreview::SpawnPreview()
 {
 	FActorSpawnParameters SpawnParams;
 	ActorToSpawn = GetWorld()->SpawnActor<ARecording3DPreviewActor>(RecordingRef, FVector(0.f, 0.f, 5000000.0f), FRotator(0.f), SpawnParams);
-	if (ActorToSpawn)
+	if (ActorToSpawn && ItemDetails.Mesh)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Spawned the Mesh %s with the size %s"), *ItemDetails.Mesh->GetName(), *ItemDetails.DesiredThumbSize.ToString());
 		ActorToSpawn->SetNewMeshPreview(ItemDetails.Mesh, ItemDetails.DesiredThumbSize);

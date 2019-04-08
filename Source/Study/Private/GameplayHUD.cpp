@@ -16,7 +16,8 @@ bool UGameplayHUD::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 	if (Operation)
 	{
 		AStudyCharacter* StudyCharacterRef = Cast<AStudyCharacter>(GetOwningPlayer()->GetPawn());
-		if (StudyCharacterRef)
+		AStudyPC* PCRef = Cast<AStudyPC>(GetOwningPlayer());
+		if (StudyCharacterRef && PCRef)
 		{
 			FVector Location = StudyCharacterRef->GetActorLocation() + StudyCharacterRef->GetActorForwardVector() * 100;
 			FRotator Rotation = StudyCharacterRef->GetActorRotation();
@@ -27,7 +28,6 @@ bool UGameplayHUD::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 			// Update Inventory if dropped from there
 			if (Operation->SlotType == ESlotType::ST_Inventory)
 			{
-				AStudyPC* PCRef = Cast<AStudyPC>(GetOwningPlayer());
 				PCRef->Inventory[Operation->SlotID] = NULL;
 				PCRef->InventoryItems[Operation->SlotID] = ACustomVariables::createItemStruct();
 				UE_LOG(LogTemp, Log, TEXT("Dropped item from Inventory"));

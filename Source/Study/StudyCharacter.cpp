@@ -2,6 +2,7 @@
 
 #include "StudyCharacter.h"
 #include "StudyPlayerState.h"
+#include "StudyPC.h"
 #include "Pickup.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
@@ -23,7 +24,7 @@ AStudyCharacter::AStudyCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-	GetCharacterMovement()->MaxWalkSpeed = 200.f;
+	GetCharacterMovement()->MaxWalkSpeed = 400.f;
 	
 	// replication setup
 	bReplicates = true;
@@ -79,11 +80,11 @@ AStudyCharacter::AStudyCharacter()
 
 	OffWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon1"));
 	OffWeapon->SetIsReplicated(true);
-	OffWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+	// OffWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	DeffWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon2"));
 	DeffWeapon->SetIsReplicated(true);
-	DeffWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+	// DeffWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	HandsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Gloves"));
 	HandsMesh->SetIsReplicated(true);
@@ -131,14 +132,17 @@ void AStudyCharacter::BeginPlay()
 	LegsMesh->SetMasterPoseComponent(GetMesh());
 	FootsMesh->SetMasterPoseComponent(GetMesh());
 
-	CurrentPlayerState = Cast<AStudyPlayerState>(GetPlayerState());
-	if(CurrentPlayerState)
-	{
-		GetCharacterMovement()->MaxWalkSpeed = float(CurrentPlayerState->CharacterStats.Speed);
-	}
+	setCharacterSpeed();
 
 	// Create Life Boss Reference Widget but don´t add into the viewport
-	BossUIRef = CreateWidget<UUserWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0), LifeBossUI, NAME_None);
+	AController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	if (PlayerController)
+	{
+		if (PlayerController->IsLocalController())
+		{
+			BossUIRef = CreateWidget<UUserWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0), LifeBossUI, NAME_None);
+		}
+	}
 }
 
 //////////////////////////////////////// Setup Inputs ///////////////////////////////////////////
@@ -202,16 +206,91 @@ float AStudyCharacter::GetSpeedMovement()
 	return GetCharacterMovement()->MaxWalkSpeed;
 }
 
+void AStudyCharacter::setCharacterSpeed()
+{
+	CurrentPlayerState = Cast<AStudyPlayerState>(GetPlayerState());
+	if (CurrentPlayerState)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = float(CurrentPlayerState->CharacterStats.Speed);
+		UE_LOG(LogTemp, Log, TEXT("Successfully casted and added the current speed on the character"));
+		GetWorld()->GetTimerManager().ClearTimer(_delayhandler);
+		GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("ERROR trying to cast to PlayerState to set the current speed on the character"));
+		GetWorld()->GetTimerManager().SetTimer(_delayhandler, this, &AStudyCharacter::setCharacterSpeed, 1.f, false);
+	}
+}
+
+void AStudyCharacter::PickupItem(APickup * Item)
+{
+	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
+	if (PSRef)
+	{
+		Server_PickupItem(Item, PSRef);
+		UE_LOG(LogTemp, Error, TEXT("Client Called Pickup Item"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Player State"));
+	}
+}
+
+void AStudyCharacter::Server_PickupItem_Implementation(APickup* Item, AStudyPlayerState* PSRef)
+{
+	APawn* PPawn = PSRef->GetPawn();
+	if (PPawn)
+	{
+		AStudyPC* ControllerRef = Cast<AStudyPC>(PPawn->GetController());
+		if (ControllerRef)
+		{
+			if (Item)
+			{
+				for (int i = 0; i < ControllerRef->Inventory.Num(); i++)
+				{
+					// check if the current item is the last and is valid
+					if (UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]) && i == 35)
+					{
+						GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Inventory is full");
+					}
+					// if not the last item of the array
+					// check if it's not a valid class on the index
+					// if it's a valid class then do nothing and go to the next step
+					// if it's not a valid class, add this item to inventory into that array index
+					else if (!UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]))
+					{
+						GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "Added to Inventory");
+						ControllerRef->Inventory[i] = Item->GetClass();
+						ControllerRef->InventoryItems[i] = Item->getItemInfo();
+						FlushNetDormancy();
+						Item->Destroy();
+						break;
+					}
+				}
+			}else{ UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Pickup Item")); }
+		}else{UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Player Controller")); }
+	}else{UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Player Pawn")); }
+
+	UE_LOG(LogTemp, Warning, TEXT("Called function"));
+}
+
+bool AStudyCharacter::Server_PickupItem_Validate(APickup* Item, AStudyPlayerState* PSRef)
+{
+	return true;
+}
+
 void AStudyCharacter::Server_SimpleAttack_Implementation()
 {
 	UWorld* World = GetWorld();
 
+	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
+
+	// otherwise execute a simple attack
 	if (Role == ROLE_Authority)
 	{
 		int32 Range = 0;
-
-		AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
-
+		
 		if (bCanAttack && !bIsReceivingDamage && PSRef)
 		{
 			UE_LOG(LogTemp, Log, TEXT("Server is executing simple Attack"));
@@ -220,42 +299,42 @@ void AStudyCharacter::Server_SimpleAttack_Implementation()
 				// check if use basic attacks animations or the animations for the weapon
 				switch (WeaponBeingUsed)
 				{
-				// Magician Weapon
+					// Magician Weapon
 				case EWeaponType::WT_Staff:
 					Range = StaffAttacks.Num() - 1;
 					MontagesToSort = StaffAttacks;
 					UE_LOG(LogTemp, Log, TEXT("Staff Basic Attacks selected"));
 					break;
-				
-				// Sword Weapon
+
+					// Sword Weapon
 				case EWeaponType::WT_Sword:
 					Range = SwordBasicAttacks.Num() - 1;
 					MontagesToSort = SwordBasicAttacks;
 					UE_LOG(LogTemp, Log, TEXT("Sword Basic Attacks selected"));
 					break;
-				
-				// Axe or Blunt Weapon
+
+					// Axe or Blunt Weapon
 				case EWeaponType::WT_Axe_OR_Blunt:
 					Range = AxeOrBluntBasicAttacks.Num() - 1;
 					MontagesToSort = AxeOrBluntBasicAttacks;
 					UE_LOG(LogTemp, Log, TEXT("Axe or Blunt Basic Attacks selected"));
 					break;
 
-				// Dual Blade Weapon
+					// Dual Blade Weapon
 				case EWeaponType::WT_DualBlade:
 					Range = DualBladeBasicAttacks.Num() - 1;
 					MontagesToSort = DualBladeBasicAttacks;
 					UE_LOG(LogTemp, Log, TEXT("Dual Blade Basic Attacks selected"));
 					break;
 
-				// Bow and Arrow Weapon
+					// Bow and Arrow Weapon
 				case EWeaponType::WT_Bow:
 					Range = BowBasicAttacks.Num() - 1;
 					MontagesToSort = BowBasicAttacks;
 					UE_LOG(LogTemp, Log, TEXT("Bow Basic Attacks selected"));
 					break;
 
-				// No Weapon was seletected
+					// No Weapon was seletected
 				default:
 					Range = NoWeaponBasicAttacks.Num() - 1;
 					MontagesToSort = NoWeaponBasicAttacks;
@@ -282,7 +361,7 @@ void AStudyCharacter::Server_SimpleAttack_Implementation()
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Character doesn't have enough stamina to perform attack"));
 			}
-			
+
 		}
 		else
 		{
@@ -293,7 +372,6 @@ void AStudyCharacter::Server_SimpleAttack_Implementation()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Not the server trying to play the animation"));
 	}
-
 }
 
 bool AStudyCharacter::Server_SimpleAttack_Validate()
@@ -325,7 +403,7 @@ void AStudyCharacter::DropItemOnWorld_Implementation(TSubclassOf<AActor> PickupC
 	{
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		World->SpawnActor<APickup>(PickupClass, Location, SpawnParams);
+		World->SpawnActor<AActor>(PickupClass, Location, SpawnParams);
 		if (SlotType == ESlotType::ST_ArmorSet && SlotID == 3)
 		{
 			// Don't change if there's another dual blade on the second hand
@@ -448,6 +526,7 @@ void AStudyCharacter::MoveForward(float Value)
 				// get forward vector
 				const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 				AddMovementInput(Direction, Value);
+				bCanAttack = true;
 			}
 		}
 	}

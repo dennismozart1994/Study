@@ -104,11 +104,13 @@ public:
 
 	float GetSpeedMovement();
 
+	void setCharacterSpeed();
+
 	// Simple attack by clicking the mouse button
 	UFUNCTION(Server, Reliable, WithValidation, Category = "Attacks")
 	void Server_SimpleAttack();
 
-	UFUNCTION(NetMulticast, UnReliable, WithValidation, Category = "Attacks")
+	UFUNCTION(NetMulticast, Reliable, WithValidation, Category = "Attacks")
 	void Multicast_PlayMontage(UAnimMontage* MontageToPlay);
 
 	UFUNCTION(Server, Reliable, WithValidation, Category = "Inventory")
@@ -119,6 +121,12 @@ protected:
 	// Basic Attacks with no Weapon
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
 	TArray<UAnimMontage*> NoWeaponBasicAttacks;
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void Server_PickupItem(APickup* Item, AStudyPlayerState* PSRef);
+
+	UFUNCTION(BlueprintCallable, Category = "Replication")
+	void PickupItem(APickup* Item);
 
 	// Basic Attacks with a Sword
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
@@ -142,6 +150,10 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Recovery")
 	FTimerHandle _delayhandler;
+
+
+	UPROPERTY(BlueprintReadWrite, Category = "Get Item Details")
+	UUserWidget* ItemInfoRef;
 
 	UFUNCTION(Server, Reliable, WithValidation, Category = "Recovery")
 	void RecoverStamina();

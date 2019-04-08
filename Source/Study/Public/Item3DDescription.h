@@ -18,7 +18,7 @@ class STUDY_API UItem3DDescription : public UUserWidget
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Info")
 	class UUserWidget* CurrentSlotRef;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item Info")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Item Info")
 	FItemDetailsDataTable ItemDetails;
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnClickedClose();
