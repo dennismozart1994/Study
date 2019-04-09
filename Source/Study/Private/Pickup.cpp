@@ -34,19 +34,24 @@ APickup::APickup()
 	RootComponent = SkeletalMesh;
 
 	// bind events
-	// SkeletalMesh->OnBeginCursorOver.AddDynamic(this, &APickup::OnMouseOver);
-	// SkeletalMesh->OnEndCursorOver.AddDynamic(this, &APickup::OnMouseLeave);
+	SkeletalMesh->OnBeginCursorOver.AddDynamic(this, &APickup::OnMouseOver);
+	SkeletalMesh->OnEndCursorOver.AddDynamic(this, &APickup::OnMouseLeave);
 
 	// create mesh and static mesh component
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	Mesh->SetupAttachment(RootComponent);
+	Mesh->OnBeginCursorOver.AddDynamic(this, &APickup::OnMouseOver);
+	Mesh->OnEndCursorOver.AddDynamic(this, &APickup::OnMouseLeave);
+	Mesh->BodyInstance.SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	Mesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Block);
+	Mesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
 
 	// Create Trigger box to enable interactions with the object
 	TriggerBox = CreateDefaultSubobject<UBoxComponent>(TEXT("Interaction Range"));
 	TriggerBox->SetupAttachment(RootComponent);
 	TriggerBox->BodyInstance.SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	TriggerBox->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Block);
-	TriggerBox->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
+	TriggerBox->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Overlap);
 	TriggerBox->SetRelativeScale3D(FVector(2.f));
 	TriggerBox->OnEndCursorOver.AddDynamic(this, &APickup::OnMouseLeave);
 	TriggerBox->OnBeginCursorOver.AddDynamic(this, &APickup::OnMouseOver);
@@ -56,8 +61,8 @@ APickup::APickup()
 	// mesh colisions
 	SkeletalMesh->SetSimulatePhysics(true);
 	SkeletalMesh->BodyInstance.SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
-	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
+	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Block);
 	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_WorldStatic, ECollisionResponse::ECR_Block);
 	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_WorldDynamic, ECollisionResponse::ECR_Ignore);
 	SkeletalMesh->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
@@ -126,6 +131,7 @@ void APickup::BeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * O
 		if (OtherComp->ComponentHasTag("Player"))
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Actor %s inside the bounds"), *UKismetSystemLibrary::GetDisplayName(OtherActor));
+			SkeletalMesh->SetRenderCustomDepth(true);
 			FlushNetDormancy();
 		}
 	}
@@ -143,6 +149,7 @@ void APickup::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Other
 
 		if (OtherComp->ComponentHasTag("Player"))
 		{
+			SkeletalMesh->SetRenderCustomDepth(false);
 			FlushNetDormancy();
 		}
 	}
