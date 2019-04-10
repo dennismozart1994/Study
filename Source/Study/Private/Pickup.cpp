@@ -25,9 +25,6 @@ APickup::APickup()
 	bReplicateMovement = true;
 	bAlwaysRelevant = false;
 	NetUpdateFrequency = 100.f;
-	// NetDormancy = ENetDormancy::DORM_DormantAll;
-
-	
 
 	// create root component
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
@@ -132,7 +129,6 @@ void APickup::BeginOverlap(UPrimitiveComponent * OverlappedComponent, AActor * O
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Actor %s inside the bounds"), *UKismetSystemLibrary::GetDisplayName(OtherActor));
 			SkeletalMesh->SetRenderCustomDepth(true);
-			FlushNetDormancy();
 		}
 	}
 }
@@ -150,7 +146,6 @@ void APickup::EndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Other
 		if (OtherComp->ComponentHasTag("Player"))
 		{
 			SkeletalMesh->SetRenderCustomDepth(false);
-			FlushNetDormancy();
 		}
 	}
 }

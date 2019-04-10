@@ -229,7 +229,6 @@ void AStudyCharacter::PickupItem(APickup * Item)
 	if (PSRef)
 	{
 		Server_PickupItem(Item, PSRef);
-		UE_LOG(LogTemp, Error, TEXT("Client Called Pickup Item"));
 	}
 	else
 	{
@@ -239,40 +238,44 @@ void AStudyCharacter::PickupItem(APickup * Item)
 
 void AStudyCharacter::Server_PickupItem_Implementation(APickup* Item, AStudyPlayerState* PSRef)
 {
-	APawn* PPawn = PSRef->GetPawn();
-	if (PPawn)
+	if (Role == ROLE_Authority)
 	{
-		AStudyPC* ControllerRef = Cast<AStudyPC>(PPawn->GetController());
-		if (ControllerRef)
+		APawn* PPawn = PSRef->GetPawn();
+		if (PPawn)
 		{
-			if (Item)
+			AStudyPC* ControllerRef = Cast<AStudyPC>(PPawn->GetController());
+			if (ControllerRef)
 			{
-				for (int i = 0; i < ControllerRef->Inventory.Num(); i++)
+				if (Item)
 				{
-					// check if the current item is the last and is valid
-					if (UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]) && i == 35)
+					for (int i = 0; i < ControllerRef->Inventory.Num(); i++)
 					{
-						GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, "Inventory is full");
-					}
-					// if not the last item of the array
-					// check if it's not a valid class on the index
-					// if it's a valid class then do nothing and go to the next step
-					// if it's not a valid class, add this item to inventory into that array index
-					else if (!UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]))
-					{
-						GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, "Added to Inventory");
-						ControllerRef->Inventory[i] = Item->GetClass();
-						ControllerRef->InventoryItems[i] = Item->getItemInfo();
-						FlushNetDormancy();
-						Item->Destroy();
-						break;
+						// check if the current item is the last and is valid
+						if (UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]) && i == 35)
+						{
+							UE_LOG(LogTemp, Warning, TEXT("Character can't pickup Item because his Inventory is full"));
+						}
+						// if not the last item of the array
+						// check if it's not a valid class on the index
+						// if it's a valid class then do nothing and go to the next step
+						// if it's not a valid class, add this item to inventory into that array index
+						else if (!UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]))
+						{
+							ControllerRef->Inventory[i] = Item->GetClass();
+							ControllerRef->InventoryItems[i] = Item->getItemInfo();
+							FlushNetDormancy();
+							UE_LOG(LogTemp, Log, TEXT("Character pickup Item and added to Inventory"));
+							Item->Destroy();
+							break;
+						}
 					}
 				}
-			}else{ UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Pickup Item")); }
-		}else{UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Player Controller")); }
-	}else{UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Player Pawn")); }
-
-	UE_LOG(LogTemp, Warning, TEXT("Called function"));
+				else { UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Pickup Item")); }
+			}
+			else { UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Player Controller")); }
+		}
+		else { UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Player Pawn")); }
+	}
 }
 
 bool AStudyCharacter::Server_PickupItem_Validate(APickup* Item, AStudyPlayerState* PSRef)
@@ -399,7 +402,7 @@ bool AStudyCharacter::Multicast_PlayMontage_Validate(UAnimMontage* MontageToPlay
 void AStudyCharacter::DropItemOnWorld_Implementation(TSubclassOf<AActor> PickupClass, FTransform Location, ESlotType SlotType, int32 SlotID)
 {
 	UWorld* World = GetWorld();
-	if (HasAuthority() && PickupClass != NULL && World)
+	if (Role == ROLE_Authority && PickupClass != NULL && World)
 	{
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;

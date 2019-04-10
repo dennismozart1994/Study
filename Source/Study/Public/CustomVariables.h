@@ -53,6 +53,33 @@ enum class EWeaponType : uint8
 	WT_Staff		UMETA(DisplayName = "Staff")
 };
 
+UENUM(BlueprintStype)
+enum class ESkillType : uint8
+{
+	ST_Spawn		UMETA(DisplayName = "Spawn Item"),
+	ST_Buff	 		UMETA(DisplayName = "Buff"),
+	ST_Recover		UMETA(DisplayName = "Recover")
+};
+
+// data table structs
+USTRUCT(BlueprintType)
+struct FSkilDataTable : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Description")
+	FText Name;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Description")
+	FText Description;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Thumbnail")
+	UTexture2D* SkillThumbnail;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Type")
+	ESkillType SkillType;
+};
+
 // simple struct
 USTRUCT(BlueprintType)
 struct FWeaponType
