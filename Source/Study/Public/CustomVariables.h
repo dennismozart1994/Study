@@ -53,7 +53,7 @@ enum class EWeaponType : uint8
 	WT_Staff		UMETA(DisplayName = "Staff")
 };
 
-UENUM(BlueprintStype)
+UENUM(Blueprinttype)
 enum class ESkillType : uint8
 {
 	ST_Spawn		UMETA(DisplayName = "Spawn Item"),
