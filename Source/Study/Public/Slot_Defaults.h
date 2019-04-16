@@ -38,6 +38,8 @@ public:
 	ESlotType SlotType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Properties")
 	EArmorType ArmorSetType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Properties")
+	ESkillClass SkillTreeClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Info")
 	FItemDetailsDataTable ItemInfo;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Info")

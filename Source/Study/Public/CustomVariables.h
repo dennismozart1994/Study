@@ -41,6 +41,15 @@ enum class EArmorType : uint8
 };
 
 UENUM(BlueprintType)
+enum class ESkillClass : uint8
+{
+	SC_None			UMETA(DisplayName = "None"),
+	SC_Warrior		UMETA(DisplayName = "Warrior"),
+	SC_Archier	 	UMETA(DisplayName = "Archier"),
+	SC_Magician		UMETA(DisplayName = "Magician")
+};
+
+UENUM(BlueprintType)
 enum class EWeaponType : uint8
 {
 	WT_None			UMETA(DisplayName = "None"),
@@ -53,12 +62,22 @@ enum class EWeaponType : uint8
 	WT_Staff		UMETA(DisplayName = "Staff")
 };
 
-UENUM(Blueprinttype)
+UENUM(BlueprintType)
 enum class ESkillType : uint8
 {
 	ST_Spawn		UMETA(DisplayName = "Spawn Item"),
 	ST_Buff	 		UMETA(DisplayName = "Buff"),
 	ST_Recover		UMETA(DisplayName = "Recover")
+};
+
+UENUM(BlueprintType)
+enum class EBuffType : uint8
+{
+	BT_Speed		UMETA(DisplayName = "Increase Speed for a period of time"),
+	BT_Strenght		UMETA(DisplayName = "Increase Stenght for a period of time"),
+	BT_Life			UMETA(DisplayName = "Recover Life each 5 seconds"),
+	BT_Magic		UMETA(DisplayName = "Recover Mana each 5 seconds"),
+	BT_Stamina		UMETA(DisplayName = "Recover Stamina each 5 seconds")
 };
 
 // data table structs
@@ -76,8 +95,50 @@ struct FSkilDataTable : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Thumbnail")
 	UTexture2D* SkillThumbnail;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Type")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	ESkillType SkillType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	bool bLocked;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	bool bCanBeUnlock;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	int32 GoldLevelRequired;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	int32 MPCost;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	UAnimMontage* MontageToPlay;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Spawn Skill Type")
+	TSoftClassPtr<AActor> Projectile;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Recover Skill Type")
+	int32 Life;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Recover Skill Type")
+	int32 MagicPoints;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Recover Skill Type")
+	int32 Speed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Recover Skill Type")
+	int32 Stamina;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Recover Skill Type")
+	int32 Strenght;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Buff Skill Type")
+	EBuffType BuffType;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Buff Skill Type")
+	float BuffingTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Buff Skill Type")
+	int32 BuffingValue;
 };
 
 // simple struct
