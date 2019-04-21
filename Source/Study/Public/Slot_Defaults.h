@@ -40,6 +40,10 @@ public:
 	EArmorType ArmorSetType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Properties")
 	ESkillClass SkillTreeClass;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill Info")
+	FName SkillRow;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill Info")
+	FSkilDataTable SkillInfo;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item Info")
 	FItemDetailsDataTable ItemInfo;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Item Info")

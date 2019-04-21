@@ -99,6 +99,9 @@ struct FSkilDataTable : public FTableRowBase
 	ESkillType SkillType;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	ESkillClass TreeClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	bool bLocked;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gameplay")
