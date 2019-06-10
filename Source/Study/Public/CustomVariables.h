@@ -67,17 +67,28 @@ enum class ESkillType : uint8
 {
 	ST_Spawn		UMETA(DisplayName = "Spawn Item"),
 	ST_Buff	 		UMETA(DisplayName = "Buff"),
-	ST_Recover		UMETA(DisplayName = "Recover")
+	ST_Recover		UMETA(DisplayName = "Recover"),
+	BT_State		UMETA(DisplayName = "State")
+};
+
+UENUM(BlueprintType)
+enum class EStateType : uint8
+{
+	ST_Stun			UMETA(DisplayName = "Paralise enemie"),
+	ST_Poison	 	UMETA(DisplayName = "Poison Enemie"),
+	ST_Delay		UMETA(DisplayName = "Reduces Enemie Speed"),
+	BT_Size			UMETA(DisplayName = "Reduces Enemie Size")
 };
 
 UENUM(BlueprintType)
 enum class EBuffType : uint8
 {
-	BT_Speed		UMETA(DisplayName = "Increase Speed for a period of time"),
-	BT_Strenght		UMETA(DisplayName = "Increase Stenght for a period of time"),
-	BT_Life			UMETA(DisplayName = "Recover Life each 5 seconds"),
-	BT_Magic		UMETA(DisplayName = "Recover Mana each 5 seconds"),
-	BT_Stamina		UMETA(DisplayName = "Recover Stamina each 5 seconds")
+	BT_Speed			UMETA(DisplayName = "Increase Speed for a period of time"),
+	BT_Strenght			UMETA(DisplayName = "Increase Stenght for a period of time"),
+	BT_Life				UMETA(DisplayName = "Recover Life each 5 seconds"),
+	BT_Magic			UMETA(DisplayName = "Recover Mana each 5 seconds"),
+	BT_Stamina			UMETA(DisplayName = "Recover Stamina each 5 seconds"),
+	BT_Defense			UMETA(DisplayName = "Decrease enemy damage by a percentage during an specific amount of time"),
 };
 
 // data table structs
@@ -92,8 +103,11 @@ struct FSkilDataTable : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Description")
 	FText Description;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Thumbnail")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design")
 	UTexture2D* SkillThumbnail;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design")
+	UParticleSystem* Particle;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	ESkillType SkillType;
@@ -106,6 +120,9 @@ struct FSkilDataTable : public FTableRowBase
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	bool bCanBeUnlock;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	float PriceToUnlock;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	int32 GoldLevelRequired;
@@ -142,6 +159,13 @@ struct FSkilDataTable : public FTableRowBase
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Buff Skill Type")
 	int32 BuffingValue;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If State Skill Type")
+	EStateType State;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If State Skill Type")
+	float StateTime;
+
 };
 
 // simple struct
