@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "StudyPlayerState.h"
+#include "Engine.h"
 #include "StudyCharacter.h"
 #include "Engine/DataTable.h"
 #include "Kismet/GameplayStatics.h"

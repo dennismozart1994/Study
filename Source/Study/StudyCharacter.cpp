@@ -17,6 +17,7 @@
 #include "Engine/World.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Runtime/Engine/Public/TimerManager.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AStudyCharacter Constructor
