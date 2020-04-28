@@ -14,3 +14,12 @@ Saved
 *.xcodeproj
 *.xcworkspace
 *.code-workspace
+# Qt Creator items on Linux
+Makefile
+.kdev4
+*.pri
+*.pro
+*.pro.user
+*.workspace
+*.kdev4
+*.txt
