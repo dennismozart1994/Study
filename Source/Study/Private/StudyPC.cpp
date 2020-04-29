@@ -28,4 +28,4 @@ void AStudyPC::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifet
  
      DOREPLIFETIME(AStudyPC, Inventory);
 	 DOREPLIFETIME(AStudyPC, InventoryItems);
- }
+	 DOREPLIFETIME(AStudyPC, CharacterSkills);

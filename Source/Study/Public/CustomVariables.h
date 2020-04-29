@@ -68,7 +68,8 @@ enum class ESkillType : uint8
 	ST_Spawn		UMETA(DisplayName = "Spawn Item"),
 	ST_Buff	 		UMETA(DisplayName = "Buff"),
 	ST_Recover		UMETA(DisplayName = "Recover"),
-	BT_State		UMETA(DisplayName = "State")
+	ST_State		UMETA(DisplayName = "State"),
+	ST_Passive		UMETA(DisplayName = "Passive")
 };
 
 UENUM(BlueprintType)
@@ -77,7 +78,7 @@ enum class EStateType : uint8
 	ST_Stun			UMETA(DisplayName = "Paralise enemie"),
 	ST_Poison	 	UMETA(DisplayName = "Poison Enemie"),
 	ST_Delay		UMETA(DisplayName = "Reduces Enemie Speed"),
-	BT_Size			UMETA(DisplayName = "Reduces Enemie Size")
+	ST_Size			UMETA(DisplayName = "Reduces Enemie Size")
 };
 
 UENUM(BlueprintType)

@@ -125,7 +125,7 @@ void USlot_Defaults::NativeOnDragDetected(const FGeometry& InGeometry, const FPo
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Not a vlaid From class item"));
+					UE_LOG(LogTemp, Warning, TEXT("Not a valid From class item"));
 				}
 			}
 			else
@@ -320,7 +320,7 @@ void USlot_Defaults::InventorySwap(UInventoryDragDropOperation* CustomizeOperati
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Either the DraDropOperation or the Player Controller is null"));
+		UE_LOG(LogTemp, Warning, TEXT("Either the DragDropOperation or the Player Controller is null"));
 	}
 }
 

@@ -22,6 +22,9 @@ class STUDY_API AStudyPC : public APlayerController
 	
 	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere, Category = "Gameplay")
 	TArray<FItemDetailsDataTable> InventoryItems;
+
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	TArray<FSkilDataTable> CharacterSkills;
 	
 	UFUNCTION()
 	AStudyPlayerState* GetPersonalPlayerState();
