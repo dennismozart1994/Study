@@ -32,3 +32,12 @@ FItemDetailsDataTable ACustomVariables::createItemStruct()
 	return nullstruct;
 }
 
+FSkilDataTable ACustomVariables::createSkillStruct()
+{
+	FSkilDataTable nullstruct;
+	nullstruct.MontageToPlay = nullptr;
+	nullstruct.Projectile = nullptr;
+	nullstruct.SkillThumbnail = nullptr;
+	return nullstruct;
+}
+

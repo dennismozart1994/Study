@@ -271,4 +271,6 @@ public:
 	ACustomVariables();
 
 	static FItemDetailsDataTable createItemStruct();
+
+	static FSkilDataTable createSkillStruct();
 };
