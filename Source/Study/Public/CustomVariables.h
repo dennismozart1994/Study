@@ -117,10 +117,7 @@ struct FSkilDataTable : public FTableRowBase
 	ESkillClass TreeClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
-	bool bLocked;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gameplay")
-	bool bCanBeUnlock;
+	int32 treeLvl;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	float PriceToUnlock;

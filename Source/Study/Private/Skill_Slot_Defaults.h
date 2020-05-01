@@ -33,9 +33,7 @@ class USkill_Slot_Defaults : public UUserWidget
 	// Data Table Properties
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data Table")
 	class UDataTable* DetailsTable;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill Info")
-	ESkillClass SkillTreeClass;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill Info", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Data Table", meta = (AllowPrivateAccess = "true"))
 	FName SkillRow;
 	
 	//////////////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////////////////////

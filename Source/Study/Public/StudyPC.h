@@ -23,9 +23,19 @@ class STUDY_API AStudyPC : public APlayerController
 	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere, Category = "Gameplay")
 	TArray<FItemDetailsDataTable> InventoryItems;
 
-	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
-	TArray<FSkilDataTable> CharacterSkills;
-	
+	// This will store all indexes to the Unlocked Skill Data table
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Gameplay")
+	TArray<FName> CharacterSkills;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Gameplay")
+	int32 WarriorTreeCurrentLvl;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Gameplay")
+	int32 ArchierTreeCurrentLvl;
+
+	UPROPERTY(BlueprintReadWrite, Category = "Gameplay")
+	int32 MageCurrentTreeLvl;
+
 	UFUNCTION()
 	AStudyPlayerState* GetPersonalPlayerState();
 

@@ -14,6 +14,9 @@ AStudyPC::AStudyPC()
 	ClickEventKeys.Add(EKeys::LeftMouseButton);
 	ClickEventKeys.Add(EKeys::RightMouseButton);
 	DefaultClickTraceChannel = ECollisionChannel::ECC_Camera;
+	WarriorTreeCurrentLvl = -1;
+	ArchierTreeCurrentLvl = -1;
+	MageCurrentTreeLvl = -1;
 }
 
 AStudyPlayerState* AStudyPC::GetPersonalPlayerState()

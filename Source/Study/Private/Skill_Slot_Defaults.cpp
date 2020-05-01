@@ -56,7 +56,19 @@ void USkill_Slot_Defaults::NativeConstruct()
 	if(SkillDetails.SkillThumbnail != nullptr && SkillThumbnail != nullptr) {
 		SkillThumbnail->SetBrushFromTexture(SkillDetails.SkillThumbnail);
 		UE_LOG(LogTemp, Log, TEXT("Set Skill Thumbnail"));
-	} else {UE_LOG(LogTemp, Warning, TEXT("Failed to grab skill details"));}
+	}
+
+	// Set button as Enabled if skill is already unlocked
+	AStudyPC* controllerRef = GetCustomController();
+	if(controllerRef) {
+		if(controllerRef->CharacterSkills.Contains(SkillRow)){
+			SkillSlot->bIsEnabled = true;
+			UE_LOG(LogTemp, Log, TEXT("Successfully enabled the slot button"));
+		} else {
+			SkillSlot->bIsEnabled = false;
+			UE_LOG(LogTemp, Error, TEXT("Failed to find Skill in the list, disabled slot button"));
+		}
+	}
 }
 
 //////////////////////////////////////////////////// FUNCTIONS //////////////////////////////////////////////////////////
