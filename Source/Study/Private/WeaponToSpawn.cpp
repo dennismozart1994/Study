@@ -12,8 +12,8 @@ AWeaponToSpawn::AWeaponToSpawn()
 	PrimaryActorTick.bCanEverTick = false;
 
 	// replication setup
-	bReplicates = true;																																																																																																																																																																							
-	bReplicateMovement = false;
+	bReplicates = true;
+	SetReplicatingMovement(false);
 	bAlwaysRelevant = false;
 
 	// create root component

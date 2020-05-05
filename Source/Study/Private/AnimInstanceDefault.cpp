@@ -35,7 +35,7 @@ void UAnimInstanceDefault::ResetCanAttack()
 	{
 		PlayerRef->bIsReceivingDamage = false;
 		PlayerRef->bCanAttack = true;
-		FRotator CurrentRotation = PlayerRef->GetCapsuleComponent()->RelativeRotation;
+		FRotator CurrentRotation = PlayerRef->GetCapsuleComponent()->GetRelativeRotation();
 		PlayerRef->GetCapsuleComponent()->SetRelativeRotation(FRotator(0.f, CurrentRotation.Yaw, 0.f));
 	}
 	else

@@ -29,7 +29,7 @@ AStudyCharacter::AStudyCharacter()
 	
 	// replication setup
 	bReplicates = true;
-	bReplicateMovement = true;
+	SetReplicatingMovement(true);
 
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
@@ -239,7 +239,7 @@ void AStudyCharacter::PickupItem(APickup * Item)
 
 void AStudyCharacter::Server_PickupItem_Implementation(APickup* Item, AStudyPlayerState* PSRef)
 {
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		APawn* PPawn = PSRef->GetPawn();
 		if (PPawn)
@@ -291,7 +291,7 @@ void AStudyCharacter::Server_SimpleAttack_Implementation()
 	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
 
 	// otherwise execute a simple attack
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		int32 Range = 0;
 		
@@ -403,7 +403,7 @@ bool AStudyCharacter::Multicast_PlayMontage_Validate(UAnimMontage* MontageToPlay
 void AStudyCharacter::DropItemOnWorld_Implementation(TSubclassOf<AActor> PickupClass, FTransform Location, ESlotType SlotType, int32 SlotID)
 {
 	UWorld* World = GetWorld();
-	if (Role == ROLE_Authority && PickupClass != NULL && World)
+	if (GetLocalRole() == ROLE_Authority && PickupClass != NULL && World)
 	{
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
@@ -439,7 +439,7 @@ void AStudyCharacter::RecoverStamina_Implementation()
 	UWorld* World = GetWorld();
 	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
 
-	if (Role == ROLE_Authority && PSRef && World)
+	if (GetLocalRole() == ROLE_Authority && PSRef && World)
 	{
 		if (!bIsReceivingDamage && bCanAttack && PSRef->CharacterStats.ActualStamina < PSRef->CharacterStats.FullStamina)
 		{

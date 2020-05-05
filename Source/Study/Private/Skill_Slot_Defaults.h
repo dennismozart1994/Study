@@ -41,6 +41,7 @@ class USkill_Slot_Defaults : public UUserWidget
 	class AStudyPC* GetCustomController();
 	class AStudyCharacter* GetCustomCharacter();
 	class AStudyPlayerState* GetCustomPlayerState();
+	UFUNCTION()
 	void OnSlotClicked();
 	UFUNCTION(BlueprintPure, Category = "Get Item Details")
 	FSkilDataTable getSkillDetails();

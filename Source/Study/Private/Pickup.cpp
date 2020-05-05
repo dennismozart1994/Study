@@ -24,7 +24,7 @@ APickup::APickup()
 
 	// replication setup
 	bReplicates = true;
-	bReplicateMovement = true;
+	SetReplicatingMovement(true);
 	bAlwaysRelevant = false;
 	NetUpdateFrequency = 100.f;
 

@@ -138,7 +138,7 @@ void AStudyPlayerState::Client_updateCharacterStats_Implementation(FItemDetailsD
 
 void AStudyPlayerState::Server_updateCharacterStats_Implementation(FItemDetailsDataTable Actual, FItemDetailsDataTable New)
 {
-	if (Role == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority)
 	{
 		CharacterStats.ActualLife += New.Life - Actual.Life;
 		CharacterStats.FullLife += New.Life - Actual.Life;

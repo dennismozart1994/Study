@@ -21,14 +21,14 @@ ARecording3DPreviewActor::ARecording3DPreviewActor()
 
 	SceneCapture2DComp = CreateDefaultSubobject<USceneCaptureComponent2D>(TEXT("Capture2D"));
 	SceneCapture2DComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
-	SceneCapture2DComp->RelativeLocation = FVector(-50.f, 0.f, 0.f);
+	SceneCapture2DComp->SetRelativeLocation(FVector(-50.f, 0.f, 0.f));
 	SceneCapture2DComp->FOVAngle = 60.f;
 	
 	PointLightComp = CreateDefaultSubobject<UPointLightComponent>(TEXT("Light"));
 	PointLightComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 	PointLightComp->Intensity = 1.f;
 	PointLightComp->AttenuationRadius = 500.f;
-	PointLightComp->RelativeLocation = FVector(0.f, -60.f, 110.f);
+	PointLightComp->SetRelativeLocation(FVector(0.f, -60.f, 110.f));
 
 	Scene3DComp = CreateDefaultSubobject<USceneComponent>(TEXT("MeshRoot"));
 	Scene3DComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
