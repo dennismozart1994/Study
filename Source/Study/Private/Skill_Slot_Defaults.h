@@ -24,6 +24,8 @@ class USkill_Slot_Defaults : public UUserWidget
 	class UButton* SkillSlot;
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	class UImage* SkillThumbnail;
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UImage* SkillLocker;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Properties")
 	int32 SlotIndex;
@@ -38,15 +40,22 @@ class USkill_Slot_Defaults : public UUserWidget
 	
 	//////////////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////////////////////
 	// Get Custom pointers
+	UFUNCTION(BlueprintPure, Category = "References")
 	class AStudyPC* GetCustomController();
+	UFUNCTION(BlueprintPure, Category = "References")
 	class AStudyCharacter* GetCustomCharacter();
+	UFUNCTION(BlueprintPure, Category = "References")
 	class AStudyPlayerState* GetCustomPlayerState();
 	UFUNCTION()
 	void OnSlotClicked();
-	UFUNCTION(BlueprintPure, Category = "Get Item Details")
+	UFUNCTION(BlueprintPure, Category = "References")
 	FSkilDataTable getSkillDetails();
 
 	protected:
+	UTexture2D* LockerImage;
+	FSlateBrush Normal;
+	FSlateBrush Hovered;
+	FButtonStyle DefaultStyle;
 	virtual bool Initialize();
 	virtual void NativeConstruct();
 };
