@@ -45,9 +45,7 @@ void USkill_Slot_Defaults::NativeConstruct()
 	LockerImage = LoadObject<UTexture2D>(this, TEXT("Texture2D'/Game/UI/Actions/SkillTree/Images/padlock-open.padlock-open'"));
 	if(LockerImage != nullptr) SkillLocker->SetBrushFromTexture(LockerImage);
 
-	if(SkillSlot != nullptr) {
-		SkillSlot->SetStyle(DefaultStyle);
-	}
+	if(SkillSlot != nullptr) SkillSlot->SetStyle(DefaultStyle);
 
 	// Set Skill Thumbnail image
 	FSkilDataTable SkillDetails = getSkillDetails();
