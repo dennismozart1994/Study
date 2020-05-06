@@ -17,6 +17,9 @@ class STUDY_API AStudyPC : public APlayerController
 	GENERATED_BODY()
 
 	public:
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data Table")
+	class UDataTable* SkillTable;
+
 	UPROPERTY(Replicated, BlueprintReadWrite, EditAnywhere, Category="Gameplay")
 	TArray<TSubclassOf<AActor>> Inventory;
 	
@@ -27,17 +30,17 @@ class STUDY_API AStudyPC : public APlayerController
 	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Gameplay")
 	TArray<FName> CharacterSkills;
 
-	UPROPERTY(BlueprintReadWrite, Category = "Gameplay")
-	int32 WarriorTreeCurrentLvl;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Gameplay")
-	int32 ArchierTreeCurrentLvl;
-
-	UPROPERTY(BlueprintReadWrite, Category = "Gameplay")
-	int32 MageCurrentTreeLvl;
-
 	UFUNCTION()
 	AStudyPlayerState* GetPersonalPlayerState();
+
+	UFUNCTION(BlueprintPure, Category = "References")
+	FSkilDataTable getSkillDetails(FName rowName);
+
+	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Gameplay")
+	void Server_UnlockSkill(AStudyPC* Controller, FName Skill);
+
+	UFUNCTION(Client, Reliable)
+	void Client_UnlockSkill(AStudyPC* Controller, FName Skill);
 
 	AStudyPC();
 	

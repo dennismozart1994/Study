@@ -69,7 +69,8 @@ enum class ESkillType : uint8
 	ST_Buff	 		UMETA(DisplayName = "Buff"),
 	ST_Recover		UMETA(DisplayName = "Recover"),
 	ST_State		UMETA(DisplayName = "State"),
-	ST_Passive		UMETA(DisplayName = "Passive")
+	ST_Passive		UMETA(DisplayName = "Passive"),
+	ST_Action		UMETA(DisplayName = "Action")
 };
 
 UENUM(BlueprintType)
@@ -117,9 +118,9 @@ struct FSkilDataTable : public FTableRowBase
 	ESkillClass TreeClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
-	int32 treeLvl;
+	FName RequiredSkillToUnlock;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	float PriceToUnlock;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")

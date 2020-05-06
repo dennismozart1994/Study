@@ -38,14 +38,8 @@ void USkill_Slot_Defaults::NativeConstruct()
 	Hovered.SetResourceObject(SlotBackground);
 	Hovered.TintColor = FSlateColor(FLinearColor(0.447917f, 0.447917f, 0.447917f, 1.f));
 
-	DefaultStyle.Normal = Normal;
-	DefaultStyle.Hovered = Hovered;
-	DefaultStyle.Pressed = Normal;
-
 	LockerImage = LoadObject<UTexture2D>(this, TEXT("Texture2D'/Game/UI/Actions/SkillTree/Images/padlock-open.padlock-open'"));
 	if(LockerImage != nullptr) SkillLocker->SetBrushFromTexture(LockerImage);
-
-	if(SkillSlot != nullptr) SkillSlot->SetStyle(DefaultStyle);
 
 	// Set Skill Thumbnail image
 	FSkilDataTable SkillDetails = getSkillDetails();
@@ -57,11 +51,19 @@ void USkill_Slot_Defaults::NativeConstruct()
 	// Set button as Enabled if skill is already unlocked
 	AStudyPC* controllerRef = GetCustomController();
 	if(controllerRef) {
-		if(controllerRef->CharacterSkills.Contains(SkillRow)){
+		if(controllerRef->CharacterSkills.Contains(SkillRow) && SkillSlot != nullptr){
+			DefaultStyle.Normal = Normal;
+			DefaultStyle.Hovered = Hovered;
+			DefaultStyle.Pressed = Normal;
+			SkillSlot->SetStyle(DefaultStyle);
 			SkillSlot->bIsEnabled = true;
 			SkillLocker->SetVisibility(ESlateVisibility::Hidden);
 			UE_LOG(LogTemp, Log, TEXT("Successfully enabled the slot button"));
 		} else {
+			DefaultStyle.Normal = Hovered;
+			DefaultStyle.Hovered = Normal;
+			DefaultStyle.Pressed = Hovered;
+			SkillSlot->SetStyle(DefaultStyle);
 			SkillSlot->bIsEnabled = false;
 			SkillLocker->SetVisibility(ESlateVisibility::Visible);
 			UE_LOG(LogTemp, Error, TEXT("Failed to find Skill in the list, disabled slot button"));
@@ -87,7 +89,31 @@ AStudyPlayerState* USkill_Slot_Defaults::GetCustomPlayerState()
 
 void USkill_Slot_Defaults::OnSlotClicked()
 {
-
+	AStudyPC* PCRef = GetCustomController();
+	if(PCRef != nullptr) {
+		// If already Unlocked, just allow the player to equip the skill into the proper session
+		if(PCRef->CharacterSkills.Contains(SkillRow)){
+			UE_LOG(LogTemp, Log, TEXT("Skill already unlocked, select a slot to equip"));
+		// Otherwise, Unlock the Skill
+		} else {
+			AStudyPlayerState* StateRef = PCRef->GetPersonalPlayerState();
+			if(StateRef != nullptr) {
+				// Only Unlock it after confirmation, but for testing we're not gonna do that
+				// Only unlock if meet skill criteria
+				FSkilDataTable row = getSkillDetails();
+				// Has the minimum level to unlock the skill?
+				bool bHasTheProperLvl = StateRef->CharacterStats.CurrentLevel >= row.GoldLevelRequired;
+				// Has the amount of gold required to buy the skill?
+				float Gold = StateRef->CharacterStats.GoldAmount;
+				bool bHasTheProperGold = Gold >= row.PriceToUnlock;
+				if(bHasTheProperLvl && bHasTheProperGold) {
+					PCRef->Server_UnlockSkill(PCRef, SkillRow);
+					SkillLocker->SetVisibility(ESlateVisibility::Hidden);
+					UE_LOG(LogTemp, Log, TEXT("Unlocked %s"), *SkillRow.ToString());
+				} else {UE_LOG(LogTemp, Error, TEXT("Either user doesn't have the required lvl or the proper amount of money"));}
+			} else {UE_LOG(LogTemp, Error, TEXT("Failed to Cast to the PlayerState"));}
+		}
+	} else {UE_LOG(LogTemp, Error, TEXT("Failed to Cast to the Player Controller"));}
 }
 
 FSkilDataTable USkill_Slot_Defaults::getSkillDetails()
