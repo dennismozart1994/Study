@@ -104,9 +104,10 @@ void USkill_Slot_Defaults::OnSlotClicked()
 				// Has the minimum level to unlock the skill?
 				bool bHasTheProperLvl = StateRef->CharacterStats.CurrentLevel >= row.GoldLevelRequired;
 				// Has the amount of gold required to buy the skill?
-				float Gold = StateRef->CharacterStats.GoldAmount;
-				bool bHasTheProperGold = Gold >= row.PriceToUnlock;
-				if(bHasTheProperLvl && bHasTheProperGold) {
+				bool bHasTheProperGold = StateRef->CharacterStats.GoldAmount >= row.PriceToUnlock;
+				// Has unlocked the skill on the lower tree lvl already?
+				bool bHasUnlockedRequiredSkill = (row.RequiredSkillToUnlock.ToString() == "None") || (PCRef->CharacterSkills.Contains(row.RequiredSkillToUnlock));
+				if(bHasTheProperLvl && bHasTheProperGold && bHasUnlockedRequiredSkill) {
 					PCRef->Server_UnlockSkill(PCRef, SkillRow);
 					SkillLocker->SetVisibility(ESlateVisibility::Hidden);
 					UE_LOG(LogTemp, Log, TEXT("Unlocked %s"), *SkillRow.ToString());
