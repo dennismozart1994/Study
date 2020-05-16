@@ -56,7 +56,6 @@ void USkill_Slot_Defaults::NativeConstruct()
 			DefaultStyle.Hovered = Hovered;
 			DefaultStyle.Pressed = Normal;
 			SkillSlot->SetStyle(DefaultStyle);
-			SkillSlot->bIsEnabled = true;
 			SkillLocker->SetVisibility(ESlateVisibility::Hidden);
 			UE_LOG(LogTemp, Log, TEXT("Successfully enabled the slot button"));
 		} else {
@@ -64,7 +63,6 @@ void USkill_Slot_Defaults::NativeConstruct()
 			DefaultStyle.Hovered = Normal;
 			DefaultStyle.Pressed = Hovered;
 			SkillSlot->SetStyle(DefaultStyle);
-			SkillSlot->bIsEnabled = false;
 			SkillLocker->SetVisibility(ESlateVisibility::Visible);
 			UE_LOG(LogTemp, Error, TEXT("Failed to find Skill in the list, disabled slot button"));
 		}

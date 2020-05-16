@@ -24,7 +24,7 @@ void AStudyPC::Server_UnlockSkill_Implementation(AStudyPC* Controller, FName Ski
 		if(State) {
 			// If is the server who's calling the unlock and the user hasn't already unlocked the Skill
 			if(State->GetLocalRole() == ROLE_Authority && !Controller->CharacterSkills.Contains(Skill)
-					&& !Skill.ToString().Equals("Empty")) {
+					&& !Skill.ToString().IsEmpty()) {
 				State->CharacterStats.GoldAmount-=getSkillDetails(Skill).PriceToUnlock;
 				Controller->CharacterSkills.Add(Skill);
 			} else {Client_UnlockSkill(Controller, Skill);}
