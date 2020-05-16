@@ -2,12 +2,12 @@
 
 #pragma once
 
+// UserWidget includes like components, helpers, etc
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "GameFramework/Actor.h"
-#include "CustomVariables.h"
 #include "Components/Button.h"
 #include "Components/Image.h"
+#include "CustomVariables.h"
 #include "Skill_Slot_Defaults.generated.h"
 
 /**
@@ -32,6 +32,12 @@ class USkill_Slot_Defaults : public UUserWidget
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Properties")
 	UTexture2D* SlotBackground;
 
+	// Widget Details Class
+	UPROPERTY(EditDefaultsOnly, Category = "Skill Details")
+    TSubclassOf<class USkillDescription> wSkillDetails;
+	UPROPERTY(BlueprintReadOnly, Category = "Skill Details")
+    class USkillDescription* SkillDetailsWG;
+	
 	// Data Table Properties
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data Table")
 	class UDataTable* DetailsTable;

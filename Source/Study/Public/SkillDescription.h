@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Components/Button.h"
+#include "Components/TextBlock.h"
+#include "CustomVariables.h"
 #include "SkillDescription.generated.h"
 
 /**
@@ -14,4 +17,46 @@ class STUDY_API USkillDescription : public UUserWidget
 {
 	GENERATED_BODY()
 	
+	public:
+	// Default layout information
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UButton* UnlockButton;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* UnlockButtonText;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* SkillDescription;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* SkillRequirements;
+
+	// Skill Properties
+	UPROPERTY(BlueprintReadOnly, Category = "Skill Info", meta = (AllowPrivateAccess = "true"))
+    class USkill_Slot_Defaults* SkillSlotRef;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Skill Info", meta = (AllowPrivateAccess = "true"))
+	FSkilDataTable SkillInfo;
+
+	// Conditioners to slot behaviour
+	bool bCanEquip;
+	bool bHasTheProperLvl;
+	bool bHasTheProperGold;
+	bool bHasUnlockedRequiredSkill;
+
+	// Custom Getters
+	UFUNCTION(BlueprintPure, Category = "References")
+    class AStudyPC* GetCustomController();
+	UFUNCTION(BlueprintPure, Category = "References")
+    class AStudyCharacter* GetCustomCharacter();
+	UFUNCTION(BlueprintPure, Category = "References")
+    class AStudyPlayerState* GetCustomPlayerState();
+
+	// UI Bindings
+	UFUNCTION()
+	void OnUnlockClicked();
+
+	protected:
+	virtual bool Initialize();
+	virtual void NativeConstruct();
 };

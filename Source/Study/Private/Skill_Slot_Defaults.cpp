@@ -6,7 +6,15 @@
 #include "StudyCharacter.h"
 #include "StudyPlayerState.h"
 #include "Engine/DataTable.h"
-#include "Engine/Engine.h"
+#include "SkillDescription.h"
+
+// Widget Helpers
+#include "Blueprint/WidgetLayoutLibrary.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
+
+// Math and debugging includes
+#include "Engine/Classes/Kismet/KismetSystemLibrary.h"
+#include "Engine/Classes/Kismet/KismetMathLibrary.h"
 
 //////////////////////////////////////////////////// NATIVE OVERRIDES ////////////////////////////////////////////////////////
 bool USkill_Slot_Defaults::Initialize()
@@ -64,7 +72,7 @@ void USkill_Slot_Defaults::NativeConstruct()
 			DefaultStyle.Pressed = Hovered;
 			SkillSlot->SetStyle(DefaultStyle);
 			SkillLocker->SetVisibility(ESlateVisibility::Visible);
-			UE_LOG(LogTemp, Error, TEXT("Failed to find Skill in the list, disabled slot button"));
+			UE_LOG(LogTemp, Warning, TEXT("Skill is still unlocked, locker image will be presented"));
 		}
 	}
 }
@@ -85,34 +93,42 @@ AStudyPlayerState* USkill_Slot_Defaults::GetCustomPlayerState()
 	return Cast<AStudyPlayerState>(GetOwningPlayer()->PlayerState);
 }
 
+// Present skill details, all checks for unlock or not are done in there.
 void USkill_Slot_Defaults::OnSlotClicked()
 {
-	AStudyPC* PCRef = GetCustomController();
-	if(PCRef != nullptr) {
-		// If already Unlocked, just allow the player to equip the skill into the proper session
-		if(PCRef->CharacterSkills.Contains(SkillRow)){
-			UE_LOG(LogTemp, Log, TEXT("Skill already unlocked, select a slot to equip"));
-		// Otherwise, Unlock the Skill
-		} else {
-			AStudyPlayerState* StateRef = PCRef->GetPersonalPlayerState();
-			if(StateRef != nullptr) {
-				// Only Unlock it after confirmation, but for testing we're not gonna do that
-				// Only unlock if meet skill criteria
-				FSkilDataTable row = getSkillDetails();
-				// Has the minimum level to unlock the skill?
-				bool bHasTheProperLvl = StateRef->CharacterStats.CurrentLevel >= row.GoldLevelRequired;
-				// Has the amount of gold required to buy the skill?
-				bool bHasTheProperGold = StateRef->CharacterStats.GoldAmount >= row.PriceToUnlock;
-				// Has unlocked the skill on the lower tree lvl already?
-				bool bHasUnlockedRequiredSkill = (row.RequiredSkillToUnlock.ToString() == "None") || (PCRef->CharacterSkills.Contains(row.RequiredSkillToUnlock));
-				if(bHasTheProperLvl && bHasTheProperGold && bHasUnlockedRequiredSkill) {
-					PCRef->Server_UnlockSkill(PCRef, SkillRow);
-					SkillLocker->SetVisibility(ESlateVisibility::Hidden);
-					UE_LOG(LogTemp, Log, TEXT("Unlocked %s"), *SkillRow.ToString());
-				} else {UE_LOG(LogTemp, Error, TEXT("Either user doesn't have the required lvl or the proper amount of money"));}
-			} else {UE_LOG(LogTemp, Error, TEXT("Failed to Cast to the PlayerState"));}
+	// remove all detailing widgets that could have beeing presented by previous clicks
+	TArray<UUserWidget*> WidgetsBeingPresented;
+	UWidgetBlueprintLibrary::GetAllWidgetsOfClass(GetWorld(), WidgetsBeingPresented, wSkillDetails, true);
+	for(UUserWidget* CustomDetails : WidgetsBeingPresented)
+	{
+		CustomDetails->RemoveFromParent();
+	}
+	
+	// create a new details widget using the skill information
+	FSkilDataTable row = getSkillDetails();
+	SkillDetailsWG = CreateWidget<USkillDescription>(GetOwningPlayer(), wSkillDetails);
+	SkillDetailsWG->SkillSlotRef = this;
+	SkillDetailsWG->SkillInfo = row;
+
+	UWidgetLayoutLibrary* WidgetLayoutLibrary;
+	WidgetLayoutLibrary = NewObject<UWidgetLayoutLibrary>(UWidgetLayoutLibrary::StaticClass());
+
+	if (WidgetLayoutLibrary)
+	{
+		FVector2D ViewportPosition = WidgetLayoutLibrary->GetMousePositionOnViewport(GetWorld());
+		if (SkillDetailsWG)
+		{
+			SkillDetailsWG->AddToViewport(1);
+			float Y;
+			float X;
+			UKismetMathLibrary::BreakVector2D(ViewportPosition, X, Y);
+			X += 30.f;
+			Y += -90.f;
+			FVector2D Position = UKismetMathLibrary::MakeVector2D(X, Y);
+
+			SkillDetailsWG->SetPositionInViewport(Position, false);
 		}
-	} else {UE_LOG(LogTemp, Error, TEXT("Failed to Cast to the Player Controller"));}
+	}
 }
 
 FSkilDataTable USkill_Slot_Defaults::getSkillDetails()
