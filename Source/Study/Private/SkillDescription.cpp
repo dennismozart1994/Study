@@ -6,6 +6,7 @@
 #include "StudyPC.h"
 #include "StudyCharacter.h"
 #include "StudyPlayerState.h"
+#include "Engine/DataTable.h"
 
 // UI Bindings
 bool USkillDescription::Initialize()
@@ -56,6 +57,8 @@ void USkillDescription::NativeConstruct()
 	// if already unlocked, just show an equip button
 	if(bCanEquip)
 	{
+		SkillRequirements->SetText(FText::FromString("Consumes " + FString::FromInt(SkillInfo.MPCost)
+			+ " of MP for each usage"));
 		UnlockButtonText->SetText(FText::FromString("Equip"));
 	}
 	// if not unlocked, check if the user can unlock the skill
@@ -69,7 +72,7 @@ void USkillDescription::NativeConstruct()
 	else if(!bHasUnlockedRequiredSkill)
 	{
 		SkillRequirements->SetText(FText::FromString("Requires skill " +
-            SkillInfo.RequiredSkillToUnlock.ToString() + " to be unlocked"));
+         getSkillDetails(SkillInfo.RequiredSkillToUnlock).Name.ToString() + " to be unlocked"));
 		UnlockButtonText->SetText(FText::FromString("Close"));
 	}
 	// If the user doesn't have the proper lvl
@@ -120,4 +123,14 @@ AStudyCharacter* USkillDescription::GetCustomCharacter()
 AStudyPlayerState* USkillDescription::GetCustomPlayerState()
 {
 	return Cast<AStudyPlayerState>(GetOwningPlayer()->PlayerState);
+}
+
+FSkilDataTable USkillDescription::getSkillDetails(FName SkillRow)
+{
+	// load data table
+	static const FString ContextCurrent(TEXT("Current Item Details"));
+	FSkilDataTable* row = SkillSlotRef->DetailsTable->FindRow<FSkilDataTable>(
+		SkillRow, ContextCurrent, true);
+	if(row) return *(row);
+	return ACustomVariables::createSkillStruct();
 }

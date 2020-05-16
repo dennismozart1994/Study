@@ -51,6 +51,8 @@ class STUDY_API USkillDescription : public UUserWidget
     class AStudyCharacter* GetCustomCharacter();
 	UFUNCTION(BlueprintPure, Category = "References")
     class AStudyPlayerState* GetCustomPlayerState();
+	UFUNCTION(BlueprintPure, Category = "References")
+    FSkilDataTable getSkillDetails(FName SkillRow);
 
 	// UI Bindings
 	UFUNCTION()
