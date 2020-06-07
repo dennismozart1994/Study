@@ -62,6 +62,8 @@ class USkill_Slot_Defaults : public UUserWidget
 	FSlateBrush Normal;
 	FSlateBrush Hovered;
 	FButtonStyle DefaultStyle;
-	virtual bool Initialize();
-	virtual void NativeConstruct();
+	virtual bool Initialize() override;
+	virtual void NativeConstruct() override;
+
+	void PlayPreview();
 };

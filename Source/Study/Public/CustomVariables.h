@@ -130,6 +130,9 @@ struct FSkilDataTable : public FTableRowBase
 	int32 MPCost;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
+	float ReloadTime;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	UAnimMontage* MontageToPlay;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Spawn Skill Type")

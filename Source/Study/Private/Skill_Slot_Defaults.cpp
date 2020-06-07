@@ -7,13 +7,10 @@
 #include "StudyPlayerState.h"
 #include "Engine/DataTable.h"
 #include "SkillDescription.h"
-
-// Widget Helpers
+#include "Skill3DPreview.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
-
-// Math and debugging includes
-#include "Engine/Classes/Kismet/KismetSystemLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
 
 //////////////////////////////////////////////////// NATIVE OVERRIDES ////////////////////////////////////////////////////////
@@ -77,6 +74,7 @@ void USkill_Slot_Defaults::NativeConstruct()
 	}
 }
 
+
 //////////////////////////////////////////////////// FUNCTIONS //////////////////////////////////////////////////////////
 AStudyPC* USkill_Slot_Defaults::GetCustomController()
 {
@@ -96,13 +94,15 @@ AStudyPlayerState* USkill_Slot_Defaults::GetCustomPlayerState()
 // Present skill details, all checks for unlock or not are done in there.
 void USkill_Slot_Defaults::OnSlotClicked()
 {
-	// remove all detailing widgets that could have beeing presented by previous clicks
+	// remove all detailing widgets that could have being presented by previous clicks
 	TArray<UUserWidget*> WidgetsBeingPresented;
 	UWidgetBlueprintLibrary::GetAllWidgetsOfClass(GetWorld(), WidgetsBeingPresented, wSkillDetails, true);
 	for(UUserWidget* CustomDetails : WidgetsBeingPresented)
 	{
 		CustomDetails->RemoveFromParent();
 	}
+	
+	PlayPreview();
 	
 	// create a new details widget using the skill information
 	FSkilDataTable row = getSkillDetails();
@@ -139,5 +139,27 @@ FSkilDataTable USkill_Slot_Defaults::getSkillDetails()
 	if(row) return *(row);
 	return ACustomVariables::createSkillStruct();
 }
+
+void USkill_Slot_Defaults::PlayPreview()
+{
+	// If we have a montage to play
+	if(getSkillDetails().MontageToPlay)
+	{
+		// get all preview actors (it should have only 1 per lvl
+		TArray<AActor*> PreviewActors;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASkill3DPreview::StaticClass(), PreviewActors);
+		for(AActor* PreviewActor : PreviewActors)
+		{
+			ASkill3DPreview* Preview3D = Cast<ASkill3DPreview>(PreviewActor);
+			// if cast is successful, then update the preview mesh and play the animation
+			if (Preview3D)
+			{
+				Preview3D->UpdateArmorSet();
+				Preview3D->PlaySkillAnimation(getSkillDetails().MontageToPlay);
+			}
+		}
+	}
+}
+
 
 
