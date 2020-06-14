@@ -8,8 +8,8 @@
 AStudyGameMode::AStudyGameMode()
 {
 	// set default pawn class to our Blueprinted character
-	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPersonCPP/Blueprints/ThirdPersonCharacter"));
-	static ConstructorHelpers::FClassFinder<AStudyPC> PlayerControllerBPClass(TEXT("/Game/ThirdPersonCPP/Blueprints/TPC_PC"));
+	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/Blueprints/Character/ThirdPersonCharacter"));
+	static ConstructorHelpers::FClassFinder<AStudyPC> PlayerControllerBPClass(TEXT("/Game/Blueprints/Character/TPC_PC"));
 	if (PlayerPawnBPClass.Class != NULL)
 	{
 		PlayerControllerClass = PlayerControllerBPClass.Class;
