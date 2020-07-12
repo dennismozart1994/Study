@@ -135,7 +135,7 @@ void AStudyCharacter::BeginPlay()
 
 	setCharacterSpeed();
 
-	// Create Life Boss Reference Widget but don´t add into the viewport
+	// Create Life Boss Reference Widget but donÂ´t add into the viewport
 	AController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
 	if (PlayerController)
 	{
