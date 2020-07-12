@@ -31,14 +31,24 @@ class STUDY_API USkillHotKey : public UUserWidget
     UPROPERTY(BlueprintReadOnly, Category="CoolDown")
     class UMaterialInstanceDynamic* CoolDownMaterial;
     UPROPERTY(EditDefaultsOnly, Category="CoolDown")
-    TSubclassOf<class AActor> CoolDownActor;
+    TSubclassOf<class AMasterSkill> SkillActor;
     UPROPERTY(BlueprintReadWrite, Category="CoolDown")
-    class AActor* CoolDownRef;
+    class AMasterSkill* SkillRef;
     UPROPERTY(BlueprintReadWrite, Category="Skill Info")
     FSkilDataTable SkillInfo;
+    UPROPERTY(BlueprintReadWrite, Category="CoolDown")
+    FText CoolDownValueInSeconds;
     
     UFUNCTION()
     void OnSlotClicked();
+    UFUNCTION()
+    void SetCoolDownText(FText content);
+    UFUNCTION()
+    void SetCoolDownTextVisibility(ESlateVisibility desired);
+    UFUNCTION()
+    void SetCoolDownImageVisibility(ESlateVisibility desired);
+    UFUNCTION()
+    void SetSkillIconColour(FLinearColor colour);
     UFUNCTION(BlueprintImplementableEvent)
     void CoolDownTimeline();
 

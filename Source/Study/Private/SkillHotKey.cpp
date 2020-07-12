@@ -6,10 +6,10 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Materials/MaterialInstanceDynamic.h"
-#include "GameFramework/Actor.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "StudyCharacter.h"
+#include "MasterSkill.h"
 
 bool USkillHotKey::Initialize()
 {
@@ -25,20 +25,56 @@ void USkillHotKey::NativeConstruct()
 {
     Super::NativeConstruct();
     CoolDownMaterial = CoolDownImage->GetDynamicMaterial();
-    UWorld* World = GetWorld();
+    UWorld* World = GetOwningPlayer()->GetWorld();
     AStudyCharacter* StudyCharacterRef = Cast<AStudyCharacter>(GetOwningPlayer()->GetPawn());
-    if(!UKismetSystemLibrary::IsValid(CoolDownRef) && UKismetSystemLibrary::IsValidClass(CoolDownActor)
+    if(!UKismetSystemLibrary::IsValid(SkillRef) && UKismetSystemLibrary::IsValidClass(SkillActor)
         && World && StudyCharacterRef) {
         FActorSpawnParameters SpawnParams;
         SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
         FVector Location = StudyCharacterRef->GetActorLocation() + StudyCharacterRef->GetActorForwardVector() * 100;
         FRotator Rotation = StudyCharacterRef->GetActorRotation();
         FTransform LocationToSpawn = UKismetMathLibrary::MakeTransform(Location, Rotation, FVector(1.f));
-        CoolDownRef = World->SpawnActor<AActor>(CoolDownActor, LocationToSpawn, SpawnParams);
+        // @TODO Take care of replication later, the skill should be spawned and only allowed in the server
+        // @TODO Clients should not be allowed to spawn any skill, otherwise it won't do anything on a Multiplayer environment
+        // @TODO Put this spawn into somewhere else later (maybe into the character itself so it can be set as it's owner
+        SkillRef = World->SpawnActor<AMasterSkill>(SkillActor, LocationToSpawn, SpawnParams);
+        if(SkillRef)
+        {
+            SkillRef->SkillSlotRef = this;
+            UE_LOG(LogTemp, Log, TEXT("Successfully Spawned Skill and assign it to it's slot reference"))
+        }
+        
     }
 }
 
 void USkillHotKey::OnSlotClicked()
 {
-    CoolDownTimeline();
+    if(SkillRef)
+    {
+        SkillRef->CoolDown();
+        CoolDownTimeline();
+    }
 }
+
+void USkillHotKey::SetCoolDownText(FText content)
+{
+    CoolDownValueInSeconds = content;
+}
+
+void USkillHotKey::SetCoolDownTextVisibility(ESlateVisibility desired)
+{
+    CoolDownText->SetVisibility(desired);
+}
+
+void USkillHotKey::SetCoolDownImageVisibility(ESlateVisibility desired)
+{
+    CoolDownImage->SetVisibility(desired);
+}
+
+void USkillHotKey::SetSkillIconColour(FLinearColor colour)
+{
+    SkillIcon->SetColorAndOpacity(colour);
+}
+
+
+
