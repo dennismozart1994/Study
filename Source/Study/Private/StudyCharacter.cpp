@@ -1,9 +1,6 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "StudyCharacter.h"
-
-#include <stdbool.h>
-
 #include "StudyPlayerState.h"
 #include "StudyPC.h"
 #include "Pickup.h"
