@@ -36,7 +36,7 @@ void USHealthComponent::DealDamage(AActor* DamagedActor, float Damage, const cla
 		return;
 	}
 
-	// Deal Damage on Player if it´s receiving damage
+	// Deal Damage on Player if itÂ´s receiving damage
 	AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(MyOwner);
 	if (PlayerRef)
 	{

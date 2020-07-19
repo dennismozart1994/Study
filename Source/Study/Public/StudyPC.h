@@ -31,7 +31,7 @@ class STUDY_API AStudyPC : public APlayerController
 	TArray<FName> CharacterSkills;
 
 	UFUNCTION()
-	AStudyPlayerState* GetPersonalPlayerState();
+	class AStudyPlayerState* GetPersonalPlayerState();
 
 	UFUNCTION(BlueprintPure, Category = "References")
 	FSkilDataTable getSkillDetails(FName rowName);

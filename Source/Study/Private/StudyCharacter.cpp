@@ -9,6 +9,8 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "SHealthComponent.h"
+#include "InventoryComponent.h"
+#include "SkillTreeComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "Kismet/GameplayStatics.h"
@@ -70,6 +72,12 @@ AStudyCharacter::AStudyCharacter()
 	// Health Component
 	HealthComp = CreateDefaultSubobject<USHealthComponent>(TEXT("HealthComponent"));
 
+	// Inventory Component
+	InventoryComp = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+	
+	// Skill Component
+	SkillTreeComp = CreateDefaultSubobject<USkillTreeComponent>(TEXT("SkillTreeComponent"));
+	
 	// Clothing System
 	HeadMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Head"));
 	HeadMesh->SetIsReplicated(true);
@@ -224,66 +232,6 @@ void AStudyCharacter::setCharacterSpeed()
 	}
 }
 
-void AStudyCharacter::PickupItem(APickup * Item)
-{
-	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
-	if (PSRef)
-	{
-		Server_PickupItem(Item, PSRef);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Player State"));
-	}
-}
-
-void AStudyCharacter::Server_PickupItem_Implementation(APickup* Item, AStudyPlayerState* PSRef)
-{
-	if (GetLocalRole() == ROLE_Authority)
-	{
-		APawn* PPawn = PSRef->GetPawn();
-		if (PPawn)
-		{
-			AStudyPC* ControllerRef = Cast<AStudyPC>(PPawn->GetController());
-			if (ControllerRef)
-			{
-				if (Item)
-				{
-					for (int i = 0; i < ControllerRef->Inventory.Num(); i++)
-					{
-						// check if the current item is the last and is valid
-						if (UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]) && i == 35)
-						{
-							UE_LOG(LogTemp, Warning, TEXT("Character can't pickup Item because his Inventory is full"));
-						}
-						// if not the last item of the array
-						// check if it's not a valid class on the index
-						// if it's a valid class then do nothing and go to the next step
-						// if it's not a valid class, add this item to inventory into that array index
-						else if (!UKismetSystemLibrary::IsValidClass(ControllerRef->Inventory[i]))
-						{
-							ControllerRef->Inventory[i] = Item->GetClass();
-							ControllerRef->InventoryItems[i] = Item->getItemInfo();
-							FlushNetDormancy();
-							UE_LOG(LogTemp, Log, TEXT("Character pickup Item and added to Inventory"));
-							Item->Destroy();
-							break;
-						}
-					}
-				}
-				else { UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Pickup Item")); }
-			}
-			else { UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Player Controller")); }
-		}
-		else { UE_LOG(LogTemp, Error, TEXT("Error trying to Cast to Player Pawn")); }
-	}
-}
-
-bool AStudyCharacter::Server_PickupItem_Validate(APickup* Item, AStudyPlayerState* PSRef)
-{
-	return true;
-}
-
 void AStudyCharacter::Server_SimpleAttack_Implementation()
 {
 	UWorld* World = GetWorld();
@@ -395,41 +343,6 @@ void AStudyCharacter::Multicast_PlayMontage_Implementation(UAnimMontage* Montage
 }
 
 bool AStudyCharacter::Multicast_PlayMontage_Validate(UAnimMontage* MontageToPlay)
-{
-	return true;
-}
-
-// Drop item on UWorld
-void AStudyCharacter::DropItemOnWorld_Implementation(TSubclassOf<AActor> PickupClass, FTransform Location, ESlotType SlotType, int32 SlotID)
-{
-	UWorld* World = GetWorld();
-	if (GetLocalRole() == ROLE_Authority && PickupClass != NULL && World)
-	{
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		World->SpawnActor<AActor>(PickupClass, Location, SpawnParams);
-		if (SlotType == ESlotType::ST_ArmorSet && SlotID == 3)
-		{
-			// Don't change if there's another dual blade on the second hand
-			if (ArmorSetProperties[5].WeaponType.WeaponType != EWeaponType::WT_DualBlade)
-			{
-				WeaponBeingUsed = EWeaponType::WT_None;
-			}
-		}
-
-		if (SlotType == ESlotType::ST_ArmorSet && SlotID == 5)
-		{
-			// only change if there's no dual blade on the other hand
-			if (ArmorSetProperties[5].WeaponType.WeaponType == EWeaponType::WT_DualBlade && ArmorSetProperties[3].WeaponType.WeaponType == EWeaponType::WT_None)
-			{
-				WeaponBeingUsed = EWeaponType::WT_None;
-			}
-		}
-		UE_LOG(LogTemp, Log, TEXT("The item %s was Dropped"), *UKismetSystemLibrary::GetClassDisplayName(PickupClass));
-	}
-}
-
-bool AStudyCharacter::DropItemOnWorld_Validate(TSubclassOf<AActor> PickupClass, FTransform Location, ESlotType SlotType, int32 SlotID)
 {
 	return true;
 }

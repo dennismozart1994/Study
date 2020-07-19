@@ -25,6 +25,12 @@ class AStudyCharacter : public ACharacter
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
 	class USHealthComponent* HealthComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
+	class UInventoryComponent* InventoryComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Health, meta = (AllowPrivateAccess = "true"))
+    class USkillTreeComponent* SkillTreeComp;
 	
 public:
 	AStudyCharacter();
@@ -113,20 +119,11 @@ public:
 	UFUNCTION(NetMulticast, Reliable, WithValidation, Category = "Attacks")
 	void Multicast_PlayMontage(UAnimMontage* MontageToPlay);
 
-	UFUNCTION(Server, Reliable, WithValidation, Category = "Inventory")
-	void DropItemOnWorld(TSubclassOf<AActor> PickupClass, FTransform Location, ESlotType SlotType, int32 SlotID);
-
 protected:
 
 	// Basic Attacks with no Weapon
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
 	TArray<UAnimMontage*> NoWeaponBasicAttacks;
-
-	UFUNCTION(Server, Reliable, WithValidation)
-	void Server_PickupItem(APickup* Item, AStudyPlayerState* PSRef);
-
-	UFUNCTION(BlueprintCallable, Category = "Replication")
-	void PickupItem(APickup* Item);
 
 	// Basic Attacks with a Sword
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
@@ -150,7 +147,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Recovery")
 	FTimerHandle _delayhandler;
-
 
 	UPROPERTY(BlueprintReadWrite, Category = "Get Item Details")
 	UUserWidget* ItemInfoRef;
@@ -196,5 +192,7 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	FORCEINLINE class UUserWidget*  GetItemWidgetRef() const { return ItemInfoRef; }
 };
 

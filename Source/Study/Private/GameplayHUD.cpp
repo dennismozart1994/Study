@@ -3,6 +3,7 @@
 #include "GameplayHUD.h"
 #include "CustomVariables.h"
 #include "StudyCharacter.h"
+#include "InventoryComponent.h"
 #include "StudyPC.h"
 #include "InventoryDragDropOperation.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -23,24 +24,27 @@ bool UGameplayHUD::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 			FRotator Rotation = StudyCharacterRef->GetActorRotation();
 			FTransform LocationToSpawn = UKismetMathLibrary::MakeTransform(Location, Rotation, FVector(1.f));
 			// Spawn Item dropped on World
-			StudyCharacterRef->DropItemOnWorld(Operation->ItemClass, LocationToSpawn, Operation->SlotType, Operation->SlotID);
-
-			// Update Inventory if dropped from there
-			if (Operation->SlotType == ESlotType::ST_Inventory)
+			UInventoryComponent* Component = Cast<UInventoryComponent>(
+            this->GetOwningPlayerPawn()->FindComponentByClass(UInventoryComponent::StaticClass()));
+			if(Component)
 			{
-				PCRef->Inventory[Operation->SlotID] = NULL;
-				PCRef->InventoryItems[Operation->SlotID] = FItemDetailsDataTable();
-				UE_LOG(LogTemp, Log, TEXT("Dropped item from Inventory"));
-				UpdateSlots();
-			}
+				Component->DropItemOnWorld(Operation->ItemClass, LocationToSpawn, Operation->SlotType, Operation->SlotID);
+				// Update Inventory if dropped from there
+				if (Operation->SlotType == ESlotType::ST_Inventory)
+				{
+					Component->UpdateInventory(PCRef, Operation);
+					UpdateSlots();
+				}
 
-			// update armorset if dropped from there
-			if (Operation->SlotType == ESlotType::ST_ArmorSet)
+				// update armorset if dropped from there
+				if (Operation->SlotType == ESlotType::ST_ArmorSet)
+				{
+					Component->UpdateArmorset(StudyCharacterRef, Operation);
+					UpdateSlots();
+				}
+			} else
 			{
-				StudyCharacterRef->ArmorSet[Operation->SlotID] = NULL;
-				StudyCharacterRef->ArmorSetProperties[Operation->SlotID] = FItemDetailsDataTable();
-				UE_LOG(LogTemp, Log, TEXT("Dropped item from Armor Set"));
-				UpdateSlots();
+				UE_LOG(LogTemp, Error, TEXT("Player Doesn't have The Inventory Component Implemented"));
 			}
 		}
 		else
