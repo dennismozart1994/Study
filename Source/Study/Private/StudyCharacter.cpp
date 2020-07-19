@@ -1,9 +1,13 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "StudyCharacter.h"
+
+#include <stdbool.h>
+
 #include "StudyPlayerState.h"
 #include "StudyPC.h"
 #include "Pickup.h"
+#include "GameplayHUD.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -20,6 +24,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "Runtime/Engine/Public/TimerManager.h"
+#include "Blueprint/WidgetBlueprintLibrary.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AStudyCharacter Constructor
@@ -152,6 +157,31 @@ void AStudyCharacter::BeginPlay()
 			BossUIRef = CreateWidget<UUserWidget>(UGameplayStatics::GetPlayerController(GetWorld(), 0), LifeBossUI, NAME_None);
 		}
 	}
+
+	TArray<AActor*> ActorsFound;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AStudyPlayerState::StaticClass(), ActorsFound);
+	for (AActor* Actor: ActorsFound)
+	{
+		AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(Actor);
+		if(PSRef)
+		{
+			if(PSRef->GetPawn())
+			{
+				AStudyPC* PCRef = Cast<AStudyPC>(PSRef->GetPawn()->GetController());
+				if(PCRef)
+				{
+					if(PCRef->IsLocalPlayerController())
+					{
+						UGameplayHUD* HudRef = CreateWidget<UGameplayHUD>(PCRef, GameplayUI);
+						UWidgetBlueprintLibrary::SetInputMode_GameAndUI(PCRef, HudRef, false, false);
+						HudRef->AddToViewport();
+						PCRef->bShowMouseCursor = true;
+					}
+				}
+			}
+		}
+	}
+	
 }
 
 //////////////////////////////////////// Setup Inputs ///////////////////////////////////////////

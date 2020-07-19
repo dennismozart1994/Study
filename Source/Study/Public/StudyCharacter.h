@@ -74,6 +74,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	TSubclassOf<UUserWidget> LifeBossUI;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
+    TSubclassOf<class UGameplayHUD> GameplayUI;
+
 	// Bos UI Reference after creating the UI based on the last variable class selected on the Editor
 	UPROPERTY(BlueprintReadWrite, Category = "UI")
 	UUserWidget* BossUIRef;
