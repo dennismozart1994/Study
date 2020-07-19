@@ -45,6 +45,6 @@ class STUDY_API UActionsHUD : public UUserWidget
 	virtual void NativeConstruct() override;
 	const FSlateColor ActiveColour = FSlateColor(FLinearColor(0.08f, 0.08f, 0.08f, 1.f));
 	const FSlateColor NormalColour = FSlateColor(FLinearColor(1.f, 1.f, 1.f, 1.f));
-	void SetTabAsActive(class UButton* Button);
-	void SetTabAsDeactivated(class UButton* Button);
+	void SetTabAsActive(ESkillClass Tab);
+	void SetTabAsDeactivated(ESkillClass Tab);
 };

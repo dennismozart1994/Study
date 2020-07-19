@@ -20,9 +20,7 @@ void UActionsHUD::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    if(CurrentTab == ESkillClass::SC_Warrior) SetTabAsActive(WarriorButton);
-    if(CurrentTab == ESkillClass::SC_Archier) SetTabAsActive(ArcherButton);
-    if(CurrentTab == ESkillClass::SC_Magician) SetTabAsActive(MageButton);
+    SetTabAsActive(CurrentTab);
     
     WarriorButton->SetVisibility(ESlateVisibility::Hidden);
     ArcherButton->SetVisibility(ESlateVisibility::Hidden);
@@ -40,33 +38,38 @@ void UActionsHUD::NativeConstruct()
 
 void UActionsHUD::OnWarriorClicked()
 {
-    SetTabAsActive(WarriorButton);
-    SetTabAsDeactivated(ArcherButton);
-    SetTabAsDeactivated(MageButton);
+    SetTabAsActive(ESkillClass::SC_Warrior);
+    SetTabAsDeactivated(ESkillClass::SC_Archier);
+    SetTabAsDeactivated(ESkillClass::SC_Magician);
 }
 
 void UActionsHUD::OnArcherClicked()
 {
-    SetTabAsDeactivated(WarriorButton);
-    SetTabAsActive(ArcherButton);
-    SetTabAsDeactivated(MageButton);
+    SetTabAsDeactivated(ESkillClass::SC_Warrior);
+    SetTabAsActive(ESkillClass::SC_Archier);
+    SetTabAsDeactivated(ESkillClass::SC_Magician);
 }
 
 void UActionsHUD::OnMageClicked()
 {
-    SetTabAsDeactivated(WarriorButton);
-    SetTabAsDeactivated(ArcherButton);
-    SetTabAsActive(MageButton);
+    SetTabAsDeactivated(ESkillClass::SC_Warrior);
+    SetTabAsDeactivated(ESkillClass::SC_Archier);
+    SetTabAsActive(ESkillClass::SC_Magician);
 }
 
-void UActionsHUD::SetTabAsActive(UButton* Button)
+void UActionsHUD::SetTabAsActive(ESkillClass Tab)
 {
-    Button->WidgetStyle.Normal.TintColor = ActiveColour;
+    if(Tab == ESkillClass::SC_Warrior) WarriorButton->WidgetStyle.Normal.TintColor = ActiveColour;
+    if(Tab == ESkillClass::SC_Archier) ArcherButton->WidgetStyle.Normal.TintColor = ActiveColour;
+    if(Tab == ESkillClass::SC_Magician) MageButton->WidgetStyle.Normal.TintColor = ActiveColour;
+    CurrentTab = Tab;
 }
 
-void UActionsHUD::SetTabAsDeactivated(UButton* Button)
+void UActionsHUD::SetTabAsDeactivated(ESkillClass Tab)
 {
-    Button->WidgetStyle.Normal.TintColor = NormalColour;
+    if(Tab == ESkillClass::SC_Warrior) WarriorButton->WidgetStyle.Normal.TintColor = NormalColour;
+    if(Tab == ESkillClass::SC_Archier) ArcherButton->WidgetStyle.Normal.TintColor = NormalColour;
+    if(Tab == ESkillClass::SC_Magician) MageButton->WidgetStyle.Normal.TintColor = NormalColour;
 }
 
 
