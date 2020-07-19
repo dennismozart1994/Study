@@ -55,7 +55,9 @@ class USkill_Slot_Defaults : public UUserWidget
 	UFUNCTION()
 	void OnSlotClicked();
 	UFUNCTION(BlueprintPure, Category = "References")
-	FSkilDataTable getSkillDetails();
+    FSkilDataTable getSkillTreeDetails();
+	UFUNCTION(BlueprintPure, Category = "References")
+	FSkillDetails getSkillInfo();
 
 	protected:
 	UTexture2D* LockerImage;

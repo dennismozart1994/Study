@@ -4,9 +4,11 @@
 #include "SkillDescription.h"
 #include "Skill_Slot_Defaults.h"
 #include "StudyPC.h"
+#include "MasterSkill.h"
 #include "StudyCharacter.h"
 #include "StudyPlayerState.h"
 #include "Engine/DataTable.h"
+#include "Engine/Classes/Kismet/KismetSystemLibrary.h"
 
 // UI Bindings
 bool USkillDescription::Initialize()
@@ -42,16 +44,18 @@ void USkillDescription::NativeConstruct()
 				// cannot equip since it's unlocked
 				bCanEquip = false;
 				// Has the minimum level to unlock the skill?
-				bHasTheProperLvl = StateRef->CharacterStats.CurrentLevel >= SkillInfo.GoldLevelRequired;
+				bHasTheProperLvl = StateRef->CharacterStats.CurrentLevel >= SkillTreeInfo.GoldLevelRequired;
 				// Has the amount of gold required to buy the skill?
-				bHasTheProperGold = StateRef->CharacterStats.GoldAmount >= SkillInfo.PriceToUnlock;
+				bHasTheProperGold = StateRef->CharacterStats.GoldAmount >= SkillTreeInfo.PriceToUnlock;
 				// Has unlocked the skill on the lower tree lvl already?
-				bHasUnlockedRequiredSkill = (SkillInfo.RequiredSkillToUnlock.ToString() == "None") ||
-					(PCRef->CharacterSkills.Contains(SkillInfo.RequiredSkillToUnlock));
+				bHasUnlockedRequiredSkill = (SkillTreeInfo.RequiredSkillToUnlock.ToString() == "None") ||
+					(PCRef->CharacterSkills.Contains(SkillTreeInfo.RequiredSkillToUnlock));
 			} else {UE_LOG(LogTemp, Error, TEXT("Failed to Cast to Player State to get Character Stats Information"));}
 		}
 	} else {UE_LOG(LogTemp, Error, TEXT("Failed to Cast to Player Controller to Get Skill Information"));}
 
+	SkillInfo = getSkillInfo(SkillTreeInfo.SkillClass);
+	
 	// Fill UI with Data
 	SkillDescription->SetText(SkillInfo.Description);
 	// if already unlocked, just show an equip button
@@ -65,27 +69,28 @@ void USkillDescription::NativeConstruct()
 	// if he can unlock, allow him to do so
 	else if(bHasTheProperLvl && bHasTheProperGold && bHasUnlockedRequiredSkill)
 	{
-		SkillRequirements->SetText(FText::FromString("Cost: " + FString::FromInt(SkillInfo.PriceToUnlock)));
+		SkillRequirements->SetText(FText::FromString("Cost: " + FString::FromInt(SkillTreeInfo.PriceToUnlock)));
 		UnlockButtonText->SetText(FText::FromString("Unlock"));
 	}
 	// If user has the proper lvl but didn't have unlocked the required skill
 	else if(!bHasUnlockedRequiredSkill)
 	{
 		SkillRequirements->SetText(FText::FromString("Requires skill " +
-         getSkillDetails(SkillInfo.RequiredSkillToUnlock).Name.ToString() + " to be unlocked"));
+			getSkillInfo(getSkillTreeDetails(SkillTreeInfo.RequiredSkillToUnlock).SkillClass).Name.ToString() +
+		" to be unlocked"));
 		UnlockButtonText->SetText(FText::FromString("Close"));
 	}
 	// If the user doesn't have the proper lvl
 	else if(!bHasTheProperLvl)
 	{
 		SkillRequirements->SetText(FText::FromString("Requires lvl " +
-			FString::FromInt(SkillInfo.GoldLevelRequired)));
+			FString::FromInt(SkillTreeInfo.GoldLevelRequired)));
 		UnlockButtonText->SetText(FText::FromString("Close"));
 	}
 	// otherwise if user simply doesn't have the amount of gold to unlock the skill
 	else
 	{
-		SkillRequirements->SetText(FText::FromString("Cost: " + FString::FromInt(SkillInfo.PriceToUnlock)));
+		SkillRequirements->SetText(FText::FromString("Cost: " + FString::FromInt(SkillTreeInfo.PriceToUnlock)));
 		UnlockButtonText->SetText(FText::FromString("Close"));
 	}
 }
@@ -94,7 +99,7 @@ void USkillDescription::OnUnlockClicked()
 {
 	if(bCanEquip)
 	{
-		// TODO: something to equip the skill
+		// @TODO: something to equip the skill
 	}
 	else if (bHasTheProperGold && bHasTheProperLvl && bHasUnlockedRequiredSkill)
 	{
@@ -125,12 +130,26 @@ AStudyPlayerState* USkillDescription::GetCustomPlayerState()
 	return Cast<AStudyPlayerState>(GetOwningPlayer()->PlayerState);
 }
 
-FSkilDataTable USkillDescription::getSkillDetails(FName SkillRow)
+FSkilDataTable USkillDescription::getSkillTreeDetails(FName SkillRow)
 {
 	// load data table
 	static const FString ContextCurrent(TEXT("Current Item Details"));
 	FSkilDataTable* row = SkillSlotRef->DetailsTable->FindRow<FSkilDataTable>(
 		SkillRow, ContextCurrent, true);
 	if(row) return *(row);
-	return ACustomVariables::createSkillStruct();
+	return FSkilDataTable();
+}
+
+FSkillDetails USkillDescription::getSkillInfo(TSubclassOf<AMasterSkill> SkillClass)
+{
+	if(UKismetSystemLibrary::IsValidClass(SkillClass))
+    {
+    	AMasterSkill* DefaultActor = Cast<AMasterSkill>(SkillClass->GetDefaultObject(true));
+    	if(DefaultActor)
+    	{
+    		UE_LOG(LogTemp, Log, TEXT("Valid Master Skill"));
+    		return DefaultActor->SkillDetails;
+    	}
+    }
+	return FSkillDetails();
 }

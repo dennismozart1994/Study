@@ -313,7 +313,7 @@ void USlot_Defaults::InventorySwap(UInventoryDragDropOperation* CustomizeOperati
 			PCRef->InventoryItems[ToSlotIndex] = FromItemInfo;
 
 			PCRef->Inventory[FromSlotIndex] = NULL;
-			PCRef->InventoryItems[FromSlotIndex] = ACustomVariables::createItemStruct();
+			PCRef->InventoryItems[FromSlotIndex] = FItemDetailsDataTable();
 
 			UE_LOG(LogTemp, Log, TEXT("Only the sender item is valid"));
 		}
@@ -363,7 +363,7 @@ void USlot_Defaults::InventoryToArmorSet(UInventoryDragDropOperation* CustomizeO
 				else
 				{
 					PCRef->Inventory[FromSlotIndex] = NULL;
-					PCRef->InventoryItems[FromSlotIndex] = ACustomVariables::createItemStruct();
+					PCRef->InventoryItems[FromSlotIndex] = FItemDetailsDataTable();
 
 					CharRef->ArmorSet[ToSlotIndex] = FromItemClass;
 					CharRef->ArmorSetProperties[ToSlotIndex] = FromItemInfo;
@@ -413,7 +413,7 @@ void USlot_Defaults::ArmorSetToInventory(UInventoryDragDropOperation* CustomizeO
 		if (!UKismetSystemLibrary::IsValid(ToItemInfo.Mesh))
 		{
 			// Remove Item from Armor Set
-			PSRef->Server_updateCharacterStats(FromItemInfo, ACustomVariables::createItemStruct());
+			PSRef->Server_updateCharacterStats(FromItemInfo, FItemDetailsDataTable());
 			UE_LOG(LogTemp, Log, TEXT("Removed from Armorset"));
 			
 			// Do the actual Swap
@@ -421,7 +421,7 @@ void USlot_Defaults::ArmorSetToInventory(UInventoryDragDropOperation* CustomizeO
 			PCRef->InventoryItems[ToSlotIndex] = FromItemInfo;
 
 			CharRef->ArmorSet[FromSlotIndex] = NULL;
-			CharRef->ArmorSetProperties[FromSlotIndex] = ACustomVariables::createItemStruct();
+			CharRef->ArmorSetProperties[FromSlotIndex] = FItemDetailsDataTable();
 		}
 		// swap items on Armor set if they are the same armor type
 		else if (PCRef->InventoryItems[ToSlotIndex].ItemType == EItemType::IT_ArmorSet && CharRef->ArmorSetProperties[FromSlotIndex].ArmorType == PCRef->InventoryItems[ToSlotIndex].ArmorType)
@@ -449,7 +449,7 @@ void USlot_Defaults::ArmorSetToInventory(UInventoryDragDropOperation* CustomizeO
 					CharRef->ArmorSetProperties[FromSlotIndex] = ToItemInfo;
 					
 					// Remove from ArmorSet
-					PSRef->Server_updateCharacterStats(FromItemInfo, ACustomVariables::createItemStruct());
+					PSRef->Server_updateCharacterStats(FromItemInfo, FItemDetailsDataTable());
 					UE_LOG(LogTemp, Log, TEXT("Removed from Armorset"));
 					break;
 				}

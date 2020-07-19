@@ -36,7 +36,10 @@ class STUDY_API USkillDescription : public UUserWidget
     class USkill_Slot_Defaults* SkillSlotRef;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Skill Info", meta = (AllowPrivateAccess = "true"))
-	FSkilDataTable SkillInfo;
+	FSkillDetails SkillInfo;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Tree Info", meta = (AllowPrivateAccess = "true"))
+	FSkilDataTable SkillTreeInfo;
 
 	// Conditioners to slot behaviour
 	bool bCanEquip;
@@ -52,7 +55,9 @@ class STUDY_API USkillDescription : public UUserWidget
 	UFUNCTION(BlueprintPure, Category = "References")
     class AStudyPlayerState* GetCustomPlayerState();
 	UFUNCTION(BlueprintPure, Category = "References")
-    FSkilDataTable getSkillDetails(FName SkillRow);
+    FSkilDataTable getSkillTreeDetails(FName SkillRow);
+	UFUNCTION(BlueprintPure, Category = "References")
+    FSkillDetails getSkillInfo(class TSubclassOf<AMasterSkill> SkillClass);
 
 	// UI Bindings
 	UFUNCTION()

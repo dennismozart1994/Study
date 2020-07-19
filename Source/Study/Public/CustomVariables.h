@@ -74,6 +74,14 @@ enum class ESkillType : uint8
 };
 
 UENUM(BlueprintType)
+enum class ESkillTarget : uint8
+{
+	ST_Self			UMETA(DisplayName = "Self"),
+	ST_Enemy		UMETA(DisplayName = "Enemy"),
+	ST_AreaAround	UMETA(DisplayName = "Area Around the Player")
+};
+
+UENUM(BlueprintType)
 enum class EStateType : uint8
 {
 	ST_Stun			UMETA(DisplayName = "Paralise enemie"),
@@ -86,7 +94,7 @@ UENUM(BlueprintType)
 enum class EBuffType : uint8
 {
 	BT_Speed			UMETA(DisplayName = "Increase Speed for a period of time"),
-	BT_Strenght			UMETA(DisplayName = "Increase Stenght for a period of time"),
+	BT_Strength			UMETA(DisplayName = "Increase Stenght for a period of time"),
 	BT_Life				UMETA(DisplayName = "Recover Life each 5 seconds"),
 	BT_Magic			UMETA(DisplayName = "Recover Mana each 5 seconds"),
 	BT_Stamina			UMETA(DisplayName = "Recover Stamina each 5 seconds"),
@@ -99,20 +107,15 @@ struct FSkilDataTable : public FTableRowBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Description")
-	FText Name;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Description")
-	FText Description;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design")
-	UTexture2D* SkillThumbnail;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design")
-	UParticleSystem* Particle;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
-	ESkillType SkillType;
+	// UStruct Constructor
+	FSkilDataTable(
+		ESkillClass tree = ESkillClass::SC_None,
+		FName requiresToUnlock = FName("None"),
+		float price = 0.f,
+		int32 lvl = 0,
+		TSubclassOf<class AMasterSkill> skill = nullptr
+	) : TreeClass(tree), RequiredSkillToUnlock(requiresToUnlock), PriceToUnlock(price),
+	GoldLevelRequired(lvl), SkillClass(skill) {}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	ESkillClass TreeClass;
@@ -126,48 +129,97 @@ struct FSkilDataTable : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
 	int32 GoldLevelRequired;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
-	int32 MPCost;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill Class")
+	TSubclassOf<class AMasterSkill> SkillClass;
+};
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
-	float ReloadTime;
+USTRUCT(BlueprintType)
+struct FSkillDetails
+{
+	GENERATED_BODY()
+	
+	// UStruct Constructor
+	FSkillDetails (
+        FText name = FText::FromString("None"),
+        FText description = FText::FromString("None"),
+        UTexture2D* skill_thumbnail = nullptr,
+        UParticleSystem* particle = nullptr,
+        ESkillTarget target = ESkillTarget::ST_Self,
+        ESkillType type = ESkillType::ST_Action,
+        int32 mp_cost = 0,
+        float cooldown = 5.f,
+        UAnimMontage* montage = nullptr,
+        int32 life = 0,
+        int32 magic_points = 0,
+        int32 speed = 0,
+        int32 stamina = 0,
+        int32 strength = 0,
+        EBuffType buffType = EBuffType::BT_Strength,
+        float buffingTime = 0.f,
+        int32 bf_value = 0,
+        EStateType state = EStateType::ST_Stun,
+        float stateTime = 0.f) :
+    Name(name), Description(description), SkillThumbnail(skill_thumbnail), Particle(particle), Target(target),
+    SkillType(type), MPCost(mp_cost), CoolDown(cooldown), MontageToPlay(montage), Life(life), MagicPoints(magic_points),
+	Speed(speed), Stamina(stamina), Strength(strength), BuffType(buffType), BuffingTime(buffingTime),
+	BuffingValue(bf_value), State(state), StateTime(stateTime) {}
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
-	UAnimMontage* MontageToPlay;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Description")
+    FText Name;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Spawn Skill Type")
-	TSoftClassPtr<AActor> Projectile;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Description")
+    FText Description;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design")
+    UTexture2D* SkillThumbnail;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Design")
+    UParticleSystem* Particle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Basic Info")
+    ESkillTarget Target;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Basic Info")
+    ESkillType SkillType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Basic Info")
+    int32 MPCost;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Basic Info")
+    float CoolDown;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Basic Info")
+    UAnimMontage* MontageToPlay;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Recover Skill Type")
-	int32 Life;
+    int32 Life;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Recover Skill Type")
-	int32 MagicPoints;
+    int32 MagicPoints;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Recover Skill Type")
-	int32 Speed;
+    int32 Speed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Recover Skill Type")
-	int32 Stamina;
+    int32 Stamina;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Recover Skill Type")
-	int32 Strenght;
+    int32 Strength;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Buff Skill Type")
-	EBuffType BuffType;
+    EBuffType BuffType;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Buff Skill Type")
-	float BuffingTime;
+    float BuffingTime;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If Buff Skill Type")
-	int32 BuffingValue;
+    int32 BuffingValue;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If State Skill Type")
-	EStateType State;
+    EStateType State;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "If State Skill Type")
-	float StateTime;
-
+    float StateTime;
 };
 
 // simple struct
@@ -175,6 +227,12 @@ USTRUCT(BlueprintType)
 struct FWeaponType
 {
 	GENERATED_BODY()
+
+	FWeaponType(
+		EWeaponType WType = EWeaponType::WT_None,
+		FName Socket = FName("None"),
+		TSoftClassPtr<AActor> projectile = nullptr
+	) : WeaponType(WType), SocketToAttach(Socket), Projectile(projectile) {}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Type")
 	EWeaponType WeaponType;
@@ -192,6 +250,28 @@ USTRUCT(BlueprintType)
 struct FItemDetailsDataTable : public FTableRowBase
 {
 	GENERATED_BODY()
+
+	FItemDetailsDataTable(
+		FText n = FText::FromString("None"),
+		FText d = FText::FromString("None"),
+		FVector size = FVector(1.f),
+		USkeletalMesh* mesh = nullptr,
+		EItemType type = EItemType::IT_Craft,
+		EArmorType AType = EArmorType::AT_None,
+		FWeaponType WType = FWeaponType(),
+		UTexture2D* Image = nullptr,
+		UTexture2D* ArmorImage = nullptr,
+		int32 s = 0,
+		int32 mp = 0,
+		int32 sm = 0,
+		int32 st = 0,
+		int32 lvl = 0,
+		int32 lf = 0,
+		int32 am = 0,
+		int32 slp = 0
+	) : Name(n), Description(d), DesiredThumbSize(size), Mesh(mesh), ItemType(type), ArmorType(AType),
+	WeaponType(WType), Thumbnail(Image), ArmorThumbnail(ArmorImage), Speed(s), MagicPoints(mp), Stamina(sm),
+	Strenght(st), GoldLevelRequired(lvl), Life(lf), Amount(am), SellingPrice(slp) {}
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Description")
 	FText Name;
@@ -270,8 +350,4 @@ class STUDY_API ACustomVariables : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ACustomVariables();
-
-	static FItemDetailsDataTable createItemStruct();
-
-	static FSkilDataTable createSkillStruct();
 };

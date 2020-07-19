@@ -29,7 +29,7 @@ bool UGameplayHUD::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 			if (Operation->SlotType == ESlotType::ST_Inventory)
 			{
 				PCRef->Inventory[Operation->SlotID] = NULL;
-				PCRef->InventoryItems[Operation->SlotID] = ACustomVariables::createItemStruct();
+				PCRef->InventoryItems[Operation->SlotID] = FItemDetailsDataTable();
 				UE_LOG(LogTemp, Log, TEXT("Dropped item from Inventory"));
 				UpdateSlots();
 			}
@@ -38,7 +38,7 @@ bool UGameplayHUD::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 			if (Operation->SlotType == ESlotType::ST_ArmorSet)
 			{
 				StudyCharacterRef->ArmorSet[Operation->SlotID] = NULL;
-				StudyCharacterRef->ArmorSetProperties[Operation->SlotID] = ACustomVariables::createItemStruct();
+				StudyCharacterRef->ArmorSetProperties[Operation->SlotID] = FItemDetailsDataTable();
 				UE_LOG(LogTemp, Log, TEXT("Dropped item from Armor Set"));
 				UpdateSlots();
 			}

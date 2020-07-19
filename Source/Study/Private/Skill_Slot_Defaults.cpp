@@ -5,6 +5,7 @@
 #include "StudyPC.h"
 #include "StudyCharacter.h"
 #include "StudyPlayerState.h"
+#include "MasterSkill.h"
 #include "Engine/DataTable.h"
 #include "SkillDescription.h"
 #include "Skill3DPreview.h"
@@ -12,6 +13,7 @@
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
+#include "Engine/Classes/Kismet/KismetSystemLibrary.h"
 
 //////////////////////////////////////////////////// NATIVE OVERRIDES ////////////////////////////////////////////////////////
 bool USkill_Slot_Defaults::Initialize()
@@ -28,7 +30,7 @@ void USkill_Slot_Defaults::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	// Set Defualt Button Style
+	// Set Default Button Style
 	Normal.DrawAs = ESlateBrushDrawType::Image;
 	Normal.Tiling = ESlateBrushTileType::NoTile;
 	Normal.Mirroring = ESlateBrushMirrorType::NoMirror;
@@ -47,12 +49,16 @@ void USkill_Slot_Defaults::NativeConstruct()
 	if(LockerImage != nullptr) SkillLocker->SetBrushFromTexture(LockerImage);
 
 	// Set Skill Thumbnail image
-	FSkilDataTable SkillDetails = getSkillDetails();
-	if(SkillDetails.SkillThumbnail != nullptr && SkillThumbnail != nullptr) {
-		SkillThumbnail->SetBrushFromTexture(SkillDetails.SkillThumbnail);
+	const FSkillDetails SkillInfo = getSkillInfo();
+	UE_LOG(LogTemp, Log, TEXT("Valid Master Skill"));
+	if(SkillInfo.SkillThumbnail != nullptr && SkillThumbnail != nullptr) {
+		SkillThumbnail->SetBrushFromTexture(SkillInfo.SkillThumbnail);
 		UE_LOG(LogTemp, Log, TEXT("Set Skill Thumbnail"));
+	} else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid thumbnail"));
 	}
-
+	
 	// Set button as Enabled if skill is already unlocked
 	AStudyPC* controllerRef = GetCustomController();
 	if(controllerRef) {
@@ -105,10 +111,10 @@ void USkill_Slot_Defaults::OnSlotClicked()
 	PlayPreview();
 	
 	// create a new details widget using the skill information
-	FSkilDataTable row = getSkillDetails();
+	FSkilDataTable row = getSkillTreeDetails();
 	SkillDetailsWG = CreateWidget<USkillDescription>(GetOwningPlayer(), wSkillDetails);
 	SkillDetailsWG->SkillSlotRef = this;
-	SkillDetailsWG->SkillInfo = row;
+	SkillDetailsWG->SkillTreeInfo = row;
 
 	UWidgetLayoutLibrary* WidgetLayoutLibrary;
 	WidgetLayoutLibrary = NewObject<UWidgetLayoutLibrary>(UWidgetLayoutLibrary::StaticClass());
@@ -131,19 +137,41 @@ void USkill_Slot_Defaults::OnSlotClicked()
 	}
 }
 
-FSkilDataTable USkill_Slot_Defaults::getSkillDetails()
+FSkillDetails USkill_Slot_Defaults::getSkillInfo()
 {
 	// load data table
 	static const FString ContextCurrent(TEXT("Current Item Details"));
 	FSkilDataTable* row = DetailsTable->FindRow<FSkilDataTable>(SkillRow, ContextCurrent, true);
+	// If row was found, return the class defaults of the skill
+	if(row) {
+		TSubclassOf<AMasterSkill> Skill = row->SkillClass;
+		if(UKismetSystemLibrary::IsValidClass(Skill))
+		{
+			AMasterSkill* DefaultActor = Cast<AMasterSkill>(Skill->GetDefaultObject(true));
+			if(DefaultActor)
+			{
+				UE_LOG(LogTemp, Log, TEXT("Valid Master Skill"));
+				return DefaultActor->SkillDetails;
+			}
+		}
+	}
+	return FSkillDetails();
+}
+
+FSkilDataTable USkill_Slot_Defaults::getSkillTreeDetails()
+{
+	// load data table
+	static const FString ContextCurrent(TEXT("Current Item Details"));
+	FSkilDataTable* row = DetailsTable->FindRow<FSkilDataTable>(SkillRow, ContextCurrent, true);
+	// If row was found, return it
 	if(row) return *(row);
-	return ACustomVariables::createSkillStruct();
+	return FSkilDataTable();
 }
 
 void USkill_Slot_Defaults::PlayPreview()
 {
 	// If we have a montage to play
-	if(getSkillDetails().MontageToPlay)
+	if(getSkillInfo().MontageToPlay)
 	{
 		// get all preview actors (it should have only 1 per lvl
 		TArray<AActor*> PreviewActors;
@@ -155,7 +183,7 @@ void USkill_Slot_Defaults::PlayPreview()
 			if (Preview3D)
 			{
 				Preview3D->UpdateArmorSet();
-				Preview3D->PlaySkillAnimation(getSkillDetails().MontageToPlay);
+				Preview3D->PlaySkillAnimation(getSkillInfo().MontageToPlay);
 			}
 		}
 	}

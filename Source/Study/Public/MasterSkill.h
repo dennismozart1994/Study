@@ -22,6 +22,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Skill Info")
     FSkilDataTable SkillInfo;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill Info")
+	FSkillDetails SkillDetails;
+
 	UPROPERTY(BlueprintReadWrite, Category = "Skill Info")
 	class USkillHotKey* SkillSlotRef;
 

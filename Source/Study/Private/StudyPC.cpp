@@ -49,7 +49,7 @@ FSkilDataTable AStudyPC::getSkillDetails(FName rowName)
 	static const FString ContextCurrent(TEXT("Current Item Details"));
 	FSkilDataTable* row = SkillTable->FindRow<FSkilDataTable>(rowName, ContextCurrent, true);
 	if(row) return *(row);
-	return ACustomVariables::createSkillStruct();
+	return FSkilDataTable();
 }
 
 AStudyPlayerState* AStudyPC::GetPersonalPlayerState()
