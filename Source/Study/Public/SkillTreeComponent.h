@@ -35,6 +35,12 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Skill")
 	FSkilDataTable GetSkillTreeItem(FName RowName);
 
+	UFUNCTION()
+	void UnlockSkill(class AStudyPC* Controller);
+
+	UFUNCTION()
+	void EquipSkill(class AStudyPC* Controller);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

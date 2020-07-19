@@ -150,5 +150,19 @@ void USkillTreeComponent::PlayPreview()
 	}
 }
 
+void USkillTreeComponent::UnlockSkill(AStudyPC* Controller)
+{
+	if(Controller != nullptr && SkillDetailsRef && SkillDetailsRef->SkillSlotRef)
+	{
+		Controller->Server_UnlockSkill(Controller, SkillDetailsRef->SkillSlotRef->SkillRow);
+		SkillDetailsRef->SkillSlotRef->SkillLocker->SetVisibility(ESlateVisibility::Hidden);
+	} else {UE_LOG(LogTemp, Error, TEXT("Failed to get the Player Controller Reference"));}
+}
+
+void USkillTreeComponent::EquipSkill(AStudyPC* Controller)
+{
+	
+}
+
 
 

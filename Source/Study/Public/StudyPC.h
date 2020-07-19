@@ -27,8 +27,17 @@ class STUDY_API AStudyPC : public APlayerController
 	TArray<FItemDetailsDataTable> InventoryItems;
 
 	// This will store all indexes to the Unlocked Skill Data table
-	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Gameplay")
-	TArray<FName> CharacterSkills;
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Skills|Warrior")
+    TArray<FName> CharacterSkills;
+	
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Skills|Warrior")
+	TArray<FName> WarriorSkills;
+
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Skills|Archer")
+    TArray<FName> ArcherSkills;
+
+	UPROPERTY(Replicated, BlueprintReadWrite, Category = "Skills|Mage")
+    TArray<FName> MageSkills;
 
 	UFUNCTION()
 	class AStudyPlayerState* GetPersonalPlayerState();
@@ -42,6 +51,12 @@ class STUDY_API AStudyPC : public APlayerController
 	UFUNCTION(Client, Reliable)
 	void Client_UnlockSkill(AStudyPC* Controller, FName Skill);
 
+	UFUNCTION(Client, Reliable, WithValidation, BlueprintCallable, Category = "Gameplay")
+    void Server_EquipSkill(AStudyPC* Controller, FName Skill);
+
+	UFUNCTION(Client, Reliable)
+	void Client_EquipSkill(AStudyPC* Controller, FName Skill);
+	
 	AStudyPC();
 	
 	protected:

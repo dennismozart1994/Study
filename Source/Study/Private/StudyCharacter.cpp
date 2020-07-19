@@ -313,7 +313,7 @@ void AStudyCharacter::Server_SimpleAttack_Implementation()
 					UE_LOG(LogTemp, Log, TEXT("Bow Basic Attacks selected"));
 					break;
 
-					// No Weapon was seletected
+					// No Weapon was selected
 				default:
 					Range = NoWeaponBasicAttacks.Num() - 1;
 					MontagesToSort = NoWeaponBasicAttacks;

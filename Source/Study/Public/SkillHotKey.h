@@ -38,6 +38,8 @@ class STUDY_API USkillHotKey : public UUserWidget
     FSkilDataTable SkillInfo;
     UPROPERTY(BlueprintReadWrite, Category="CoolDown")
     FText CoolDownValueInSeconds;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill Info")
+    int32 SlotIndex;
     
     UFUNCTION()
     void OnSlotClicked();

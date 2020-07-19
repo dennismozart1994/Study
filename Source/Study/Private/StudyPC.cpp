@@ -15,6 +15,15 @@ AStudyPC::AStudyPC()
 	ClickEventKeys.Add(EKeys::LeftMouseButton);
 	ClickEventKeys.Add(EKeys::RightMouseButton);
 	DefaultClickTraceChannel = ECollisionChannel::ECC_Camera;
+
+	// Initialize Equipped Skills with null values
+	for(int i=1; i<=6; i++)
+	{
+		WarriorSkills.Add(FName("None"));
+		ArcherSkills.Add(FName("None"));
+		MageSkills.Add(FName("Name"));
+	}
+	
 }
 
 void AStudyPC::Server_UnlockSkill_Implementation(AStudyPC* Controller, FName Skill)
@@ -42,6 +51,21 @@ void AStudyPC::Client_UnlockSkill_Implementation(AStudyPC *Controller, FName Ski
 	Server_UnlockSkill(Controller, Skill);
 }
 
+void AStudyPC::Server_EquipSkill_Implementation(AStudyPC* Controller, FName Skill)
+{
+	
+}
+
+bool AStudyPC::Server_EquipSkill_Validate(AStudyPC* Controller, FName Skill)
+{
+	return true;
+}
+
+void AStudyPC::Client_EquipSkill_Implementation(AStudyPC* Controller, FName Skill)
+{
+	Server_EquipSkill_Implementation(Controller, Skill);
+}
+
 
 FSkilDataTable AStudyPC::getSkillDetails(FName rowName)
 {
@@ -65,4 +89,7 @@ void AStudyPC::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifet
      DOREPLIFETIME(AStudyPC, Inventory);
 	 DOREPLIFETIME(AStudyPC, InventoryItems);
 	 DOREPLIFETIME(AStudyPC, CharacterSkills);
+	 DOREPLIFETIME(AStudyPC, WarriorSkills);
+	 DOREPLIFETIME(AStudyPC, ArcherSkills);
+	 DOREPLIFETIME(AStudyPC, MageSkills);
 }

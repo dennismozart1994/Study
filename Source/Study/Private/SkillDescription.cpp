@@ -7,6 +7,7 @@
 #include "MasterSkill.h"
 #include "StudyCharacter.h"
 #include "StudyPlayerState.h"
+#include "SkillTreeComponent.h"
 #include "Engine/DataTable.h"
 #include "Engine/Classes/Kismet/KismetSystemLibrary.h"
 
@@ -97,21 +98,24 @@ void USkillDescription::NativeConstruct()
 
 void USkillDescription::OnUnlockClicked()
 {
-	if(bCanEquip)
+	if(this->GetOwningPlayerPawn())
 	{
-		// @TODO: something to equip the skill
-	}
-	else if (bHasTheProperGold && bHasTheProperLvl && bHasUnlockedRequiredSkill)
-	{
-		AStudyPC* PCRef = GetCustomController();
-		if(PCRef != nullptr)
+		USkillTreeComponent* Component = Cast<USkillTreeComponent>(
+            this->GetOwningPlayerPawn()->FindComponentByClass(USkillTreeComponent::StaticClass()));
+		if(Component)
 		{
-			PCRef->Server_UnlockSkill(PCRef, SkillSlotRef->SkillRow);
-			SkillSlotRef->SkillLocker->SetVisibility(ESlateVisibility::Hidden);
-		} else {UE_LOG(LogTemp, Error, TEXT("Failed to get the Player Controller Reference"));}
+			if(bCanEquip)
+			{
+				// @TODO: something to equip the skill
+			}
+			else if (bHasTheProperGold && bHasTheProperLvl && bHasUnlockedRequiredSkill)
+			{
+				AStudyPC* PCRef = GetCustomController();
+				Component->UnlockSkill(PCRef);
+			}
+			this->RemoveFromParent();
+		}
 	}
-
-	this->RemoveFromParent();
 }
 
 // Custom Getters
