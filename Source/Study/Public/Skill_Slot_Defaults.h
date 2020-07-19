@@ -31,12 +31,6 @@ class USkill_Slot_Defaults : public UUserWidget
 	int32 SlotIndex;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Slot Properties")
 	UTexture2D* SlotBackground;
-
-	// Widget Details Class
-	UPROPERTY(EditDefaultsOnly, Category = "Skill Details")
-    TSubclassOf<class USkillDescription> wSkillDetails;
-	UPROPERTY(BlueprintReadOnly, Category = "Skill Details")
-    class USkillDescription* SkillDetailsWG;
 	
 	// Data Table Properties
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data Table")
@@ -55,17 +49,14 @@ class USkill_Slot_Defaults : public UUserWidget
 	UFUNCTION()
 	void OnSlotClicked();
 	UFUNCTION(BlueprintPure, Category = "References")
-    FSkilDataTable getSkillTreeDetails();
-	UFUNCTION(BlueprintPure, Category = "References")
 	FSkillDetails getSkillInfo();
 
 	protected:
+	UPROPERTY()
 	UTexture2D* LockerImage;
 	FSlateBrush Normal;
 	FSlateBrush Hovered;
 	FButtonStyle DefaultStyle;
 	virtual bool Initialize() override;
 	virtual void NativeConstruct() override;
-
-	void PlayPreview();
 };

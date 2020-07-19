@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "CustomVariables.h"
 #include "SkillTreeComponent.generated.h"
 
 
@@ -15,14 +16,29 @@ class STUDY_API USkillTreeComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	USkillTreeComponent();
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data Table")
+    class UDataTable* DetailsTable;
+	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
+    TSubclassOf<class USkillDescription> SkillDetailsClass;
+	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
+    class USkillDescription* SkillDetailsRef;
+
+	UFUNCTION()
+	void RemoveAllPreviewWidgets();
+
+	UFUNCTION()
+	void CreatePreviewWidget(class USkill_Slot_Defaults* SlotRef);
+
+	UFUNCTION(BlueprintPure, Category = "Skill")
+	FSkillDetails GetSkillInfo();
+
+	UFUNCTION(BlueprintPure, Category = "Skill")
+	FSkilDataTable GetSkillTreeItem(FName RowName);
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-		
+	UFUNCTION()
+	void PlayPreview();
 };
