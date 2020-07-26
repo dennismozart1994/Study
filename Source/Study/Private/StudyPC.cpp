@@ -51,19 +51,50 @@ void AStudyPC::Client_UnlockSkill_Implementation(AStudyPC *Controller, FName Ski
 	Server_UnlockSkill(Controller, Skill);
 }
 
-void AStudyPC::Server_EquipSkill_Implementation(AStudyPC* Controller, FName Skill)
+void AStudyPC::Server_EquipSkill_Implementation(AStudyPC* Controller, FName Skill, int32 SlotIndex)
 {
-	
+	const FSkilDataTable SkillDetails = getSkillDetails(Skill);
+	switch (SkillDetails.TreeClass)
+	{
+		case ESkillClass::SC_Warrior: WarriorSkills[SlotIndex] = Skill;
+		break;
+		case ESkillClass::SC_Archier: ArcherSkills[SlotIndex] = Skill;
+		break;
+		case ESkillClass::SC_Magician: MageSkills[SlotIndex] = Skill;
+		break;
+		default: UE_LOG(LogTemp, Error, TEXT("Invalid Skill Class"));
+		break;
+	}
 }
 
-bool AStudyPC::Server_EquipSkill_Validate(AStudyPC* Controller, FName Skill)
+bool AStudyPC::Server_EquipSkill_Validate(AStudyPC* Controller, FName Skill, int32 SlotIndex)
 {
 	return true;
 }
 
-void AStudyPC::Client_EquipSkill_Implementation(AStudyPC* Controller, FName Skill)
+void AStudyPC::Client_EquipSkill_Implementation(AStudyPC* Controller, FName Skill, int32 SlotIndex)
 {
-	Server_EquipSkill_Implementation(Controller, Skill);
+	Server_EquipSkill_Implementation(Controller, Skill, SlotIndex);
+}
+
+TArray<FName> AStudyPC::GetSkillArray(ESkillClass Tree) const
+{
+	TArray<FName> Empty;
+	switch (Tree)
+	{
+		case ESkillClass::SC_Warrior:
+			UE_LOG(LogTemp, Log, TEXT("Grabbed Warrior Skills"));
+			return WarriorSkills;
+		case ESkillClass::SC_Archier:
+			UE_LOG(LogTemp, Log, TEXT("Grabbed Archer Skills"));
+			return ArcherSkills;
+		case ESkillClass::SC_Magician:
+			UE_LOG(LogTemp, Log, TEXT("Grabbed Mage Skills"));
+			return MageSkills;
+		default:
+			UE_LOG(LogTemp, Error, TEXT("Returned Empty Skills Array"));
+			return Empty;
+	}
 }
 
 

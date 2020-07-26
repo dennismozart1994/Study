@@ -100,20 +100,25 @@ void USkillDescription::OnUnlockClicked()
 {
 	if(this->GetOwningPlayerPawn())
 	{
-		USkillTreeComponent* Component = Cast<USkillTreeComponent>(
-            this->GetOwningPlayerPawn()->FindComponentByClass(USkillTreeComponent::StaticClass()));
-		if(Component)
+		AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(this->GetOwningPlayerPawn());
+		if(PlayerRef)
 		{
-			if(bCanEquip)
+			USkillTreeComponent* Component = Cast<USkillTreeComponent>(
+            PlayerRef->FindComponentByClass(USkillTreeComponent::StaticClass()));
+			if(Component)
 			{
-				// @TODO: something to equip the skill
+				if(bCanEquip)
+				{
+					// @TODO: something to equip the skill
+					Component->StartEquipSkill();
+				}
+				else if (bHasTheProperGold && bHasTheProperLvl && bHasUnlockedRequiredSkill)
+				{
+					AStudyPC* PCRef = GetCustomController();
+					Component->UnlockSkill(PCRef);
+				}
+				this->RemoveFromParent();
 			}
-			else if (bHasTheProperGold && bHasTheProperLvl && bHasUnlockedRequiredSkill)
-			{
-				AStudyPC* PCRef = GetCustomController();
-				Component->UnlockSkill(PCRef);
-			}
-			this->RemoveFromParent();
 		}
 	}
 }

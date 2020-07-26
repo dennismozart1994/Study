@@ -13,6 +13,9 @@ UCLASS()
 class STUDY_API UGameplayHUD : public UUserWidget
 {
 	GENERATED_BODY()
+	public:
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+    class UActionsHUD* Actions;
 	
 	protected:
 	UFUNCTION(BlueprintImplementableEvent)

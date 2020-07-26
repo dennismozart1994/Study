@@ -77,6 +77,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "UI")
     TSubclassOf<class UGameplayHUD> GameplayUI;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	class UGameplayHUD* HudRef;
+
 	// Bos UI Reference after creating the UI based on the last variable class selected on the Editor
 	UPROPERTY(BlueprintReadWrite, Category = "UI")
 	UUserWidget* BossUIRef;

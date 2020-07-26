@@ -52,10 +52,13 @@ class STUDY_API AStudyPC : public APlayerController
 	void Client_UnlockSkill(AStudyPC* Controller, FName Skill);
 
 	UFUNCTION(Client, Reliable, WithValidation, BlueprintCallable, Category = "Gameplay")
-    void Server_EquipSkill(AStudyPC* Controller, FName Skill);
+    void Server_EquipSkill(AStudyPC* Controller, FName Skill, int32 SlotIndex);
 
 	UFUNCTION(Client, Reliable)
-	void Client_EquipSkill(AStudyPC* Controller, FName Skill);
+	void Client_EquipSkill(AStudyPC* Controller, FName Skill, int32 SlotIndex);
+
+	UFUNCTION()
+	TArray<FName> GetSkillArray(ESkillClass Tree) const;
 	
 	AStudyPC();
 	

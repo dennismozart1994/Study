@@ -6,9 +6,11 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "Materials/MaterialInstanceDynamic.h"
+#include "SkillTreeComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "StudyCharacter.h"
+#include "StudyPC.h"
 #include "MasterSkill.h"
 
 bool USkillHotKey::Initialize()
@@ -49,10 +51,24 @@ void USkillHotKey::NativeConstruct()
 
 void USkillHotKey::OnSlotClicked()
 {
-    if(SkillRef)
+    // If user implements Skill Tree Component, than interact with the UI
+    if(this->GetOwningPlayerPawn() && SkillRef)
     {
-        SkillRef->CoolDown();
-        CoolDownTimeline();
+        USkillTreeComponent* Component = Cast<USkillTreeComponent>(
+            this->GetOwningPlayerPawn()->FindComponentByClass(USkillTreeComponent::StaticClass()));
+        if(Component)
+        {
+            if(Component->bIsEquippingSkill)
+            {
+                Component->EquipSkill(SlotIndex);
+                Component->StopSkillBarHighlight();
+            } else
+            {
+                // @TODO Spawn Skill and blocked until the cool down is done
+                SkillRef->CoolDown();
+                CoolDownTimeline();
+            }
+        }
     }
 }
 
@@ -75,6 +91,7 @@ void USkillHotKey::SetSkillIconColour(FLinearColor colour)
 {
     SkillIcon->SetColorAndOpacity(colour);
 }
+
 
 
 

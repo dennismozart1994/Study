@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "GameplayHUD.h"
+#include "ActionsHUD.h"
 #include "CustomVariables.h"
 #include "StudyCharacter.h"
 #include "InventoryComponent.h"

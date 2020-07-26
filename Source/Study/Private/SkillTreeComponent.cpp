@@ -7,8 +7,11 @@
 #include "MasterSkill.h"
 #include "Skill3DPreview.h"
 #include "Blueprint/UserWidget.h"
+#include "GameplayHUD.h"
+#include "ActionsHUD.h"
 #include "SkillDescription.h"
 #include "Skill_Slot_Defaults.h"
+#include "SkillHotKey.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/GameplayStatics.h"
@@ -18,6 +21,7 @@
 // Sets default values for this component's properties
 USkillTreeComponent::USkillTreeComponent()
 {
+	bIsEquippingSkill = false;
 }
 
 
@@ -159,10 +163,168 @@ void USkillTreeComponent::UnlockSkill(AStudyPC* Controller)
 	} else {UE_LOG(LogTemp, Error, TEXT("Failed to get the Player Controller Reference"));}
 }
 
-void USkillTreeComponent::EquipSkill(AStudyPC* Controller)
+void USkillTreeComponent::SkillBarHighlight()
 {
-	
+	AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
+	if(PlayerRef)
+	{
+		UGameplayHUD* gmpHUD = PlayerRef->HudRef;
+		if(gmpHUD)
+		{
+			UActionsHUD* Actions = gmpHUD->Actions;
+			if(Actions)
+			{
+				// Just in case deactivate all other tabs
+				Actions->SetTabAsDeactivated(ESkillClass::SC_Warrior);
+				Actions->SetTabAsDeactivated(ESkillClass::SC_Archier);
+				Actions->SetTabAsDeactivated(ESkillClass::SC_Magician);
+
+				// And only activates back the right one
+				Actions->SetTabAsActive(SkillToEquip.TreeClass);
+				Actions->StartAnimation();
+				bIsEquippingSkill = true;
+			}
+		}
+	}
 }
+
+void USkillTreeComponent::StopSkillBarHighlight()
+{
+	AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
+	if(PlayerRef)
+	{
+		UGameplayHUD* gmpHUD = PlayerRef->HudRef;
+		if(gmpHUD)
+		{
+			UActionsHUD* Actions = gmpHUD->Actions;
+			if(Actions)
+			{
+				Actions->StopHighlightAnimation();
+				bIsEquippingSkill = false;
+			}
+		}
+	}
+}
+
+void USkillTreeComponent::StartEquipSkill()
+{
+	if(SkillDetailsRef)
+	{
+		if(SkillDetailsRef->SkillSlotRef)
+		{
+			// Store the Skill into a local variable to use later once we click on the actual slot
+			CurrentSkillRow = SkillDetailsRef->SkillSlotRef->SkillRow;
+			SkillToEquip = GetSkillTreeItem(CurrentSkillRow);
+			// Highlight Effect on the Border around the Skill Slots
+			SkillBarHighlight();
+		}
+	}
+}
+
+void USkillTreeComponent::EquipSkill(int32 SlotIndex)
+{
+	AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
+	if(PlayerRef)
+	{
+		AStudyPC* ControllerRef = Cast<AStudyPC>(PlayerRef->GetController());
+		if(ControllerRef)
+		{
+			if(GetOwnerRole() == ROLE_Authority)
+			{
+				ControllerRef->Server_EquipSkill(ControllerRef, CurrentSkillRow, SlotIndex);
+			}
+			else
+			{
+				ControllerRef->Client_EquipSkill(ControllerRef, CurrentSkillRow, SlotIndex);
+			}
+			StopSkillBarHighlight();
+			UpdateSkillSlots(SkillToEquip.TreeClass);
+		}
+	}
+}
+
+void USkillTreeComponent::UpdateSkillSlots(ESkillClass Tree)
+{
+	AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
+	if(PlayerRef)
+	{
+		AStudyPC* PCRef = Cast<AStudyPC>(PlayerRef->GetController());
+		if(PCRef)
+		{
+			TArray<FName> Skills = PCRef->GetSkillArray(Tree);
+			TArray<USkillHotKey*> Slots;
+			UGameplayHUD* gmpHUD = PlayerRef->HudRef;
+			if(gmpHUD)
+			{
+				UActionsHUD* Actions = gmpHUD->Actions;
+				if(Actions)
+				{
+					// Save Skill Slots References
+					Slots.Add(Actions->SkillSlot0);
+					Slots.Add(Actions->SkillSlot1);
+					Slots.Add(Actions->SkillSlot2);
+					Slots.Add(Actions->SkillSlot3);
+					Slots.Add(Actions->SkillSlot4);
+					Slots.Add(Actions->SkillSlot5);
+					for(int32 i = 0; i < Skills.Num(); i++)
+					{
+						// If there's a Skill on the current index
+						if(Skills[i] != FName("None"))
+						{
+							// Grab the right Skill Type Array
+							FSkilDataTable SkillTreeDetail = GetSkillTreeItem(Skills[i]);
+							// If there's a valid Skill Class on that row, than grab its values
+							if(UKismetSystemLibrary::IsValidClass(SkillTreeDetail.SkillClass)) {
+								AMasterSkill* DefaultActor = Cast<AMasterSkill>(SkillTreeDetail.SkillClass->GetDefaultObject(true));
+								if(DefaultActor)
+								{
+									// If there's a thumbnail set that and make it visible
+									// in any other case, hide the thumbnail because either some value is null or None
+									if(DefaultActor->SkillDetails.SkillThumbnail && Slots[i])
+									{
+										Slots[i]->SkillIcon->SetBrushFromTexture(DefaultActor->SkillDetails.SkillThumbnail);
+										Slots[i]->SkillIcon->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+										UE_LOG(LogTemp, Log, TEXT("Update Slots"));
+									} else
+									{
+										Slots[i]->SkillIcon->SetVisibility(ESlateVisibility::Hidden);
+										UE_LOG(LogTemp, Error, TEXT("Thumbnail or Slots are null"));
+									}
+								}else
+								{
+									Slots[i]->SkillIcon->SetVisibility(ESlateVisibility::Hidden);
+									UE_LOG(LogTemp, Error, TEXT("Failed to cast to Master Skill Class"));
+								}
+							}else
+							{
+								Slots[i]->SkillIcon->SetVisibility(ESlateVisibility::Hidden);
+								UE_LOG(LogTemp, Error, TEXT("Skill Class is invalid"));
+							}
+						} else
+						{
+							Slots[i]->SkillIcon->SetVisibility(ESlateVisibility::Hidden);
+							UE_LOG(LogTemp, Log, TEXT("Skill is None"));
+						}
+					}
+				}else
+				{
+					UE_LOG(LogTemp, Error, TEXT("Actions HUD Reference is null"));
+				}
+			}else
+			{
+				UE_LOG(LogTemp, Error, TEXT("Gameplay HUD is null"));
+			}
+		}else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Controller reference is null"));
+		}
+	}else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Player Character Reference is null"));
+	}
+}
+
+
 
 
 

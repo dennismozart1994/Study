@@ -108,6 +108,7 @@ void USkill_Slot_Defaults::OnSlotClicked()
             this->GetOwningPlayerPawn()->FindComponentByClass(USkillTreeComponent::StaticClass()));
 		if(Component)
 		{
+			Component->StopSkillBarHighlight();
 			Component->RemoveAllPreviewWidgets();
 			Component->CreatePreviewWidget(this);
 		}

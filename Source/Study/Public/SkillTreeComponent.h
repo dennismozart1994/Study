@@ -22,24 +22,29 @@ public:
     TSubclassOf<class USkillDescription> SkillDetailsClass;
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
     class USkillDescription* SkillDetailsRef;
+	UPROPERTY(BlueprintReadOnly, Category = "Skill")
+	bool bIsEquippingSkill;
 
 	UFUNCTION()
 	void RemoveAllPreviewWidgets();
-
 	UFUNCTION()
 	void CreatePreviewWidget(class USkill_Slot_Defaults* SlotRef);
-
 	UFUNCTION(BlueprintPure, Category = "Skill")
 	FSkillDetails GetSkillInfo();
-
 	UFUNCTION(BlueprintPure, Category = "Skill")
 	FSkilDataTable GetSkillTreeItem(FName RowName);
-
 	UFUNCTION()
 	void UnlockSkill(class AStudyPC* Controller);
-
 	UFUNCTION()
-	void EquipSkill(class AStudyPC* Controller);
+	void SkillBarHighlight();
+	UFUNCTION()
+	void StopSkillBarHighlight();
+	UFUNCTION()
+	void StartEquipSkill();
+	UFUNCTION()
+	void EquipSkill(int32 SlotIndex);
+	UFUNCTION()
+	void UpdateSkillSlots(ESkillClass Tree);
 
 protected:
 	// Called when the game starts
@@ -47,4 +52,9 @@ protected:
 
 	UFUNCTION()
 	void PlayPreview();
+
+	UPROPERTY()
+	FSkilDataTable SkillToEquip;
+	UPROPERTY()
+	FName CurrentSkillRow;
 };

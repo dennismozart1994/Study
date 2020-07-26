@@ -169,7 +169,7 @@ void AStudyCharacter::BeginPlay()
 				{
 					if(PCRef->IsLocalPlayerController())
 					{
-						UGameplayHUD* HudRef = CreateWidget<UGameplayHUD>(PCRef, GameplayUI);
+						HudRef = CreateWidget<UGameplayHUD>(PCRef, GameplayUI);
 						UWidgetBlueprintLibrary::SetInputMode_GameAndUI(PCRef, HudRef, false, false);
 						HudRef->AddToViewport();
 						PCRef->bShowMouseCursor = true;
