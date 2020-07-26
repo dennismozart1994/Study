@@ -27,32 +27,12 @@ void USkillHotKey::NativeConstruct()
 {
     Super::NativeConstruct();
     CoolDownMaterial = CoolDownImage->GetDynamicMaterial();
-    UWorld* World = GetOwningPlayer()->GetWorld();
-    AStudyCharacter* StudyCharacterRef = Cast<AStudyCharacter>(GetOwningPlayer()->GetPawn());
-    if(!UKismetSystemLibrary::IsValid(SkillRef) && UKismetSystemLibrary::IsValidClass(SkillActor)
-        && World && StudyCharacterRef) {
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-        FVector Location = StudyCharacterRef->GetActorLocation() + StudyCharacterRef->GetActorForwardVector() * 100;
-        FRotator Rotation = StudyCharacterRef->GetActorRotation();
-        FTransform LocationToSpawn = UKismetMathLibrary::MakeTransform(Location, Rotation, FVector(1.f));
-        // @TODO Take care of replication later, the skill should be spawned and only allowed in the server
-        // @TODO Clients should not be allowed to spawn any skill, otherwise it won't do anything on a Multiplayer environment
-        // @TODO Put this spawn into somewhere else later (maybe into the character itself so it can be set as it's owner
-        SkillRef = World->SpawnActor<AMasterSkill>(SkillActor, LocationToSpawn, SpawnParams);
-        if(SkillRef)
-        {
-            SkillRef->SkillSlotRef = this;
-            UE_LOG(LogTemp, Log, TEXT("Successfully Spawned Skill and assign it to it's slot reference"))
-        }
-        
-    }
 }
 
 void USkillHotKey::OnSlotClicked()
 {
     // If user implements Skill Tree Component, than interact with the UI
-    if(this->GetOwningPlayerPawn() && SkillRef)
+    if(this->GetOwningPlayerPawn())
     {
         USkillTreeComponent* Component = Cast<USkillTreeComponent>(
             this->GetOwningPlayerPawn()->FindComponentByClass(USkillTreeComponent::StaticClass()));
@@ -62,11 +42,16 @@ void USkillHotKey::OnSlotClicked()
             {
                 Component->EquipSkill(SlotIndex);
                 Component->StopSkillBarHighlight();
-            } else
+                UE_LOG(LogTemp, Log, TEXT("Skill Has been equipped"))
+            } else if(SkillRef)
             {
                 // @TODO Spawn Skill and blocked until the cool down is done
                 SkillRef->CoolDown();
                 CoolDownTimeline();
+                UE_LOG(LogTemp, Log, TEXT("Casting Skill"))
+            } else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Invalid Skill Reference, maybe the slot is empty?"))
             }
         }
     }
@@ -92,6 +77,25 @@ void USkillHotKey::SetSkillIconColour(FLinearColor colour)
     SkillIcon->SetColorAndOpacity(colour);
 }
 
-
-
-
+void USkillHotKey::SpawnSkill()
+{
+    UWorld* World = GetOwningPlayer()->GetWorld();
+    AStudyCharacter* StudyCharacterRef = Cast<AStudyCharacter>(GetOwningPlayer()->GetPawn());
+    if(!UKismetSystemLibrary::IsValid(SkillRef) && UKismetSystemLibrary::IsValidClass(SkillActor)
+        && World && StudyCharacterRef) {
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+        FVector Location = StudyCharacterRef->GetActorLocation() + StudyCharacterRef->GetActorForwardVector() * 100;
+        FRotator Rotation = StudyCharacterRef->GetActorRotation();
+        FTransform LocationToSpawn = UKismetMathLibrary::MakeTransform(Location, Rotation, FVector(1.f));
+        // @TODO Take care of replication later, the skill should be spawned and only allowed in the server
+        // @TODO Clients should not be allowed to spawn any skill, otherwise it won't do anything on a Multiplayer environment
+        // @TODO Put this spawn into somewhere else later (maybe into the character itself so it can be set as it's owner
+        SkillRef = World->SpawnActor<AMasterSkill>(SkillActor, LocationToSpawn, SpawnParams);
+        if(SkillRef)
+        {
+            SkillRef->SkillSlotRef = this;
+            UE_LOG(LogTemp, Log, TEXT("Successfully Spawned Skill and assign it to it's slot reference"))
+        }
+    }
+}

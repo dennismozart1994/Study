@@ -24,17 +24,6 @@ void AMasterSkill::BeginPlay()
 	{
 		CoolDownTimeLine->SetTimelinePostUpdateFunc(UpdateTimelineDelegate);
         CoolDownTimeLine->SetTimelineFinishedFunc(FinishTimelineDelegate);
-    
-        if(SkillSlotRef)
-        {
-        	SkillInfo = SkillSlotRef->SkillInfo;
-        	// @TODO substitute this by the Skill Info CoolDown once the equip skill is implemented
-        	CoolDownTimeLine->SetTimelineLength(5.f);
-        } else	
-        {
-        	UE_LOG(LogTemp, Error, TEXT("Failed to set the CoolDown time properly, giving it a default value of 5 seconds"));
-        	CoolDownTimeLine->SetTimelineLength(5.f);
-        }
 	}
 	else
 	{

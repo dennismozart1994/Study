@@ -30,7 +30,7 @@ class STUDY_API USkillHotKey : public UUserWidget
     // Variables
     UPROPERTY(BlueprintReadOnly, Category="CoolDown")
     class UMaterialInstanceDynamic* CoolDownMaterial;
-    UPROPERTY(EditDefaultsOnly, Category="CoolDown")
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="CoolDown")
     TSubclassOf<class AMasterSkill> SkillActor;
     UPROPERTY(BlueprintReadWrite, Category="CoolDown")
     class AMasterSkill* SkillRef;
@@ -51,6 +51,8 @@ class STUDY_API USkillHotKey : public UUserWidget
     void SetCoolDownImageVisibility(ESlateVisibility desired);
     UFUNCTION()
     void SetSkillIconColour(FLinearColor colour);
+    UFUNCTION()
+    void SpawnSkill();
     UFUNCTION(BlueprintImplementableEvent)
     void CoolDownTimeline();
 

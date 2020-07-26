@@ -275,6 +275,8 @@ void USkillTreeComponent::UpdateSkillSlots(ESkillClass Tree)
 							FSkilDataTable SkillTreeDetail = GetSkillTreeItem(Skills[i]);
 							// If there's a valid Skill Class on that row, than grab its values
 							if(UKismetSystemLibrary::IsValidClass(SkillTreeDetail.SkillClass)) {
+								Slots[i]->SkillActor = SkillTreeDetail.SkillClass;
+								Slots[i]->SpawnSkill();
 								AMasterSkill* DefaultActor = Cast<AMasterSkill>(SkillTreeDetail.SkillClass->GetDefaultObject(true));
 								if(DefaultActor)
 								{
