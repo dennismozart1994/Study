@@ -23,6 +23,8 @@
 #include "Blueprint/UserWidget.h"
 #include "Runtime/Engine/Public/TimerManager.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Animation/AnimMontage.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AStudyCharacter Constructor
@@ -135,6 +137,7 @@ void AStudyCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & O
 	 DOREPLIFETIME(AStudyCharacter, MontagesToSort);
 	 DOREPLIFETIME(AStudyCharacter, WeaponBeingUsed);
 	 DOREPLIFETIME(AStudyCharacter, CurrentSkillCast);
+	 DOREPLIFETIME(AStudyCharacter, SkillMontage);
  }
  
 //////////////////////////////////// Native events ////////////////////////////////////////////

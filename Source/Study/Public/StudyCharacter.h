@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "CustomVariables.h"
-#include "Components/SkeletalMeshComponent.h"
 #include "StudyCharacter.generated.h"
 
 class AWeaponToSpawn;
@@ -86,32 +85,34 @@ public:
 
 	// Attacks replication variable
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Montages)
-	TArray<UAnimMontage*> MontagesToSort;
-
+	TArray<class UAnimMontage*> MontagesToSort;
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Montages)
+	class UAnimMontage* SkillMontage;
+	
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
 	TArray<class AMasterSkill*> CurrentSkillCast;
 
 	// Clothing System
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USkeletalMeshComponent* HeadMesh;
+	class USkeletalMeshComponent* HeadMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USkeletalMeshComponent* ChestMesh;
+	class USkeletalMeshComponent* ChestMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USkeletalMeshComponent* OffWeapon;
+	class USkeletalMeshComponent* OffWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USkeletalMeshComponent* DeffWeapon;
+	class USkeletalMeshComponent* DeffWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USkeletalMeshComponent* HandsMesh;
+	class USkeletalMeshComponent* HandsMesh;
 
 	UPROPERTY( EditAnywhere, BlueprintReadWrite)
-	USkeletalMeshComponent* LegsMesh;
+	class USkeletalMeshComponent* LegsMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USkeletalMeshComponent* FootsMesh;
+	class USkeletalMeshComponent* FootsMesh;
 
 	/* Gameplay Functions*/
 	UFUNCTION(Category = "Basics")
@@ -129,33 +130,33 @@ public:
 	void SpawnSkill(TSubclassOf<class AMasterSkill> SkillActor, int32 SlotIndex);
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation, Category = "Attacks")
-	void Multicast_PlayMontage(UAnimMontage* MontageToPlay);
+	void Multicast_PlayMontage(class UAnimMontage* MontageToPlay);
 
 protected:
 
 	// Basic Attacks with no Weapon
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
-	TArray<UAnimMontage*> NoWeaponBasicAttacks;
+	TArray<class UAnimMontage*> NoWeaponBasicAttacks;
 
 	// Basic Attacks with a Sword
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
-	TArray<UAnimMontage*> SwordBasicAttacks;
+	TArray<class UAnimMontage*> SwordBasicAttacks;
 
 	// Basic Attacks with a Dual Blade
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
-	TArray<UAnimMontage*> DualBladeBasicAttacks;
+	TArray<class UAnimMontage*> DualBladeBasicAttacks;
 
 	// Basic Attacks with an Axe Or a Blunt
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
-	TArray<UAnimMontage*> AxeOrBluntBasicAttacks;
+	TArray<class UAnimMontage*> AxeOrBluntBasicAttacks;
 
 	// Basic Attacks with a Bow
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
-	TArray<UAnimMontage*> BowBasicAttacks;
+	TArray<class UAnimMontage*> BowBasicAttacks;
 
 	// Basic Attacks with a Bow
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
-	TArray<UAnimMontage*> StaffAttacks;
+	TArray<class UAnimMontage*> StaffAttacks;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Recovery")
 	FTimerHandle _delayhandler;

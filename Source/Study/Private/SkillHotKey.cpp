@@ -53,7 +53,8 @@ void USkillHotKey::OnSlotClicked()
                     {
                         if(PlayerRef->CurrentSkillCast[SlotIndex]->SkillDetails.MontageToPlay)
                         {
-                            PlayerRef->Multicast_PlayMontage(PlayerRef->CurrentSkillCast[SlotIndex]->SkillDetails.MontageToPlay);
+                            PlayerRef->SkillMontage = PlayerRef->CurrentSkillCast[SlotIndex]->SkillDetails.MontageToPlay;
+                            PlayerRef->Multicast_PlayMontage(PlayerRef->SkillMontage);
                             PlayerRef->CurrentSkillCast[SlotIndex]->CoolDown();
                             UE_LOG(LogTemp, Log, TEXT("Casting Skill"))
                             bCanCastSkill = false;
