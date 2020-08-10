@@ -38,8 +38,12 @@ class STUDY_API USkillHotKey : public UUserWidget
     FSkilDataTable SkillInfo;
     UPROPERTY(BlueprintReadWrite, Category="CoolDown")
     FText CoolDownValueInSeconds;
+    UPROPERTY(BlueprintReadOnly, Category="CoolDown")
+    bool bCanCastSkill;
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Skill Info")
     int32 SlotIndex;
+    UPROPERTY(BlueprintReadOnly, Category = "Skill Info")
+    FKey HotKey;
     
     UFUNCTION()
     void OnSlotClicked();
@@ -53,8 +57,6 @@ class STUDY_API USkillHotKey : public UUserWidget
     void SetSkillIconColour(FLinearColor colour);
     UFUNCTION()
     void SpawnSkill();
-    UFUNCTION(BlueprintImplementableEvent)
-    void CoolDownTimeline();
 
     protected:
     virtual bool Initialize() override;

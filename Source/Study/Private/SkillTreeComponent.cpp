@@ -22,6 +22,13 @@
 USkillTreeComponent::USkillTreeComponent()
 {
 	bIsEquippingSkill = false;
+	MaxSlots = 6;
+	SkillHotKeys.Add(EKeys::One);
+	SkillHotKeys.Add(EKeys::Two);
+	SkillHotKeys.Add(EKeys::Three);
+	SkillHotKeys.Add(EKeys::Four);
+	SkillHotKeys.Add(EKeys::Five);
+	SkillHotKeys.Add(EKeys::Six);
 }
 
 
@@ -277,6 +284,7 @@ void USkillTreeComponent::UpdateSkillSlots(ESkillClass Tree)
 							if(UKismetSystemLibrary::IsValidClass(SkillTreeDetail.SkillClass)) {
 								Slots[i]->SkillActor = SkillTreeDetail.SkillClass;
 								Slots[i]->SpawnSkill();
+								Slots[i]->HotKey = SkillHotKeys[i];
 								AMasterSkill* DefaultActor = Cast<AMasterSkill>(SkillTreeDetail.SkillClass->GetDefaultObject(true));
 								if(DefaultActor)
 								{
@@ -325,6 +333,36 @@ void USkillTreeComponent::UpdateSkillSlots(ESkillClass Tree)
 		UE_LOG(LogTemp, Error, TEXT("Player Character Reference is null"));
 	}
 }
+
+void USkillTreeComponent::CastSkill(FKey KeyPressed)
+{
+	if(SkillHotKeys.Contains(KeyPressed) && SkillHotKeys.Num() <= MaxSlots)
+	{
+		AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
+		if(PlayerRef)
+		{
+			AStudyPC* PCRef = Cast<AStudyPC>(PlayerRef->GetController());
+			if(PCRef)
+			{
+				UGameplayHUD* gmpHUD = PlayerRef->HudRef;
+				if(gmpHUD)
+				{
+					UActionsHUD* Actions = gmpHUD->Actions;
+					if(Actions)
+					{
+						if(SkillHotKeys[0] == KeyPressed) Actions->SkillSlot0->OnSlotClicked();
+						if(SkillHotKeys[1] == KeyPressed) Actions->SkillSlot1->OnSlotClicked();
+						if(SkillHotKeys[2] == KeyPressed) Actions->SkillSlot2->OnSlotClicked();
+						if(SkillHotKeys[3] == KeyPressed) Actions->SkillSlot3->OnSlotClicked();
+						if(SkillHotKeys[4] == KeyPressed) Actions->SkillSlot4->OnSlotClicked();
+						if(SkillHotKeys[5] == KeyPressed) Actions->SkillSlot5->OnSlotClicked();
+					}
+				}
+			}
+		}
+	}
+}
+
 
 
 

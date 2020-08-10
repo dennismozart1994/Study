@@ -5,15 +5,24 @@
 #include "SkillHotKey.h"
 #include "Components/TimelineComponent.h"
 #include "Kismet/KismetTextLibrary.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 AMasterSkill::AMasterSkill()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	// replication setup
+	SetReplicates(true);
+	SetReplicateMovement(true);
+	bAlwaysRelevant = true;
 	CoolDownTimeLine = CreateDefaultSubobject<UTimelineComponent>(TEXT("CoolDownTimeLine"));
 	UpdateTimelineDelegate.BindUFunction(this, FName("OnTimelineUpdate"));
 	FinishTimelineDelegate.BindUFunction(this, FName("OnTimelineFinished"));
+}
+
+void AMasterSkill::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AMasterSkill, SkillDetails);
 }
 
 // Called when the game starts or when spawned
@@ -31,12 +40,6 @@ void AMasterSkill::BeginPlay()
 	}
 	
 	
-}
-
-// Called every frame
-void AMasterSkill::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void AMasterSkill::OnTimelineUpdate()
@@ -60,7 +63,6 @@ void AMasterSkill::OnTimelineUpdate()
 			// Set the material instance parameter and the text with it's current cool down value in seconds
 			SkillSlotRef->CoolDownMaterial->SetScalarParameterValue("Percent", coolDownPercentage);
 			SkillSlotRef->SetCoolDownText(coolDownInSeconds);
-			UE_LOG(LogTemp, Log, TEXT("Running Cool Down Timeline %s"), *coolDownInSeconds.ToString());
 		}
 	}
 }
@@ -72,6 +74,7 @@ void AMasterSkill::OnTimelineFinished()
 		SkillSlotRef->SetSkillIconColour(FLinearColor(1.f, 1.f, 1.f, 1.f));
 		SkillSlotRef->SetCoolDownImageVisibility(ESlateVisibility::Hidden);
 		SkillSlotRef->SetCoolDownTextVisibility(ESlateVisibility::Hidden);
+		SkillSlotRef->bCanCastSkill = true;
 		UE_LOG(LogTemp, Log, TEXT("Finish Cool Down Timeline"));
 	}
 }

@@ -22,7 +22,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Skill Info")
     FSkilDataTable SkillInfo;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill Info")
+	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = "Skill Info")
 	FSkillDetails SkillDetails;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Skill Info")
@@ -35,11 +35,9 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-	
+public:
 	UFUNCTION()
 	void OnTimelineUpdate();
 

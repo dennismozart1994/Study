@@ -7,7 +7,7 @@
 // Sets default values for this component's properties
 USHealthComponent::USHealthComponent()
 {
-	SetIsReplicated(true);
+	SetIsReplicatedByDefault(true);
 	DefaultLife = 100.f;
 	CurrentLife = 100.f;
 }

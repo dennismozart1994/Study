@@ -26,6 +26,7 @@ bool USkillHotKey::Initialize()
 void USkillHotKey::NativeConstruct()
 {
     Super::NativeConstruct();
+    bCanCastSkill = true;
     CoolDownMaterial = CoolDownImage->GetDynamicMaterial();
 }
 
@@ -38,20 +39,39 @@ void USkillHotKey::OnSlotClicked()
             this->GetOwningPlayerPawn()->FindComponentByClass(USkillTreeComponent::StaticClass()));
         if(Component)
         {
-            if(Component->bIsEquippingSkill)
+            AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwningPlayerPawn());
+            if(PlayerRef)
             {
-                Component->EquipSkill(SlotIndex);
-                Component->StopSkillBarHighlight();
-                UE_LOG(LogTemp, Log, TEXT("Skill Has been equipped"))
-            } else if(SkillRef)
-            {
-                // @TODO Spawn Skill and blocked until the cool down is done
-                SkillRef->CoolDown();
-                CoolDownTimeline();
-                UE_LOG(LogTemp, Log, TEXT("Casting Skill"))
+                if(Component->bIsEquippingSkill)
+                {
+                    Component->EquipSkill(SlotIndex);
+                    Component->StopSkillBarHighlight();
+                    UE_LOG(LogTemp, Log, TEXT("Skill Has been equipped"))
+                } else if(PlayerRef->CurrentSkillCast[SlotIndex])
+                {
+                    if(bCanCastSkill)
+                    {
+                        if(PlayerRef->CurrentSkillCast[SlotIndex]->SkillDetails.MontageToPlay)
+                        {
+                            PlayerRef->Multicast_PlayMontage(PlayerRef->CurrentSkillCast[SlotIndex]->SkillDetails.MontageToPlay);
+                            PlayerRef->CurrentSkillCast[SlotIndex]->CoolDown();
+                            UE_LOG(LogTemp, Log, TEXT("Casting Skill"))
+                            bCanCastSkill = false;
+                        } else
+                        {
+                            UE_LOG(LogTemp, Error, TEXT("Invalid Montage to Skill Ref"))
+                        }
+                    } else
+                    {
+                        UE_LOG(LogTemp, Warning, TEXT("Skill is Cooling Down"))
+                    }
+                } else
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("Invalid Skill Reference, maybe the slot is empty?"))
+                }
             } else
             {
-                UE_LOG(LogTemp, Warning, TEXT("Invalid Skill Reference, maybe the slot is empty?"))
+                UE_LOG(LogTemp, Error, TEXT("Failed to Cast to Player Character"))
             }
         }
     }
@@ -79,22 +99,13 @@ void USkillHotKey::SetSkillIconColour(FLinearColor colour)
 
 void USkillHotKey::SpawnSkill()
 {
-    UWorld* World = GetOwningPlayer()->GetWorld();
     AStudyCharacter* StudyCharacterRef = Cast<AStudyCharacter>(GetOwningPlayer()->GetPawn());
-    if(!UKismetSystemLibrary::IsValid(SkillRef) && UKismetSystemLibrary::IsValidClass(SkillActor)
-        && World && StudyCharacterRef) {
-        FActorSpawnParameters SpawnParams;
-        SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-        FVector Location = StudyCharacterRef->GetActorLocation() + StudyCharacterRef->GetActorForwardVector() * 100;
-        FRotator Rotation = StudyCharacterRef->GetActorRotation();
-        FTransform LocationToSpawn = UKismetMathLibrary::MakeTransform(Location, Rotation, FVector(1.f));
-        // @TODO Take care of replication later, the skill should be spawned and only allowed in the server
-        // @TODO Clients should not be allowed to spawn any skill, otherwise it won't do anything on a Multiplayer environment
-        // @TODO Put this spawn into somewhere else later (maybe into the character itself so it can be set as it's owner
-        SkillRef = World->SpawnActor<AMasterSkill>(SkillActor, LocationToSpawn, SpawnParams);
-        if(SkillRef)
+    if(UKismetSystemLibrary::IsValidClass(SkillActor) && StudyCharacterRef)
+    {
+        StudyCharacterRef->SpawnSkill(SkillActor, SlotIndex);
+        if(StudyCharacterRef->CurrentSkillCast[SlotIndex])
         {
-            SkillRef->SkillSlotRef = this;
+            StudyCharacterRef->CurrentSkillCast[SlotIndex]->SkillSlotRef = this;
             UE_LOG(LogTemp, Log, TEXT("Successfully Spawned Skill and assign it to it's slot reference"))
         }
     }

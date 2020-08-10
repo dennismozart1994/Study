@@ -88,6 +88,9 @@ public:
 	UPROPERTY(Replicated, EditAnywhere, BlueprintReadWrite, Category = Montages)
 	TArray<UAnimMontage*> MontagesToSort;
 
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadOnly, Category = "Skill")
+	TArray<class AMasterSkill*> CurrentSkillCast;
+
 	// Clothing System
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMeshComponent* HeadMesh;
@@ -121,6 +124,9 @@ public:
 	// Simple attack by clicking the mouse button
 	UFUNCTION(Server, Reliable, WithValidation, Category = "Attacks")
 	void Server_SimpleAttack();
+
+	UFUNCTION(Server, Reliable, WithValidation, Category = "Attacks")
+	void SpawnSkill(TSubclassOf<class AMasterSkill> SkillActor, int32 SlotIndex);
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation, Category = "Attacks")
 	void Multicast_PlayMontage(UAnimMontage* MontageToPlay);

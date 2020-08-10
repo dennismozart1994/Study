@@ -16,6 +16,10 @@ class STUDY_API USkillTreeComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	USkillTreeComponent();
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "HotKeys")
+	TArray<FKey> SkillHotKeys;
+	UPROPERTY()
+	int32 MaxSlots;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data Table")
     class UDataTable* DetailsTable;
 	UPROPERTY(EditDefaultsOnly, Category = "Widgets")
@@ -33,6 +37,8 @@ public:
 	FSkillDetails GetSkillInfo();
 	UFUNCTION(BlueprintPure, Category = "Skill")
 	FSkilDataTable GetSkillTreeItem(FName RowName);
+	UFUNCTION(BlueprintCallable, Category = "Skill")
+	void CastSkill(FKey KeyPressed);
 	UFUNCTION()
 	void UnlockSkill(class AStudyPC* Controller);
 	UFUNCTION()
