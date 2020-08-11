@@ -12,6 +12,8 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "InventoryDragDropOperation.h"
+#include "WidgetBlueprintLibrary.h"
+#include "Blueprint/UserWidget.h"
 
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
@@ -139,11 +141,15 @@ void UInventoryComponent::PresentItem3D()
 			AStudyPC* ControllerRef = Cast<AStudyPC>(CharacterRef->GetController());
 			if(ControllerRef)
 			{
-				UItem3DDescription* WidgetRef = Cast<UItem3DDescription>(CreateWidget<UItem3DDescription>(ControllerRef, Item3DWidgetClass));
-				if(PickupInfoWidgetRef->PickupReference)
+				if(!PreviewWidgetRef)
 				{
-					WidgetRef->ItemDetails = PickupInfoWidgetRef->PickupReference->getItemInfo();
-					WidgetRef->AddToViewport();
+					PreviewWidgetRef = Cast<UItem3DDescription>(CreateWidget<UItem3DDescription>(ControllerRef, Item3DWidgetClass));
+				}
+				
+				if(PickupInfoWidgetRef->PickupReference && PreviewWidgetRef)
+				{
+					PreviewWidgetRef->ItemDetails = PickupInfoWidgetRef->PickupReference->getItemInfo();
+					if(!PreviewWidgetRef->IsInViewport()) PreviewWidgetRef->AddToViewport();
 					PickupInfoWidgetRef->RemoveFromParent();
 				}
 			}

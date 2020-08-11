@@ -31,6 +31,8 @@ protected:
 	bool bFoundSomething;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widgets")
 	TSubclassOf<class UItem3DDescription> Item3DWidgetClass;
+	UPROPERTY(BlueprintReadOnly, Category = "Widgets")
+	class UItem3DDescription* PreviewWidgetRef;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Widgets")
 	TSubclassOf<class UPickupInfo> PickupInfoWidgetClass;
 	UPROPERTY(BlueprintReadOnly, Category = "Widgets")

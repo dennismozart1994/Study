@@ -9,6 +9,7 @@
 #include "Pickup.h"
 #include "InventoryDragDropOperation.h"
 #include "Item3DDescription.h"
+#include "InventoryComponent.h"
 
 // UserWidget includes like components, helpers, etc
 #include "UMG/Public/Blueprint/WidgetBlueprintLibrary.h"
@@ -205,13 +206,13 @@ void USlot_Defaults::OnSlotClicked()
 	UE_LOG(LogTemp, Log, TEXT("On Clicked Called"));
 	if (SlotType == ESlotType::ST_ArmorSet || SlotType == ESlotType::ST_Inventory)
 	{
-		// Show 3D Item preview
-		ItemDescriptionWG = CreateWidget<UItem3DDescription>(GetOwningPlayer(), wItemDescription);
-		// Update Mesh info
-		ItemDescriptionWG->ItemDetails = ItemInfo;
-		ItemDescriptionWG->CurrentSlotRef = this;
-		ItemDescriptionWG->AddToViewport(1);
-		Call3DPreview();
+		if(this->GetOwningPlayerPawn())
+		{
+			UInventoryComponent* Component = Cast<UInventoryComponent>(
+                this->GetOwningPlayerPawn()->FindComponentByClass(UInventoryComponent::StaticClass()));
+			if(Component) Component->PresentItem3D();
+			Call3DPreview();
+		}
 	}
 }
 
@@ -237,7 +238,7 @@ void USlot_Defaults::OnSlotHovered()
 			FVector2D ViewportPosition = WidgetLayoutLibrary->GetMousePositionOnViewport(GetWorld());
 			if (UIComparisionRef)
 			{
-				UIComparisionRef->AddToViewport(0);
+				if(!UIComparisionRef->IsInViewport()) UIComparisionRef->AddToViewport(0);
 				float Y;
 				float X;
 				UKismetMathLibrary::BreakVector2D(ViewportPosition, X, Y);
