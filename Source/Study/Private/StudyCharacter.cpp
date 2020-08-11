@@ -166,29 +166,7 @@ void AStudyCharacter::BeginPlay()
 		}
 	}
 
-	TArray<AActor*> ActorsFound;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AStudyPlayerState::StaticClass(), ActorsFound);
-	for (AActor* Actor: ActorsFound)
-	{
-		AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(Actor);
-		if(PSRef)
-		{
-			if(PSRef->GetPawn())
-			{
-				AStudyPC* PCRef = Cast<AStudyPC>(PSRef->GetPawn()->GetController());
-				if(PCRef)
-				{
-					if(PCRef->IsLocalPlayerController())
-					{
-						HudRef = CreateWidget<UGameplayHUD>(PCRef, GameplayUI);
-						UWidgetBlueprintLibrary::SetInputMode_GameAndUI(PCRef, HudRef, false, false);
-						HudRef->AddToViewport();
-						PCRef->bShowMouseCursor = true;
-					}
-				}
-			}
-		}
-	}
+	createGameplayHUD();
 	
 }
 
@@ -269,6 +247,45 @@ void AStudyCharacter::setCharacterSpeed()
 		GetWorld()->GetTimerManager().SetTimer(_delayhandler, this, &AStudyCharacter::setCharacterSpeed, 1.f, false);
 	}
 }
+
+void AStudyCharacter::createGameplayHUD()
+{
+		AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
+		if(PSRef)
+		{
+			if(PSRef->GetPawn())
+			{
+				AStudyPC* PCRef = Cast<AStudyPC>(PSRef->GetPawn()->GetController());
+				if(PCRef)
+				{
+					if(PCRef->IsLocalPlayerController())
+					{
+						HudRef = CreateWidget<UGameplayHUD>(PCRef, GameplayUI);
+						UWidgetBlueprintLibrary::SetInputMode_GameAndUI(PCRef, HudRef, false, false);
+						HudRef->AddToViewport();
+						PCRef->bShowMouseCursor = true;
+						UE_LOG(LogTemp, Log, TEXT("Gameplay Widget has been created"))
+						GetWorld()->GetTimerManager().ClearTimer(_delayhandler);
+						GetWorld()->GetTimerManager().ClearAllTimersForObject(this);
+					} else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Player Controller is not being locally controlled"))
+					}
+				} else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Fail to Cast to Player Controller"))
+				}
+			} else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Player State is valid, but a problem was found when getting the Pawn"))
+			}
+		} else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Fail to Cast to Player State"))
+			GetWorld()->GetTimerManager().SetTimer(_delayhandler, this, &AStudyCharacter::createGameplayHUD, 1.f, false);
+		}
+}
+
 
 void AStudyCharacter::Server_SimpleAttack_Implementation()
 {
@@ -376,12 +393,13 @@ void AStudyCharacter::SpawnSkill_Implementation(TSubclassOf<AMasterSkill> SkillA
 	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
 
 	// otherwise execute a simple attack
-	if (GetLocalRole() == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority && PSRef)
 	{
-		if(UKismetSystemLibrary::IsValidClass(SkillActor) && World)
+		if(UKismetSystemLibrary::IsValidClass(SkillActor) && World && PSRef->GetPawn())
 		{
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+			SpawnParams.Owner = PSRef->GetPawn();
 			FVector Location = GetActorLocation() + GetActorForwardVector() * 100;
 			FRotator Rotation = GetActorRotation();
 			FTransform LocationToSpawn = UKismetMathLibrary::MakeTransform(Location, Rotation, FVector(1.f));

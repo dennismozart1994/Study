@@ -3,6 +3,7 @@
 #include "AnimInstanceDefault.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "SkillTreeComponent.h"
 #include "Runtime/Engine/Classes/Components/CapsuleComponent.h"
 
 UAnimInstanceDefault::UAnimInstanceDefault()
@@ -20,6 +21,7 @@ void UAnimInstanceDefault::UpdateAnimProperties()
 		CharacterSpeed = Pawn->GetVelocity().Size();
 		PlayerStateRef = Cast<AStudyPlayerState>(Pawn->GetPlayerState());
 		WeaponBeingUsed = Pawn->WeaponBeingUsed;
+		bIsCastingSkill = !Pawn->GetSkillTreeComponent()->bCanCastSkill;
 		if(PlayerStateRef)
 		{
 			bIsAlive = PlayerStateRef->bIsAlive;
@@ -43,6 +45,21 @@ void UAnimInstanceDefault::ResetCanAttack()
 		UE_LOG(LogTemp, Warning, TEXT("Error trying to get player reference during cast on function ResetCanAttack() at the Anim Instance"));
 	}
 }
+
+void UAnimInstanceDefault::ResetCanWalk()
+{
+	AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(TryGetPawnOwner());
+	if (PlayerRef)
+	{
+		PlayerRef->GetSkillTreeComponent()->bCanCastSkill = true;
+		PlayerRef->bCanWalk = true;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Error trying to get player reference during cast on function ResetCanAttack() at the Anim Instance"));
+	}
+}
+
 
 void UAnimInstanceDefault::DoOnce()
 {

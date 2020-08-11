@@ -122,6 +122,8 @@ public:
 
 	void setCharacterSpeed();
 
+	void createGameplayHUD();
+
 	// Simple attack by clicking the mouse button
 	UFUNCTION(Server, Reliable, WithValidation, Category = "Attacks")
 	void Server_SimpleAttack();
@@ -207,5 +209,7 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	FORCEINLINE class UUserWidget*  GetItemWidgetRef() const { return ItemInfoRef; }
+
+	FORCEINLINE class USkillTreeComponent*  GetSkillTreeComponent() const { return SkillTreeComp; }
 };
 

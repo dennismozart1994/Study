@@ -28,6 +28,8 @@ public:
     class USkillDescription* SkillDetailsRef;
 	UPROPERTY(BlueprintReadOnly, Category = "Skill")
 	bool bIsEquippingSkill;
+	UPROPERTY(BlueprintReadOnly, Category = "Skill")
+	bool bCanCastSkill;
 
 	UFUNCTION()
 	void RemoveAllPreviewWidgets();

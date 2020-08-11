@@ -57,7 +57,9 @@ void USkillHotKey::OnSlotClicked()
                             PlayerRef->Multicast_PlayMontage(PlayerRef->SkillMontage);
                             PlayerRef->CurrentSkillCast[SlotIndex]->CoolDown();
                             UE_LOG(LogTemp, Log, TEXT("Casting Skill"))
+                            PlayerRef->GetSkillTreeComponent()->bCanCastSkill = false;
                             bCanCastSkill = false;
+                            PlayerRef->bCanWalk = false;
                         } else
                         {
                             UE_LOG(LogTemp, Error, TEXT("Invalid Montage to Skill Ref"))

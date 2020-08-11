@@ -27,6 +27,9 @@ class STUDY_API UAnimInstanceDefault : public UAnimInstance
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animations Properties")
 	bool bIsAlive;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation Properties")
+	bool bIsCastingSkill;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Functions")
 	bool bDoOnce;
 
@@ -47,6 +50,9 @@ class STUDY_API UAnimInstanceDefault : public UAnimInstance
 
 	UFUNCTION(BlueprintCallable, Category = "Animations")
 	virtual void ResetCanAttack();
+
+	UFUNCTION(BlueprintCallable, Category = "Animations")
+	virtual void ResetCanWalk();
 
 	UFUNCTION()
 	void DoOnce();

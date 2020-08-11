@@ -3,6 +3,8 @@
 
 #include "MasterSkill.h"
 #include "SkillHotKey.h"
+#include "StudyCharacter.h"
+#include "SkillTreeComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Kismet/KismetTextLibrary.h"
 #include "Net/UnrealNetwork.h"
@@ -69,13 +71,21 @@ void AMasterSkill::OnTimelineUpdate()
 
 void AMasterSkill::OnTimelineFinished()
 {
+	AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
 	if(SkillSlotRef)
 	{
-		SkillSlotRef->SetSkillIconColour(FLinearColor(1.f, 1.f, 1.f, 1.f));
-		SkillSlotRef->SetCoolDownImageVisibility(ESlateVisibility::Hidden);
-		SkillSlotRef->SetCoolDownTextVisibility(ESlateVisibility::Hidden);
-		SkillSlotRef->bCanCastSkill = true;
-		UE_LOG(LogTemp, Log, TEXT("Finish Cool Down Timeline"));
+		if(PlayerRef)
+		{
+			SkillSlotRef->SetSkillIconColour(FLinearColor(1.f, 1.f, 1.f, 1.f));
+			SkillSlotRef->SetCoolDownImageVisibility(ESlateVisibility::Hidden);
+			SkillSlotRef->SetCoolDownTextVisibility(ESlateVisibility::Hidden);
+			SkillSlotRef->bCanCastSkill = true;
+			PlayerRef->GetSkillTreeComponent()->bCanCastSkill = true;
+			UE_LOG(LogTemp, Log, TEXT("Finish Cool Down Timeline"));
+		} else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Invalid Player Owner"))
+		}
 	}
 }
 

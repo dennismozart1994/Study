@@ -22,6 +22,7 @@
 USkillTreeComponent::USkillTreeComponent()
 {
 	bIsEquippingSkill = false;
+	bCanCastSkill = true;
 	MaxSlots = 6;
 	SkillHotKeys.Add(EKeys::One);
 	SkillHotKeys.Add(EKeys::Two);
