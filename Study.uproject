@@ -24,10 +24,6 @@
 		{
 			"Name": "RawInput",
 			"Enabled": true
-		},
-		{
-			"Name": "RiderLink",
-			"Enabled": true
 		}
 	]
 }
