@@ -27,6 +27,9 @@ class STUDY_API UAnimInstanceDefault : public UAnimInstance
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animations Properties")
 	bool bIsAlive;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animations Properties")
+	bool bIsInAir;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Animation Properties")
 	bool bIsCastingSkill;
 

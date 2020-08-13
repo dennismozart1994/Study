@@ -94,11 +94,23 @@ public:
 
 	// Clothing System
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USkeletalMeshComponent* FaceMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USkeletalMeshComponent* HairMesh;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class USkeletalMeshComponent* HeadMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USkeletalMeshComponent* ShoulderMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class USkeletalMeshComponent* ChestMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UStaticMeshComponent* BackPackMesh;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class USkeletalMeshComponent* OffWeapon;
 
@@ -108,8 +120,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class USkeletalMeshComponent* HandsMesh;
 
-	UPROPERTY( EditAnywhere, BlueprintReadWrite)
-	class USkeletalMeshComponent* LegsMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USkeletalMeshComponent* BeltMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class USkeletalMeshComponent* FootsMesh;

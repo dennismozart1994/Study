@@ -24,6 +24,7 @@
 #include "Runtime/Engine/Public/TimerManager.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "Animation/AnimMontage.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -84,19 +85,35 @@ AStudyCharacter::AStudyCharacter()
 	SkillTreeComp = CreateDefaultSubobject<USkillTreeComponent>(TEXT("SkillTreeComponent"));
 	
 	// Clothing System
-	HeadMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Head"));
+	FaceMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Face"));
+	FaceMesh->SetIsReplicated(true);
+	FaceMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+
+	HairMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Hair"));
+	HairMesh->SetIsReplicated(true);
+	HairMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+	
+	HeadMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HeadGears"));
 	HeadMesh->SetIsReplicated(true);
 	HeadMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
+	ShoulderMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ShoulderPad"));
+	ShoulderMesh->SetIsReplicated(true);
+	ShoulderMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+	
 	ChestMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Chest"));
 	ChestMesh->SetIsReplicated(true);
 	ChestMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
-
-	OffWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon1"));
+	
+	BackPackMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Backpack"));
+	BackPackMesh->SetIsReplicated(true);
+	BackPackMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, FName("Backpack"));
+	
+	OffWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RightWeapon"));
 	OffWeapon->SetIsReplicated(true);
 	// OffWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
-	DeffWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon2"));
+	DeffWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LeftWeapon"));
 	DeffWeapon->SetIsReplicated(true);
 	// DeffWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
@@ -104,9 +121,9 @@ AStudyCharacter::AStudyCharacter()
 	HandsMesh->SetIsReplicated(true);
 	HandsMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
-	LegsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Trousers"));
-	LegsMesh->SetIsReplicated(true);
-	LegsMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+	BeltMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Belt"));
+	BeltMesh->SetIsReplicated(true);
+	BeltMesh->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	FootsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Boots"));
 	FootsMesh->SetIsReplicated(true);
@@ -148,12 +165,14 @@ void AStudyCharacter::BeginPlay()
 	HealthComp->OnHealthChanged.AddDynamic(this, &AStudyCharacter::OnHealthChanged);
 
 	// Force the other skeletal meshes follows the root Skeletal movement
+	FaceMesh->SetMasterPoseComponent(GetMesh());
+	HairMesh->SetMasterPoseComponent(GetMesh());
 	HeadMesh->SetMasterPoseComponent(GetMesh());
+	ShoulderMesh->SetMasterPoseComponent(GetMesh());
 	ChestMesh->SetMasterPoseComponent(GetMesh());
 	HandsMesh->SetMasterPoseComponent(GetMesh());
-	LegsMesh->SetMasterPoseComponent(GetMesh());
+	BeltMesh->SetMasterPoseComponent(GetMesh());
 	FootsMesh->SetMasterPoseComponent(GetMesh());
-
 	setCharacterSpeed();
 
 	// Create Life Boss Reference Widget but don´t add into the viewport
@@ -258,7 +277,7 @@ void AStudyCharacter::createGameplayHUD()
 				AStudyPC* PCRef = Cast<AStudyPC>(PSRef->GetPawn()->GetController());
 				if(PCRef)
 				{
-					if(PCRef->IsLocalPlayerController())
+					if(PCRef->IsLocalPlayerController() && PCRef->GetPawn())
 					{
 						HudRef = CreateWidget<UGameplayHUD>(PCRef, GameplayUI);
 						UWidgetBlueprintLibrary::SetInputMode_GameAndUI(PCRef, HudRef, false, false);

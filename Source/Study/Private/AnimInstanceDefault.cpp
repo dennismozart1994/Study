@@ -5,11 +5,13 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "SkillTreeComponent.h"
 #include "Runtime/Engine/Classes/Components/CapsuleComponent.h"
+#include "GameFramework/PawnMovementComponent.h"
 
 UAnimInstanceDefault::UAnimInstanceDefault()
 {
 	bDoOnce = true;
 	bIsAlive = true;
+	bIsInAir = false;
 	WeaponBeingUsed = EWeaponType::WT_None;
 }
 
@@ -21,6 +23,7 @@ void UAnimInstanceDefault::UpdateAnimProperties()
 		CharacterSpeed = Pawn->GetVelocity().Size();
 		PlayerStateRef = Cast<AStudyPlayerState>(Pawn->GetPlayerState());
 		WeaponBeingUsed = Pawn->WeaponBeingUsed;
+		bIsInAir = Pawn->GetMovementComponent()->IsFalling();
 		bIsCastingSkill = !Pawn->GetSkillTreeComponent()->bCanCastSkill;
 		if(PlayerStateRef)
 		{
