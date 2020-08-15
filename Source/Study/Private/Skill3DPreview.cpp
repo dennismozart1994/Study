@@ -27,24 +27,40 @@ ASkill3DPreview::ASkill3DPreview()
 	MainBody = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("MainBody"));
 	MainBody->SetupAttachment(SceneRoot);
 	
-	HeadMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Head"));
+	// Clothing System
+	FaceMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Face"));
+	FaceMesh->AttachToComponent(MainBody, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+
+	HairMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Hair"));
+	HairMesh->AttachToComponent(MainBody, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+	
+	HeadMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("HeadGears"));
 	HeadMesh->AttachToComponent(MainBody, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
+	ShoulderMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ShoulderPad"));
+	ShoulderMesh->AttachToComponent(MainBody, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+	
 	ChestMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Chest"));
 	ChestMesh->AttachToComponent(MainBody, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+	
+	BackPackMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Backpack"));
+	BackPackMesh->AttachToComponent(MainBody, FAttachmentTransformRules::KeepRelativeTransform, FName("Backpack"));
+	
+	OffWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("RightWeapon"));
+	// OffWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
-	OffWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon1"));
-
-	DeffWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Weapon2"));
+	DeffWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("LeftWeapon"));
+	// DeffWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	HandsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Gloves"));
 	HandsMesh->AttachToComponent(MainBody, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
-	LegsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Trousers"));
-	LegsMesh->AttachToComponent(MainBody, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+	BeltMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Belt"));
+	BeltMesh->AttachToComponent(MainBody, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
 
 	FootsMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Boots"));
 	FootsMesh->AttachToComponent(MainBody, FAttachmentTransformRules::KeepRelativeTransform, NAME_None);
+
 	
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
 	SpringArm->SetupAttachment(MainBody);
@@ -64,10 +80,13 @@ void ASkill3DPreview::BeginPlay()
 	Super::BeginPlay();
 	
 	// Force the other skeletal meshes follows the root Skeletal movement
+	FaceMesh->SetMasterPoseComponent(MainBody);
+	HairMesh->SetMasterPoseComponent(MainBody);
 	HeadMesh->SetMasterPoseComponent(MainBody);
+	ShoulderMesh->SetMasterPoseComponent(MainBody);
 	ChestMesh->SetMasterPoseComponent(MainBody);
 	HandsMesh->SetMasterPoseComponent(MainBody);
-	LegsMesh->SetMasterPoseComponent(MainBody);
+	BeltMesh->SetMasterPoseComponent(MainBody);
 	FootsMesh->SetMasterPoseComponent(MainBody);
 }
 
@@ -80,31 +99,64 @@ void ASkill3DPreview::UpdateArmorSet()
 		{
 			MainBody->SetSkeletalMesh(playerRef->GetMesh()->SkeletalMesh);
 		}
+
+		if(playerRef->FaceMesh->SkeletalMesh)
+		{
+			FaceMesh->SetSkeletalMesh(playerRef->FaceMesh->SkeletalMesh);
+		}
+
+		if(playerRef->HairMesh->SkeletalMesh)
+		{
+			HairMesh->SetSkeletalMesh(playerRef->HairMesh->SkeletalMesh);
+		}
 		
 		// Update meshes if available
 		if(playerRef->ArmorSetProperties[1].Mesh)
 		{
 			HeadMesh->SetSkeletalMesh(playerRef->ArmorSetProperties[1].Mesh);
+		} else if(playerRef->HeadMesh->SkeletalMesh)
+		{
+			HeadMesh->SetSkeletalMesh(playerRef->HeadMesh->SkeletalMesh);
+		}
+
+		if(playerRef->ArmorSetProperties[2].Mesh)
+		{
+			ShoulderMesh->SetSkeletalMesh(playerRef->ArmorSetProperties[2].Mesh);
+		} else if(playerRef->ShoulderMesh->SkeletalMesh)
+		{
+			ShoulderMesh->SetSkeletalMesh(playerRef->ShoulderMesh->SkeletalMesh);
 		}
 
 		if(playerRef->ArmorSetProperties[4].Mesh)
 		{
 			ChestMesh->SetSkeletalMesh(playerRef->ArmorSetProperties[4].Mesh);
+		}else if(playerRef->ChestMesh->SkeletalMesh)
+		{
+			ChestMesh->SetSkeletalMesh(playerRef->ChestMesh->SkeletalMesh);
 		}
 
 		if(playerRef->ArmorSetProperties[6].Mesh)
 		{
 			HandsMesh->SetSkeletalMesh(playerRef->ArmorSetProperties[6].Mesh);
+		}else if(playerRef->HandsMesh->SkeletalMesh)
+		{
+			HandsMesh->SetSkeletalMesh(playerRef->HandsMesh->SkeletalMesh);
 		}
 
 		if(playerRef->ArmorSetProperties[7].Mesh)
 		{
-			LegsMesh->SetSkeletalMesh(playerRef->ArmorSetProperties[7].Mesh);
+			BeltMesh->SetSkeletalMesh(playerRef->ArmorSetProperties[7].Mesh);
+		}else if(playerRef->BeltMesh->SkeletalMesh)
+		{
+			BeltMesh->SetSkeletalMesh(playerRef->BeltMesh->SkeletalMesh);
 		}
 
 		if(playerRef->ArmorSetProperties[8].Mesh)
 		{
 			FootsMesh->SetSkeletalMesh(playerRef->ArmorSetProperties[8].Mesh);
+		}else if(playerRef->FootsMesh->SkeletalMesh)
+		{
+			FootsMesh->SetSkeletalMesh(playerRef->FootsMesh->SkeletalMesh);
 		}
 
 		// update offensive weapon meshes if available

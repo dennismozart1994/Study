@@ -30,26 +30,39 @@ public:
 	// Sets default values for this actor's properties
 	ASkill3DPreview();
 	
+	// Clothing System
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    class USkeletalMeshComponent* HeadMesh;
+	class USkeletalMeshComponent* FaceMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    class USkeletalMeshComponent* ChestMesh;
+	class USkeletalMeshComponent* HairMesh;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USkeletalMeshComponent* HeadMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    class USkeletalMeshComponent* OffWeapon;
+	class USkeletalMeshComponent* ShoulderMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    class USkeletalMeshComponent* DeffWeapon;
+	class USkeletalMeshComponent* ChestMesh;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    class USkeletalMeshComponent* HandsMesh;
-
-	UPROPERTY( EditAnywhere, BlueprintReadWrite)
-    class USkeletalMeshComponent* LegsMesh;
+	class UStaticMeshComponent* BackPackMesh;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USkeletalMeshComponent* OffWeapon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    class USkeletalMeshComponent* FootsMesh;
+	class USkeletalMeshComponent* DeffWeapon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USkeletalMeshComponent* HandsMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USkeletalMeshComponent* BeltMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USkeletalMeshComponent* FootsMesh;
 
 	void UpdateArmorSet();
 
