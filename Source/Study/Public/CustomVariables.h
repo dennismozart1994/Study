@@ -29,14 +29,14 @@ UENUM(BlueprintType)
 enum class EArmorType : uint8
 {
 	AT_None			UMETA(DisplayName="None"),
-	AT_Ring			UMETA(DisplayName="Ring"),
+	AT_ShoulderPad	UMETA(DisplayName="ShoulderPad"),
 	AT_Helmet		UMETA(DisplayName="Helmet"),
 	AT_Grimoire		UMETA(DisplayName="Grimoire"),
 	AT_Weapon1		UMETA(DisplayName="Weapon1"),
 	AT_Chest		UMETA(DisplayName="Chest"),
 	AT_Weapon2		UMETA(DisplayName="Weapon2"),
 	AT_Gloves		UMETA(DisplayName="Gloves"),
-	AT_Trowsers		UMETA(DisplayName="Trowsers"),
+	AT_Belt			UMETA(DisplayName="Belt"),
 	AT_Shoes		UMETA(DisplayName="Shoes")
 };
 

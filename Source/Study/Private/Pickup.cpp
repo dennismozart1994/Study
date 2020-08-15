@@ -12,6 +12,7 @@
 #include "Components/BoxComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SceneComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Runtime/CoreUObject/Public/UObject/ConstructorHelpers.h"
 #include "Runtime/Engine/Public/TimerManager.h"
@@ -29,12 +30,12 @@ APickup::APickup()
 	NetUpdateFrequency = 100.f;
 
 	// create root component
-	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
-	RootComponent = SkeletalMesh;
+	PickupRoot = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	RootComponent = PickupRoot;
 
 	// bind events
-	SkeletalMesh->OnBeginCursorOver.AddDynamic(this, &APickup::OnMouseOver);
-	SkeletalMesh->OnEndCursorOver.AddDynamic(this, &APickup::OnMouseLeave);
+	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh"));
+	SkeletalMesh->SetupAttachment(RootComponent);
 
 	// create mesh and static mesh component
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
@@ -52,8 +53,8 @@ APickup::APickup()
 	TriggerBox->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Block);
 	TriggerBox->BodyInstance.SetResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Overlap);
 	TriggerBox->SetRelativeScale3D(FVector(2.f));
-	TriggerBox->OnEndCursorOver.AddDynamic(this, &APickup::OnMouseLeave);
 	TriggerBox->OnBeginCursorOver.AddDynamic(this, &APickup::OnMouseOver);
+	TriggerBox->OnEndCursorOver.AddDynamic(this, &APickup::OnMouseLeave);
 	TriggerBox->OnComponentBeginOverlap.AddDynamic(this, &APickup::BeginOverlap);
 	TriggerBox->OnComponentEndOverlap.AddDynamic(this, &APickup::EndOverlap);
 
