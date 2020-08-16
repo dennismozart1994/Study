@@ -299,17 +299,17 @@ void USkillTreeComponent::UpdateSkillSlots(ESkillClass Tree)
 									} else
 									{
 										Slots[i]->SkillIcon->SetVisibility(ESlateVisibility::Hidden);
-										UE_LOG(LogTemp, Error, TEXT("Thumbnail or Slots are null"));
+										UE_LOG(LogTemp, Warning, TEXT("Thumbnail or Slots are null"));
 									}
 								}else
 								{
 									Slots[i]->SkillIcon->SetVisibility(ESlateVisibility::Hidden);
-									UE_LOG(LogTemp, Error, TEXT("Failed to cast to Master Skill Class"));
+									UE_LOG(LogTemp, Warning, TEXT("Failed to cast to Master Skill Class"));
 								}
 							}else
 							{
 								Slots[i]->SkillIcon->SetVisibility(ESlateVisibility::Hidden);
-								UE_LOG(LogTemp, Error, TEXT("Skill Class is invalid"));
+								UE_LOG(LogTemp, Warning, TEXT("Skill Class is invalid"));
 							}
 						} else
 						{

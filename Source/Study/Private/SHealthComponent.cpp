@@ -10,6 +10,7 @@ USHealthComponent::USHealthComponent()
 	SetIsReplicatedByDefault(true);
 	DefaultLife = 100.f;
 	CurrentLife = 100.f;
+	DamageFactor = 1.f;
 }
 
 
@@ -43,8 +44,8 @@ void USHealthComponent::DealDamage(AActor* DamagedActor, float Damage, const cla
 		AStudyPlayerState* PlayerStateRef = Cast<AStudyPlayerState>(PlayerRef->GetPlayerState());
 		if (PlayerStateRef)
 		{
-			PlayerStateRef->CharacterStats.ActualLife = FMath::Clamp(PlayerStateRef->CharacterStats.ActualLife - int32(Damage), 0, PlayerStateRef->CharacterStats.ActualLife);
-			OnHealthChanged.Broadcast(this, PlayerStateRef->CharacterStats.ActualLife, int32(Damage), DamageType, InstigatedBy, DamageCauser);
+			PlayerStateRef->CharacterStats.ActualLife = FMath::Clamp(PlayerStateRef->CharacterStats.ActualLife - int32(Damage * DamageFactor), 0, PlayerStateRef->CharacterStats.ActualLife);
+			OnHealthChanged.Broadcast(this, PlayerStateRef->CharacterStats.ActualLife, int32(Damage * DamageFactor), DamageType, InstigatedBy, DamageCauser);
 		}
 		else
 		{

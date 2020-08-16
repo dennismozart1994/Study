@@ -39,6 +39,8 @@ public:
 
 	virtual void BeginPlay() override;
 
+	virtual void Jump() override;
+
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
 	float BaseTurnRate;
@@ -145,6 +147,9 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation, Category = "Attacks")
 	void Multicast_PlayMontage(class UAnimMontage* MontageToPlay);
+	
+	UFUNCTION(Server, Reliable, WithValidation, Category = "Recovery")
+    void BoostPlayerStats(EBuffType Type, int32 value);
 
 protected:
 
@@ -221,6 +226,8 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	FORCEINLINE class UUserWidget*  GetItemWidgetRef() const { return ItemInfoRef; }
+
+	FORCEINLINE class USHealthComponent*  GetHealthComponent() const { return HealthComp; }
 
 	FORCEINLINE class USkillTreeComponent*  GetSkillTreeComponent() const { return SkillTreeComp; }
 };

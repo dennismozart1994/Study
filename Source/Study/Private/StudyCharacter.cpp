@@ -158,6 +158,11 @@ void AStudyCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & O
  }
  
 //////////////////////////////////// Native events ////////////////////////////////////////////
+void AStudyCharacter::Jump()
+{
+	if(bCanWalk) Super::Jump();
+}
+
 void AStudyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -419,8 +424,8 @@ void AStudyCharacter::SpawnSkill_Implementation(TSubclassOf<AMasterSkill> SkillA
 			FActorSpawnParameters SpawnParams;
 			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 			SpawnParams.Owner = PSRef->GetPawn();
-			FVector Location = GetActorLocation() + GetActorForwardVector() * 100;
-			FRotator Rotation = GetActorRotation();
+			FVector Location = PSRef->GetPawn()->GetActorLocation() + PSRef->GetPawn()->GetActorForwardVector() * 100;
+			FRotator Rotation = PSRef->GetPawn()->GetActorRotation();
 			FTransform LocationToSpawn = UKismetMathLibrary::MakeTransform(Location, Rotation, FVector(1.f));
 			if(CurrentSkillCast[SlotIndex]) CurrentSkillCast[SlotIndex]->SetLifeSpan(5.f);
 			CurrentSkillCast[SlotIndex] = World->SpawnActor<AMasterSkill>(SkillActor, LocationToSpawn, SpawnParams);
@@ -494,6 +499,88 @@ bool AStudyCharacter::RecoverStamina_Validate()
 	return true;
 }
 
+void AStudyCharacter::BoostPlayerStats_Implementation(EBuffType Type, int32 value)
+{
+	UWorld* World = GetWorld();
+	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
+
+	if (GetLocalRole() == ROLE_Authority && PSRef && World)
+	{
+
+		// Speed Buff
+		if(Type == EBuffType::BT_Speed)
+		{
+			PSRef->CharacterStats.Speed = FMath::Clamp(PSRef->CharacterStats.Speed + value, 0,
+                PSRef->CharacterStats.Speed + value);
+			setCharacterSpeed();
+		}
+
+		// Strength Buff
+		if(Type == EBuffType::BT_Strength)
+		{
+			PSRef->CharacterStats.Strenght = FMath::Clamp(PSRef->CharacterStats.Strenght + value, 0,
+                PSRef->CharacterStats.Strenght + value);
+		}
+
+		// Life Buff
+		if(Type == EBuffType::BT_Life)
+		{
+			PSRef->CharacterStats.ActualLife = FMath::Clamp(PSRef->CharacterStats.ActualLife + value, 0,
+                PSRef->CharacterStats.FullLife + value);
+			PSRef->CharacterStats.FullLife = FMath::Clamp(PSRef->CharacterStats.FullLife + value, 0,
+                PSRef->CharacterStats.FullLife + value);
+		}
+		
+		// Mana Buff
+		if(Type == EBuffType::BT_Magic)
+		{
+			PSRef->CharacterStats.ActualMana = FMath::Clamp(PSRef->CharacterStats.ActualMana + value, 0,
+                PSRef->CharacterStats.FullMana + value);
+			PSRef->CharacterStats.FullMana = FMath::Clamp(PSRef->CharacterStats.FullMana + value, 0,
+                PSRef->CharacterStats.FullMana + value);
+		}
+		
+		// Stamina Buff
+		if(Type == EBuffType::BT_Stamina)
+		{
+			PSRef->CharacterStats.ActualStamina = FMath::Clamp(PSRef->CharacterStats.ActualStamina + value, 0,
+                PSRef->CharacterStats.FullStamina + value);
+			PSRef->CharacterStats.FullStamina = FMath::Clamp(PSRef->CharacterStats.FullStamina + value, 0,
+                PSRef->CharacterStats.FullStamina + value);
+		}
+
+		// Defense Buff
+		if(Type == EBuffType::BT_Defense)
+		{
+			AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(PSRef->GetPawn());
+			if(PlayerRef)
+			{
+				PlayerRef->GetHealthComponent()->DamageFactor = FMath::Clamp(float(value)/100, 0.f, 5.f);
+			}
+		}
+		
+		if(value > 0)
+		{
+			UE_LOG(LogTemp, Log, TEXT("Buff of %s points activated for a few seconds"), *FString::FromInt(value))
+		} else
+		{
+			UE_LOG(LogTemp, Log, TEXT("Buff of points is over, Removing buff from character"))
+		}
+	}
+	else
+	{
+		BoostPlayerStats(Type, value);
+		UE_LOG(LogTemp, Error, TEXT("Not the Server or Player State is Invalid or World is not valid"));
+	}
+}
+
+bool AStudyCharacter::BoostPlayerStats_Validate(EBuffType Type, int32 value)
+{
+	return true;
+}
+
+
+
 void AStudyCharacter::OnResetVR()
 {
 	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
@@ -501,7 +588,7 @@ void AStudyCharacter::OnResetVR()
 
 void AStudyCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
 {
-		Jump();
+	if(bCanWalk) Jump();
 }
 
 void AStudyCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)

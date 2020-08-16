@@ -5,6 +5,7 @@
 #include "SkillHotKey.h"
 #include "StudyCharacter.h"
 #include "SkillTreeComponent.h"
+#include "Components/SceneComponent.h"
 #include "Components/TimelineComponent.h"
 #include "Kismet/KismetTextLibrary.h"
 #include "Net/UnrealNetwork.h"
@@ -16,6 +17,8 @@ AMasterSkill::AMasterSkill()
 	SetReplicates(true);
 	SetReplicateMovement(true);
 	bAlwaysRelevant = true;
+	RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultSkillRoot"));
+	RootSceneComponent->SetupAttachment(RootComponent);
 	CoolDownTimeLine = CreateDefaultSubobject<UTimelineComponent>(TEXT("CoolDownTimeLine"));
 	UpdateTimelineDelegate.BindUFunction(this, FName("OnTimelineUpdate"));
 	FinishTimelineDelegate.BindUFunction(this, FName("OnTimelineFinished"));

@@ -95,9 +95,9 @@ enum class EBuffType : uint8
 {
 	BT_Speed			UMETA(DisplayName = "Increase Speed for a period of time"),
 	BT_Strength			UMETA(DisplayName = "Increase Stenght for a period of time"),
-	BT_Life				UMETA(DisplayName = "Recover Life each 5 seconds"),
-	BT_Magic			UMETA(DisplayName = "Recover Mana each 5 seconds"),
-	BT_Stamina			UMETA(DisplayName = "Recover Stamina each 5 seconds"),
+	BT_Life				UMETA(DisplayName = "Increase Life for a period of time"),
+	BT_Magic			UMETA(DisplayName = "Increase Mana for a period of time"),
+	BT_Stamina			UMETA(DisplayName = "Increase Stamina for a period of time"),
 	BT_Defense			UMETA(DisplayName = "Decrease enemy damage by a percentage during an specific amount of time"),
 };
 

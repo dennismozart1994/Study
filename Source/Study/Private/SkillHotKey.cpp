@@ -49,7 +49,7 @@ void USkillHotKey::OnSlotClicked()
                     UE_LOG(LogTemp, Log, TEXT("Skill Has been equipped"))
                 } else if(PlayerRef->CurrentSkillCast[SlotIndex])
                 {
-                    if(bCanCastSkill)
+                    if(bCanCastSkill && PlayerRef->isMovingOnGroundCheck())
                     {
                         if(PlayerRef->CurrentSkillCast[SlotIndex]->SkillDetails.MontageToPlay)
                         {
@@ -66,7 +66,7 @@ void USkillHotKey::OnSlotClicked()
                         }
                     } else
                     {
-                        UE_LOG(LogTemp, Warning, TEXT("Skill is Cooling Down"))
+                        UE_LOG(LogTemp, Warning, TEXT("Skill is Cooling Down or Player is in the Air"))
                     }
                 } else
                 {

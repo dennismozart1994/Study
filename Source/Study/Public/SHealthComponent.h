@@ -25,12 +25,17 @@ protected:
 	AActor* MyOwner;
 
 public:	
-	// Life Variables for any ohter element on game to deal damage
+	/** Initial Life of the character when Spawn */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Life")
 	float DefaultLife;
 
+	/** Updated Life value during gameplay */
 	UPROPERTY(BlueprintReadWrite, Category = "Life")
 	float CurrentLife;
+
+	/** Damage factor implies on how much in percentage an enemy damage will be taken by the player*/
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Life")
+	float DamageFactor;
 
 	UFUNCTION()
 	void DealDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);

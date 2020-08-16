@@ -16,6 +16,9 @@ class STUDY_API AMasterSkill : public AActor
 public:	
 	// Sets default values for this actor's properties
 	AMasterSkill();
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components", meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* RootSceneComponent;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="TimeLine", meta = (AllowPrivateAccess = "true"))
 	class UTimelineComponent* CoolDownTimeLine;
 	
@@ -39,12 +42,12 @@ protected:
 
 public:
 	UFUNCTION()
-	void OnTimelineUpdate();
+	virtual void OnTimelineUpdate();
 
 	UFUNCTION()
-	void OnTimelineFinished();
+	virtual void OnTimelineFinished();
 
 	UFUNCTION(BlueprintCallable, Category="CoolDown")
-	void CoolDown();
+	virtual void CoolDown();
 
 };
