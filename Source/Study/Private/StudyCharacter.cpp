@@ -285,7 +285,7 @@ void AStudyCharacter::createGameplayHUD()
 					if(PCRef->IsLocalPlayerController() && PCRef->GetPawn())
 					{
 						HudRef = CreateWidget<UGameplayHUD>(PCRef, GameplayUI);
-						UWidgetBlueprintLibrary::SetInputMode_GameAndUI(PCRef, HudRef, false, false);
+						UWidgetBlueprintLibrary::SetInputMode_GameAndUIEx(PCRef, HudRef, EMouseLockMode::DoNotLock, false);
 						HudRef->AddToViewport();
 						PCRef->bShowMouseCursor = true;
 						UE_LOG(LogTemp, Log, TEXT("Gameplay Widget has been created"))
