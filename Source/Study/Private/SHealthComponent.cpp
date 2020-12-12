@@ -20,7 +20,7 @@ void USHealthComponent::BeginPlay()
 	Super::BeginPlay();
 	CurrentLife = DefaultLife;
 
-	if (GetOwnerRole() == ROLE_Authority)
+	if (GetOwnerRole() == ROLE_Authority || (GetOwnerRole() == ROLE_Authority && GetOwner()->GetRemoteRole() < ROLE_AutonomousProxy))
 	{
 		MyOwner = GetOwner();
 		if (MyOwner)

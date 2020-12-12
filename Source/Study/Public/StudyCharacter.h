@@ -147,12 +147,11 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable, WithValidation, Category = "Attacks")
 	void Multicast_PlayMontage(class UAnimMontage* MontageToPlay);
-	
+
 	UFUNCTION(Server, Reliable, WithValidation, Category = "Recovery")
     void BoostPlayerStats(EBuffType Type, int32 value);
 
 protected:
-
 	// Basic Attacks with no Weapon
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Montages)
 	TArray<class UAnimMontage*> NoWeaponBasicAttacks;

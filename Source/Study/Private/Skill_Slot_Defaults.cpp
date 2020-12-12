@@ -55,9 +55,6 @@ void USkill_Slot_Defaults::NativeConstruct()
 	if(SkillInfo.SkillThumbnail != nullptr && SkillThumbnail != nullptr) {
 		SkillThumbnail->SetBrushFromTexture(SkillInfo.SkillThumbnail);
 		UE_LOG(LogTemp, Log, TEXT("Set Skill Thumbnail"));
-	} else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Invalid thumbnail"));
 	}
 	
 	// Set button as Enabled if skill is already unlocked
@@ -76,7 +73,7 @@ void USkill_Slot_Defaults::NativeConstruct()
 			DefaultStyle.Pressed = Hovered;
 			SkillSlot->SetStyle(DefaultStyle);
 			SkillLocker->SetVisibility(ESlateVisibility::Visible);
-			UE_LOG(LogTemp, Warning, TEXT("Skill is still unlocked, locker image will be presented"));
+			UE_LOG(LogTemp, Log, TEXT("Skill is still unlocked, locker image will be presented"));
 		}
 	}
 }

@@ -3,7 +3,6 @@
 #include "StudyPC.h"
 #include "Net/UnrealNetwork.h"
 #include "StudyPlayerState.h"
-#include "Engine/Engine.h"
 #include "Engine/DataTable.h"
 
 AStudyPC::AStudyPC()
@@ -32,7 +31,7 @@ void AStudyPC::Server_UnlockSkill_Implementation(AStudyPC* Controller, FName Ski
 		AStudyPlayerState* State = Cast<AStudyPlayerState>(Controller->PlayerState);
 		if(State) {
 			// If is the server who's calling the unlock and the user hasn't already unlocked the Skill
-			if(State->GetLocalRole() == ROLE_Authority && !Controller->CharacterSkills.Contains(Skill)
+			if((State->GetLocalRole() == ROLE_Authority || (State->GetLocalRole() == ROLE_Authority && State->GetRemoteRole() < ROLE_AutonomousProxy)) && !Controller->CharacterSkills.Contains(Skill)
 					&& !Skill.ToString().IsEmpty()) {
 				State->CharacterStats.GoldAmount-=getSkillDetails(Skill).PriceToUnlock;
 				Controller->CharacterSkills.Add(Skill);

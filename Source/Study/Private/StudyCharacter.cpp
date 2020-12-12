@@ -318,7 +318,7 @@ void AStudyCharacter::Server_SimpleAttack_Implementation()
 	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
 
 	// otherwise execute a simple attack
-	if (GetLocalRole() == ROLE_Authority)
+	if (GetLocalRole() == ROLE_Authority || (GetLocalRole() == ROLE_Authority && GetController()->GetRemoteRole() < ROLE_AutonomousProxy))
 	{
 		int32 Range = 0;
 		
@@ -417,7 +417,7 @@ void AStudyCharacter::SpawnSkill_Implementation(TSubclassOf<AMasterSkill> SkillA
 	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
 
 	// otherwise execute a simple attack
-	if (GetLocalRole() == ROLE_Authority && PSRef)
+	if ((GetLocalRole() == ROLE_Authority  || (GetLocalRole() == ROLE_Authority && GetController()->GetRemoteRole() < ROLE_AutonomousProxy)) && PSRef)
 	{
 		if(UKismetSystemLibrary::IsValidClass(SkillActor) && World && PSRef->GetPawn())
 		{
@@ -467,7 +467,7 @@ void AStudyCharacter::RecoverStamina_Implementation()
 	UWorld* World = GetWorld();
 	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
 
-	if (GetLocalRole() == ROLE_Authority && PSRef && World)
+	if ((GetLocalRole() == ROLE_Authority  || (GetLocalRole() == ROLE_Authority && GetController()->GetRemoteRole() < ROLE_AutonomousProxy)) && PSRef && World)
 	{
 		if (!bIsReceivingDamage && bCanAttack && PSRef->CharacterStats.ActualStamina < PSRef->CharacterStats.FullStamina)
 		{
@@ -504,7 +504,7 @@ void AStudyCharacter::BoostPlayerStats_Implementation(EBuffType Type, int32 valu
 	UWorld* World = GetWorld();
 	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
 
-	if (GetLocalRole() == ROLE_Authority && PSRef && World)
+	if ((GetLocalRole() == ROLE_Authority  || (GetLocalRole() == ROLE_Authority && GetController()->GetRemoteRole() < ROLE_AutonomousProxy)) && PSRef && World)
 	{
 
 		// Speed Buff

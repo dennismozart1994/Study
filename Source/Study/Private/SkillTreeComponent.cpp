@@ -237,7 +237,7 @@ void USkillTreeComponent::EquipSkill(int32 SlotIndex)
 		AStudyPC* ControllerRef = Cast<AStudyPC>(PlayerRef->GetController());
 		if(ControllerRef)
 		{
-			if(GetOwnerRole() == ROLE_Authority)
+			if(GetOwnerRole() == ROLE_Authority || (GetOwnerRole() == ROLE_Authority && GetOwner()->GetRemoteRole() < ROLE_AutonomousProxy))
 			{
 				ControllerRef->Server_EquipSkill(ControllerRef, CurrentSkillRow, SlotIndex);
 			}

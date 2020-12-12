@@ -29,7 +29,7 @@ void UInventoryComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// Only store the owner in the server side
-	if (GetOwnerRole() == ROLE_Authority)
+	if (GetOwnerRole() == ROLE_Authority || (GetOwnerRole() == ROLE_Authority && GetOwner()->GetRemoteRole() < ROLE_AutonomousProxy))
 	{
 		MyOwner = GetOwner();
 	}
@@ -93,7 +93,7 @@ void UInventoryComponent::PickupClosestItem()
 						
 						if(!bFoundSomething)
 						{
-							UE_LOG(LogTemp, Warning, TEXT("No Pickups near by were found"))
+							UE_LOG(LogTemp, Log, TEXT("No Pickups near by were found"))
 							UUserWidget* ItemWidgetRef = CharacterRef->GetItemWidgetRef();
 							if (ItemWidgetRef) ItemWidgetRef->RemoveFromParent();
 						}
@@ -183,7 +183,7 @@ void UInventoryComponent::PickupItem(APickup * Item)
 
 void UInventoryComponent::Server_PickupItem_Implementation(APickup* Item, AStudyPlayerState* PSRef)
 {
-	if (GetOwnerRole() == ROLE_Authority)
+	if (GetOwnerRole() == ROLE_Authority || (GetOwnerRole() == ROLE_Authority && GetOwner()->GetRemoteRole() < ROLE_AutonomousProxy))
 	{
 		APawn* PPawn = PSRef->GetPawn();
 		if (PPawn)
@@ -234,7 +234,7 @@ void UInventoryComponent::DropItemOnWorld_Implementation(TSubclassOf<AActor> Pic
 {
 	UWorld* World = GetWorld();
 	AStudyCharacter* CharacterRef = Cast<AStudyCharacter>(GetOwner());
-	if (GetOwnerRole() == ROLE_Authority && PickupClass != NULL && World && CharacterRef)
+	if ((GetOwnerRole() == ROLE_Authority  || (GetOwnerRole() == ROLE_Authority && GetOwner()->GetRemoteRole() < ROLE_AutonomousProxy)) && PickupClass != NULL && World && CharacterRef)
 	{
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
