@@ -14,11 +14,11 @@
 AMasterSkill::AMasterSkill()
 {
 	// replication setup
-	SetReplicates(true);
+	bReplicates = true;
 	SetReplicateMovement(true);
 	bAlwaysRelevant = true;
 	RootSceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("DefaultSkillRoot"));
-	RootSceneComponent->SetupAttachment(RootComponent);
+	RootComponent = RootSceneComponent;
 	CoolDownTimeLine = CreateDefaultSubobject<UTimelineComponent>(TEXT("CoolDownTimeLine"));
 	UpdateTimelineDelegate.BindUFunction(this, FName("OnTimelineUpdate"));
 	FinishTimelineDelegate.BindUFunction(this, FName("OnTimelineFinished"));

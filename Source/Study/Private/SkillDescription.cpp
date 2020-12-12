@@ -62,37 +62,82 @@ void USkillDescription::NativeConstruct()
 	// if already unlocked, just show an equip button
 	if(bCanEquip)
 	{
-		SkillRequirements->SetText(FText::FromString("Consumes " + FString::FromInt(SkillInfo.MPCost)
-			+ " of MP for each usage"));
-		UnlockButtonText->SetText(FText::FromStringTable(ACustomVariables::TABLE_REFERENCE, ACustomVariables::EQUIP_KEY));
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("ConsumesString"), FText::FromStringTable(COMMON_STRING_TABLE, "Consumes"));
+		Args.Add(TEXT("MPCost"), FText::AsNumber(SkillInfo.MPCost));
+		Args.Add(TEXT("OfString"), FText::FromStringTable(COMMON_STRING_TABLE, "Of"));
+		Args.Add(TEXT("MPString"), FText::FromStringTable(COMMON_STRING_TABLE, "MP"));
+		Args.Add(TEXT("ForEachUsageString"), FText::FromStringTable(COMMON_STRING_TABLE, "ForEachUsage"));
+
+		const FText ButtonDescription = FText::Format(NSLOCTEXT("SkillDescriptionUI", "MagicPointsConsumeString",
+			"{ConsumesString} {MPCost} {OfString} {MPString} {ForEachUsageString}"), Args);
+		
+		SkillRequirements->SetText(ButtonDescription);
+		UnlockButtonText->SetText(FText::FromStringTable(COMMON_STRING_TABLE, "Equip"));
+		PriceText->SetText(FText::FromString(""));
 	}
 	// if not unlocked, check if the user can unlock the skill
 	// if he can unlock, allow him to do so
 	else if(bHasTheProperLvl && bHasTheProperGold && bHasUnlockedRequiredSkill)
 	{
-		SkillRequirements->SetText(FText::FromString("Cost: " + FString::FromInt(SkillTreeInfo.PriceToUnlock)));
-		UnlockButtonText->SetText(FText::FromString("Unlock"));
+		SkillRequirements->SetText(FText::Format(
+			NSLOCTEXT("SkillDescriptionUI", "MagicPointsComsumptionString",
+            "{0} {1} {2} {3} {4}"),
+            FText::FromStringTable(COMMON_STRING_TABLE, "Consumes"),
+            FText::AsNumber(SkillInfo.MPCost),
+            FText::FromStringTable(COMMON_STRING_TABLE, "Of"),
+            FText::FromStringTable(COMMON_STRING_TABLE, "MP"),
+            FText::FromStringTable(COMMON_STRING_TABLE, "ForEachUsage")
+		));
+		UnlockButtonText->SetText(FText::FromStringTable(COMMON_STRING_TABLE,"Unlock"));
+		PriceText->SetText(FText::Format(NSLOCTEXT("SkillDescriptionUI", "PriceTextString", "{0}G"), FText::AsNumber(SkillTreeInfo.PriceToUnlock)));
 	}
 	// If user has the proper lvl but didn't have unlocked the required skill
 	else if(!bHasUnlockedRequiredSkill)
 	{
-		SkillRequirements->SetText(FText::FromString("Requires skill " +
-			getSkillInfo(getSkillTreeDetails(SkillTreeInfo.RequiredSkillToUnlock).SkillClass).Name.ToString() +
-		" to be unlocked"));
-		UnlockButtonText->SetText(FText::FromString("Close"));
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("RequiresString"), FText::FromStringTable(COMMON_STRING_TABLE, "Requires"));
+		Args.Add(TEXT("SkillString"), FText::FromStringTable(COMMON_STRING_TABLE, "Skill"));
+		Args.Add(TEXT("SkillName"), getSkillInfo(getSkillTreeDetails(SkillTreeInfo.RequiredSkillToUnlock).SkillClass).Name);
+		Args.Add(TEXT("ToBeString"), FText::FromStringTable(COMMON_STRING_TABLE, "ToBe"));
+		Args.Add(TEXT("UnlockedString"), FText::FromStringTable(COMMON_STRING_TABLE, "Unlocked"));
+		
+		const FText ButtonText = FText::Format(NSLOCTEXT("SkillDescriptionUI",
+            "RequiresSkillDescription",
+            "{RequiresString} {SkillString} {SkillName} {ToBeString} {UnlockedString}")
+            , Args);
+		SkillRequirements->SetText(ButtonText);
+		UnlockButtonText->SetText(FText::FromStringTable(COMMON_STRING_TABLE, "Close"));
+		PriceText->SetText(FText::FromString(""));
 	}
 	// If the user doesn't have the proper lvl
 	else if(!bHasTheProperLvl)
 	{
-		SkillRequirements->SetText(FText::FromString("Requires lvl " +
-			FString::FromInt(SkillTreeInfo.GoldLevelRequired)));
-		UnlockButtonText->SetText(FText::FromString("Close"));
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("RequiresString2"), FText::FromStringTable(COMMON_STRING_TABLE, "Requires"));
+		Args.Add(TEXT("LevelString"), FText::FromStringTable(COMMON_STRING_TABLE, "Level"));
+		Args.Add(TEXT("LevelRequired"), FText::AsNumber(SkillTreeInfo.GoldLevelRequired));
+
+		SkillRequirements->SetText(FText::Format(NSLOCTEXT("SkillDescriptionUI",
+            "RequiresLvlDescription",
+            "{RequiresString2} {LevelString} {LevelRequired}"),
+            Args));
+		UnlockButtonText->SetText(FText::FromStringTable(COMMON_STRING_TABLE, "Close"));
+		PriceText->SetText(FText::FromString(""));
 	}
 	// otherwise if user simply doesn't have the amount of gold to unlock the skill
 	else
 	{
-		SkillRequirements->SetText(FText::FromString("Cost: " + FString::FromInt(SkillTreeInfo.PriceToUnlock)));
-		UnlockButtonText->SetText(FText::FromString("Close"));
+		FFormatNamedArguments Args;
+		Args.Add(TEXT("CostString2"), FText::FromStringTable(COMMON_STRING_TABLE, "Cost"));
+		Args.Add(TEXT("PriceToUnlock"), FText::AsNumber(SkillTreeInfo.PriceToUnlock));
+		
+		SkillRequirements->SetText(FText::Format(NSLOCTEXT("SkillDescriptionUI",
+            "CostDescription2",
+            "{CostString2}: {PriceToUnlock}G"),
+            Args));
+		UnlockButtonText->SetText(FText::FromStringTable(COMMON_STRING_TABLE, "Close"));
+		PriceText->SetText(FText::FromString(""));
 	}
 }
 

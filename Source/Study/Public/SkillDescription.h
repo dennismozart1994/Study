@@ -26,6 +26,9 @@ class STUDY_API USkillDescription : public UUserWidget
 	class UTextBlock* UnlockButtonText;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	class UTextBlock* PriceText;
+
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
 	class UTextBlock* SkillDescription;
 
 	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
@@ -66,4 +69,7 @@ class STUDY_API USkillDescription : public UUserWidget
 	protected:
 	virtual bool Initialize();
 	virtual void NativeConstruct();
+
+	private:
+	const FName COMMON_STRING_TABLE = ACustomVariables::COMMON_WORDS;
 };
