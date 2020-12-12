@@ -347,7 +347,9 @@ class STUDY_API ACustomVariables : public AActor
 {
 	GENERATED_BODY()
 	
-public:	
+public:
+	static const FName TABLE_REFERENCE;
+	static const FString EQUIP_KEY;
 	// Sets default values for this actor's properties
 	ACustomVariables();
 };

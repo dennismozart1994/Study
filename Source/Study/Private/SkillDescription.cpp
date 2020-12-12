@@ -64,7 +64,7 @@ void USkillDescription::NativeConstruct()
 	{
 		SkillRequirements->SetText(FText::FromString("Consumes " + FString::FromInt(SkillInfo.MPCost)
 			+ " of MP for each usage"));
-		UnlockButtonText->SetText(FText::FromString("Equip"));
+		UnlockButtonText->SetText(FText::FromStringTable(ACustomVariables::TABLE_REFERENCE, ACustomVariables::EQUIP_KEY));
 	}
 	// if not unlocked, check if the user can unlock the skill
 	// if he can unlock, allow him to do so

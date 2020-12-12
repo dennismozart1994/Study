@@ -1,7 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "CustomVariables.h"
-
+const FName ACustomVariables::TABLE_REFERENCE = "/Game/UI/Strings/CommonWords.CommonWords";
+const FString ACustomVariables::EQUIP_KEY = "Equip";
 // Sets default values
 ACustomVariables::ACustomVariables()
 {
