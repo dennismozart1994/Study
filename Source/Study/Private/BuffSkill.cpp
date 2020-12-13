@@ -27,28 +27,31 @@ void ABuffSkill::CoolDown()
    AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
    if(PlayerRef && World)
    {
-      if(SkillSlotRef && CoolDownTimeLine)
+      if(GetLocalRole() == ROLE_Authority)
       {
-         if(SkillDetails.Particle)
+         if(CoolDownTimeLine)
          {
-            ParticleComponent = UGameplayStatics::SpawnEmitterAtLocation(World, SkillDetails.Particle, PlayerRef->GetActorLocation(),
-               PlayerRef->GetActorRotation(), FVector(1.f), true, EPSCPoolMethod::None,
-               true);
+            if(SkillDetails.Particle)
+            {
+               ParticleComponent = UGameplayStatics::SpawnEmitterAtLocation(World, SkillDetails.Particle, PlayerRef->GetActorLocation(),
+                  PlayerRef->GetActorRotation(), FVector(1.f), true, EPSCPoolMethod::None,
+                  true);
+            } else
+            {
+               UE_LOG(LogTemp, Warning, TEXT("Invalid Particle set on the buff skill"))
+            }
+
+            PlayerRef->BoostPlayerStats(SkillDetails.BuffType, SkillDetails.BuffingValue);
+            BuffCountDown = SkillDetails.BuffingTime;
+            World->GetTimerManager().SetTimer(_BuffTimer, this, &ABuffSkill::BuffTimeout, 1.f, false);
          } else
          {
-            UE_LOG(LogTemp, Warning, TEXT("Invalid Particle set on the buff skill"))
+            UE_LOG(LogTemp, Error, TEXT("Invalid Cool Down inside the Buff Skill"))
          }
-
-         PlayerRef->BoostPlayerStats(SkillDetails.BuffType, SkillDetails.BuffingValue);
-         BuffCountDown = SkillDetails.BuffingTime;
-         World->GetTimerManager().SetTimer(_BuffTimer, this, &ABuffSkill::BuffTimeout, 1.f, false);
-      } else
-      {
-         UE_LOG(LogTemp, Error, TEXT("Invalid Skill Slot Ref or Cool Down inside the Buff Skill"))
       }
    } else
    {
-      UE_LOG(LogTemp, Error, TEXT("Owner of the Skill is not a player"))
+      UE_LOG(LogTemp, Error, TEXT("Owner of the Buff Skill is not a player"))
    }
 }
 
@@ -60,18 +63,21 @@ void ABuffSkill::BuffTimeout()
 
    if(World && PlayerRef)
    {
-      if(BuffCountDown <= 0)
+      if(GetLocalRole() == ROLE_Authority)
       {
-         PlayerRef->BoostPlayerStats(SkillDetails.BuffType, SkillDetails.BuffingValue * -1);
-         BuffCountDown = SkillDetails.BuffingTime;
-         World->GetTimerManager().ClearTimer(_BuffTimer);
-         World->GetTimerManager().ClearAllTimersForObject(this);
-         UE_LOG(LogTemp, Log, TEXT("Reset Buff to it's default value and Cleared out timers"))
-      } else
-      {
-         UE_LOG(LogTemp, Log, TEXT("Buff is still operating, countdown on %s"), *FString::SanitizeFloat(BuffCountDown))
-         BuffCountDown -= 1.f;
-         World->GetTimerManager().SetTimer(_BuffTimer, this, &ABuffSkill::BuffTimeout, 1.f, false);
+         if(BuffCountDown <= 0)
+         {
+            PlayerRef->BoostPlayerStats(SkillDetails.BuffType, SkillDetails.BuffingValue * -1);
+            BuffCountDown = SkillDetails.BuffingTime;
+            World->GetTimerManager().ClearTimer(_BuffTimer);
+            World->GetTimerManager().ClearAllTimersForObject(this);
+            UE_LOG(LogTemp, Log, TEXT("Reset Buff to it's default value and Cleared out timers"))
+         } else
+         {
+            UE_LOG(LogTemp, Log, TEXT("Buff is still operating, countdown on %s"), *FString::SanitizeFloat(BuffCountDown))
+            BuffCountDown -= 1.f;
+            World->GetTimerManager().SetTimer(_BuffTimer, this, &ABuffSkill::BuffTimeout, 1.f, false);
+         }
       }
    }
 }
@@ -85,7 +91,10 @@ void ABuffSkill::OnTimelineUpdate()
    {
       if(PlayerRef->bCanWalk)
       {
-         ParticleComponent->Deactivate();
+         if(GetLocalRole() == ROLE_Authority)
+         {
+            ParticleComponent->Deactivate();
+         }
       }
    }
 }
@@ -95,6 +104,9 @@ void ABuffSkill::OnTimelineFinished()
    Super::OnTimelineFinished();
    if(ParticleComponent)
    {
-      ParticleComponent->Deactivate();
+      if(GetLocalRole() == ROLE_Authority)
+      {
+         ParticleComponent->Deactivate();
+      }
    }
 }

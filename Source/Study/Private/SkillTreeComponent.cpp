@@ -284,7 +284,6 @@ void USkillTreeComponent::UpdateSkillSlots(ESkillClass Tree)
 							// If there's a valid Skill Class on that row, than grab its values
 							if(UKismetSystemLibrary::IsValidClass(SkillTreeDetail.SkillClass)) {
 								Slots[i]->SkillActor = SkillTreeDetail.SkillClass;
-								Slots[i]->SpawnSkill();
 								Slots[i]->HotKey = SkillHotKeys[i];
 								AMasterSkill* DefaultActor = Cast<AMasterSkill>(SkillTreeDetail.SkillClass->GetDefaultObject(true));
 								if(DefaultActor)
@@ -332,6 +331,115 @@ void USkillTreeComponent::UpdateSkillSlots(ESkillClass Tree)
 	}else
 	{
 		UE_LOG(LogTemp, Error, TEXT("Player Character Reference is null"));
+	}
+}
+
+void USkillTreeComponent::CoolDown(int32 SlotIndex)
+{
+	AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
+	if(PlayerRef)
+	{
+		AStudyPC* PCRef = Cast<AStudyPC>(PlayerRef->GetController());
+		if(PCRef)
+		{
+			TArray<USkillHotKey*> Slots;
+			UGameplayHUD* gmpHUD = PlayerRef->HudRef;
+			if(gmpHUD)
+			{
+				UActionsHUD* Actions = gmpHUD->Actions;
+				if(Actions)
+				{
+					// Save Skill Slots References
+					Slots.Add(Actions->SkillSlot0);
+					Slots.Add(Actions->SkillSlot1);
+					Slots.Add(Actions->SkillSlot2);
+					Slots.Add(Actions->SkillSlot3);
+					Slots.Add(Actions->SkillSlot4);
+					Slots.Add(Actions->SkillSlot5);
+
+					Slots[SlotIndex]->SetSkillIconColour(FLinearColor(0.33f, 0.33f, 0.33f, 1.f));
+					Slots[SlotIndex]->SetCoolDownImageVisibility(ESlateVisibility::SelfHitTestInvisible);
+					Slots[SlotIndex]->SetCoolDownTextVisibility(ESlateVisibility::SelfHitTestInvisible);
+				}
+			}
+		}
+	}
+}
+
+void USkillTreeComponent::CoolDownFinished(int32 SlotIndex)
+{
+	AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
+	if(PlayerRef)
+	{
+		AStudyPC* PCRef = Cast<AStudyPC>(PlayerRef->GetController());
+		if(PCRef)
+		{
+			TArray<USkillHotKey*> Slots;
+			UGameplayHUD* gmpHUD = PlayerRef->HudRef;
+			if(gmpHUD)
+			{
+				UActionsHUD* Actions = gmpHUD->Actions;
+				if(Actions)
+				{
+					// Save Skill Slots References
+					Slots.Add(Actions->SkillSlot0);
+					Slots.Add(Actions->SkillSlot1);
+					Slots.Add(Actions->SkillSlot2);
+					Slots.Add(Actions->SkillSlot3);
+					Slots.Add(Actions->SkillSlot4);
+					Slots.Add(Actions->SkillSlot5);
+
+					Slots[SlotIndex]->SetSkillIconColour(FLinearColor(1.f, 1.f, 1.f, 1.f));
+					Slots[SlotIndex]->SetCoolDownImageVisibility(ESlateVisibility::Hidden);
+					Slots[SlotIndex]->SetCoolDownTextVisibility(ESlateVisibility::Hidden);
+					Slots[SlotIndex]->bCanCastSkill = true;
+					
+					PlayerRef->GetSkillTreeComponent()->bCanCastSkill = true;
+				}
+			}
+		}
+	}
+}
+
+void USkillTreeComponent::CoolDownUpdate(int32 SlotIndex, float coolDownPercentage, FText coolDownInSeconds)
+{
+	AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
+	if(PlayerRef)
+	{
+		AStudyPC* PCRef = Cast<AStudyPC>(PlayerRef->GetController());
+		if(PCRef)
+		{
+			TArray<USkillHotKey*> Slots;
+			UGameplayHUD* gmpHUD = PlayerRef->HudRef;
+			if(gmpHUD)
+			{
+				UActionsHUD* Actions = gmpHUD->Actions;
+				if(Actions)
+				{
+					// Save Skill Slots References
+					Slots.Add(Actions->SkillSlot0);
+					Slots.Add(Actions->SkillSlot1);
+					Slots.Add(Actions->SkillSlot2);
+					Slots.Add(Actions->SkillSlot3);
+					Slots.Add(Actions->SkillSlot4);
+					Slots.Add(Actions->SkillSlot5);
+
+					if(Slots[SlotIndex])
+					{
+						if(Slots[SlotIndex]->CoolDownMaterial && Slots[SlotIndex]->CoolDownText)
+						{
+							// Set the material instance parameter and the text with it's current cool down value in seconds
+							Slots[SlotIndex]->CoolDownMaterial->SetScalarParameterValue("Percent", coolDownPercentage);
+							Slots[SlotIndex]->SetCoolDownText(coolDownInSeconds);
+							UE_LOG(LogTemp, Log, TEXT("Updating Cool Down Timeline"));
+						}
+					} else
+					{
+						UE_LOG(LogTemp, Warning, TEXT("Failed to Grab a Valid Slot Reference inside the Master Skill"))
+					}
+				}
+			}
+		}
 	}
 }
 

@@ -53,7 +53,13 @@ public:
 	void EquipSkill(int32 SlotIndex);
 	UFUNCTION()
 	void UpdateSkillSlots(ESkillClass Tree);
-
+	UFUNCTION()
+	void CoolDown(int32 SlotIndex);
+	UFUNCTION()
+	void CoolDownFinished(int32 SlotIndex);
+	UFUNCTION()
+	void CoolDownUpdate(int32 SlotIndex, float coolDownPercentage, FText coolDownInSeconds);
+	
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
 #include "CustomVariables.h"
+#include "SkillHotKey.h"
+
 #include "StudyPC.generated.h"
 
 /**
@@ -59,6 +61,12 @@ class STUDY_API AStudyPC : public APlayerController
 
 	UFUNCTION()
 	TArray<FName> GetSkillArray(ESkillClass Tree) const;
+
+	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Gameplay")
+	void Server_CastSkill(AStudyPC* Controller, int32 SkillIndex, TSubclassOf<AMasterSkill> SkillClass);
+
+	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "Gameplay")
+    void Client_CastSkill(AStudyPC* Controller, int32 SkillIndex, TSubclassOf<AMasterSkill> SkillClass);
 	
 	AStudyPC();
 	

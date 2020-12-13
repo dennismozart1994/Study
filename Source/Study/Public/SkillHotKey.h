@@ -55,8 +55,6 @@ class STUDY_API USkillHotKey : public UUserWidget
     void SetCoolDownImageVisibility(ESlateVisibility desired);
     UFUNCTION()
     void SetSkillIconColour(FLinearColor colour);
-    UFUNCTION()
-    void SpawnSkill();
 
     protected:
     virtual bool Initialize() override;

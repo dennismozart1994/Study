@@ -47,30 +47,39 @@ void USkillHotKey::OnSlotClicked()
                     Component->EquipSkill(SlotIndex);
                     Component->StopSkillBarHighlight();
                     UE_LOG(LogTemp, Log, TEXT("Skill Has been equipped"))
-                } else if(PlayerRef->CurrentSkillCast[SlotIndex])
+                } else if(SkillIcon != NULL)
                 {
-                    if(bCanCastSkill && PlayerRef->isMovingOnGroundCheck())
+                    if(bCanCastSkill && UKismetSystemLibrary::IsValidClass(SkillActor))
                     {
-                        if(PlayerRef->CurrentSkillCast[SlotIndex]->SkillDetails.MontageToPlay)
+                        if(PlayerRef->isMovingOnGroundCheck())
                         {
-                            PlayerRef->SkillMontage = PlayerRef->CurrentSkillCast[SlotIndex]->SkillDetails.MontageToPlay;
-                            PlayerRef->Multicast_PlayMontage(PlayerRef->SkillMontage);
-                            PlayerRef->CurrentSkillCast[SlotIndex]->CoolDown();
-                            UE_LOG(LogTemp, Log, TEXT("Casting Skill"))
-                            PlayerRef->GetSkillTreeComponent()->bCanCastSkill = false;
-                            bCanCastSkill = false;
-                            PlayerRef->bCanWalk = false;
+                            AStudyPC* PCRef = Cast<AStudyPC>(PlayerRef->Controller);
+                            if(PCRef)
+                            {
+                                if(PCRef->GetRemoteRole() == ROLE_Authority)
+                                {
+                                    PCRef->Server_CastSkill(PCRef, SlotIndex, SkillActor);
+                                    UE_LOG(LogTemp, Log, TEXT("Server Called Cast Skill"))
+                                } else
+                                {
+                                    UE_LOG(LogTemp, Log, TEXT("Client Called Cast Skill"))
+                                    PCRef->Client_CastSkill(PCRef, SlotIndex, SkillActor);
+                                }
+                            } else
+                            {
+                                UE_LOG(LogTemp, Warning, TEXT("Invalid Player Controller"))
+                            }
                         } else
                         {
-                            UE_LOG(LogTemp, Error, TEXT("Invalid Montage to Skill Ref"))
+                            UE_LOG(LogTemp, Warning, TEXT("Player in on Air"))
                         }
                     } else
                     {
-                        UE_LOG(LogTemp, Warning, TEXT("Skill is Cooling Down or Player is in the Air"))
+                        UE_LOG(LogTemp, Warning, TEXT("Skill is Cooling Down or skill class is invalid"))
                     }
                 } else
                 {
-                    UE_LOG(LogTemp, Warning, TEXT("Invalid Skill Reference, maybe the slot is empty?"))
+                    UE_LOG(LogTemp, Warning, TEXT("Invalid Skill Icon, maybe the slot is empty?"))
                 }
             } else
             {
@@ -98,18 +107,4 @@ void USkillHotKey::SetCoolDownImageVisibility(ESlateVisibility desired)
 void USkillHotKey::SetSkillIconColour(FLinearColor colour)
 {
     SkillIcon->SetColorAndOpacity(colour);
-}
-
-void USkillHotKey::SpawnSkill()
-{
-    AStudyCharacter* StudyCharacterRef = Cast<AStudyCharacter>(GetOwningPlayer()->GetPawn());
-    if(UKismetSystemLibrary::IsValidClass(SkillActor) && StudyCharacterRef)
-    {
-        StudyCharacterRef->SpawnSkill(SkillActor, SlotIndex);
-        if(StudyCharacterRef->CurrentSkillCast[SlotIndex])
-        {
-            StudyCharacterRef->CurrentSkillCast[SlotIndex]->SkillSlotRef = this;
-            UE_LOG(LogTemp, Log, TEXT("Successfully Spawned Skill and assign it to it's slot reference"))
-        }
-    }
 }

@@ -19,7 +19,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components", meta = (AllowPrivateAccess = "true"))
 	class USceneComponent* RootSceneComponent;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="TimeLine", meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category="TimeLine", meta = (AllowPrivateAccess = "true"))
 	class UTimelineComponent* CoolDownTimeLine;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Skill Info")
@@ -30,6 +30,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Skill Info")
 	class USkillHotKey* SkillSlotRef;
+
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Skill Info")
+	int32 SkillSlotIndex;
 
 	// Declare our delegates that gonna bind the timeline to the update and finish functions
 	FOnTimelineEvent UpdateTimelineDelegate{};

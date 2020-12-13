@@ -136,12 +136,22 @@ AStudyCharacter::AStudyCharacter()
 	bCanAttack = true;
 	bCanWalk = true;
 	WeaponBeingUsed = EWeaponType::WT_None;
+
+	// Creates the default Casted Skill Array
 	CurrentSkillCast.Add(nullptr);
 	CurrentSkillCast.Add(nullptr);
 	CurrentSkillCast.Add(nullptr);
 	CurrentSkillCast.Add(nullptr);
 	CurrentSkillCast.Add(nullptr);
 	CurrentSkillCast.Add(nullptr);
+
+	// Starts the game allowing him to cast skill on all 6 slots
+	CanCastSkillOnSlot.Add(true);
+	CanCastSkillOnSlot.Add(true);
+	CanCastSkillOnSlot.Add(true);
+	CanCastSkillOnSlot.Add(true);
+	CanCastSkillOnSlot.Add(true);
+	CanCastSkillOnSlot.Add(true);
 }
 //////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////// replication /////////////////////////////////////
@@ -410,41 +420,6 @@ bool AStudyCharacter::Server_SimpleAttack_Validate()
 	return true;
 }
 
-void AStudyCharacter::SpawnSkill_Implementation(TSubclassOf<AMasterSkill> SkillActor, int32 SlotIndex)
-{
-	UWorld* World = GetWorld();
-
-	AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(GetPlayerState());
-
-	// otherwise execute a simple attack
-	if ((GetLocalRole() == ROLE_Authority  || (GetLocalRole() == ROLE_Authority && GetController()->GetRemoteRole() < ROLE_AutonomousProxy)) && PSRef)
-	{
-		if(UKismetSystemLibrary::IsValidClass(SkillActor) && World && PSRef->GetPawn())
-		{
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-			SpawnParams.Owner = PSRef->GetPawn();
-			FVector Location = PSRef->GetPawn()->GetActorLocation() + PSRef->GetPawn()->GetActorForwardVector() * 100;
-			FRotator Rotation = PSRef->GetPawn()->GetActorRotation();
-			FTransform LocationToSpawn = UKismetMathLibrary::MakeTransform(Location, Rotation, FVector(1.f));
-			if(CurrentSkillCast[SlotIndex]) CurrentSkillCast[SlotIndex]->SetLifeSpan(5.f);
-			CurrentSkillCast[SlotIndex] = World->SpawnActor<AMasterSkill>(SkillActor, LocationToSpawn, SpawnParams);
-		} else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("World or Skill Actor class are invalid"))
-		}
-	} else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Not a Server trying to spawn an item to the world"))
-	}
-}
-
-bool AStudyCharacter::SpawnSkill_Validate(TSubclassOf<AMasterSkill> SkillActor, int32 SlotIndex)
-{
-	return true;
-}
-
-
 // Play on All clients(Including the Server) the animation
 void AStudyCharacter::Multicast_PlayMontage_Implementation(UAnimMontage* MontageToPlay)
 {
@@ -454,6 +429,9 @@ void AStudyCharacter::Multicast_PlayMontage_Implementation(UAnimMontage* Montage
 		// PlayAnimMontage(MontageToPlay, PSRef->CharacterStats.Speed / 200, FName("None"));
 		PlayAnimMontage(MontageToPlay, 1.f);
 		UE_LOG(LogTemp, Log, TEXT("Played the Montage %s"), *UKismetSystemLibrary::GetDisplayName(MontageToPlay));
+	} else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Invalid Player State while playing Montage"))
 	}
 }
 

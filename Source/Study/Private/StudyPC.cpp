@@ -3,7 +3,13 @@
 #include "StudyPC.h"
 #include "Net/UnrealNetwork.h"
 #include "StudyPlayerState.h"
+#include "StudyCharacter.h"
 #include "Engine/DataTable.h"
+#include "Animation/AnimMontage.h"
+#include "MasterSkill.h"
+#include "SkillTreeComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 AStudyPC::AStudyPC()
 {
@@ -94,6 +100,73 @@ TArray<FName> AStudyPC::GetSkillArray(ESkillClass Tree) const
 			UE_LOG(LogTemp, Error, TEXT("Returned Empty Skills Array"));
 			return Empty;
 	}
+}
+
+void AStudyPC::Server_CastSkill_Implementation(AStudyPC* Controller, int32 SkillIndex, TSubclassOf<AMasterSkill> SkillClass)
+{
+	if(GetLocalRole() == ROLE_Authority || (GetLocalRole() == ROLE_Authority && GetRemoteRole() < ROLE_AutonomousProxy))
+	{
+		AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(Controller->GetPawn());
+		if(PlayerRef)
+		{
+			UWorld* World = GetWorld();
+
+			AStudyPlayerState* PSRef = Cast<AStudyPlayerState>(PlayerState);
+			if(PSRef)
+			{
+				if(UKismetSystemLibrary::IsValidClass(SkillClass) && World && PSRef->GetPawn())
+				{
+					FActorSpawnParameters SpawnParams;
+					SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+					SpawnParams.Owner = PSRef->GetPawn();
+					FVector Location = PSRef->GetPawn()->GetActorLocation() + PSRef->GetPawn()->GetActorForwardVector() * 100;
+					FRotator Rotation = PSRef->GetPawn()->GetActorRotation();
+					FTransform LocationToSpawn = UKismetMathLibrary::MakeTransform(Location, Rotation, FVector(1.f));
+					if(PlayerRef->CurrentSkillCast[SkillIndex]) PlayerRef->CurrentSkillCast[SkillIndex]->SetLifeSpan(5.f);
+					AMasterSkill* SkillRef = World->SpawnActor<AMasterSkill>(SkillClass, LocationToSpawn, SpawnParams);
+					if(SkillRef)
+					{
+						SkillRef->SkillSlotIndex = SkillIndex;
+						PlayerRef->CurrentSkillCast[SkillIndex] = SkillRef;
+						UE_LOG(LogTemp, Log, TEXT("Successfully Spawned Skill and assign it to it's slot reference"))
+					} else {
+						UE_LOG(LogTemp, Error, TEXT("Error trying to store a valid Skill Actor to the current Array index"))
+					}
+				
+					PlayerRef->SkillMontage = PlayerRef->CurrentSkillCast[SkillIndex]->SkillDetails.MontageToPlay;
+					PlayerRef->Multicast_PlayMontage(PlayerRef->SkillMontage);
+					// Need to find a way of passing the UI Ref in here (Maybe the Index?)
+					UE_LOG(LogTemp, Log, TEXT("CoolDown on Slot %s"), *FString::FromInt(SkillIndex));
+					PlayerRef->CurrentSkillCast[SkillIndex]->CoolDown();
+					UE_LOG(LogTemp, Log, TEXT("Casting Skill"))
+					PlayerRef->GetSkillTreeComponent()->bCanCastSkill = false;
+					PlayerRef->bCanWalk = false;
+				} else
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Error trying to Spawn Skill"))
+				}
+			} else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Invalid Player State"))
+			}
+		}else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Invalid Player Ref"))
+		}
+	} else
+	{
+		Client_CastSkill(Controller, SkillIndex, SkillClass);
+	}
+}
+
+bool AStudyPC::Server_CastSkill_Validate(AStudyPC* Controller, int32 SkillIndex, TSubclassOf<AMasterSkill> SkillClass)
+{
+	return true;
+}
+
+void AStudyPC::Client_CastSkill_Implementation(AStudyPC* Controller, int32 SkillIndex,  TSubclassOf<AMasterSkill> SkillClass)
+{
+	Server_CastSkill(Controller, SkillIndex, SkillClass);
 }
 
 
