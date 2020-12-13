@@ -38,6 +38,9 @@ class STUDY_API ABuffSkill : public AMasterSkill
 	virtual void OnTimelineUpdate() override;
 	virtual void OnTimelineFinished() override;
 
-	UFUNCTION(NetMulticast, Reliable, WithValidation, BlueprintCallable, Category = "Networking")
-	void Multicast_BuffCountDown();
+	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Networking")
+	void Server_BuffCountDown();
+	
+	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "Networking")
+	void Client_BuffCountDown();
 };

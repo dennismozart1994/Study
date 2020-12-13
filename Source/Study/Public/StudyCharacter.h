@@ -145,8 +145,11 @@ public:
 	UFUNCTION(Server, Reliable, WithValidation, Category = "Attacks")
 	void Server_SimpleAttack();
 	
-	UFUNCTION(NetMulticast, Reliable, WithValidation, Category = "Attacks")
+	UFUNCTION(NetMulticast, Reliable, WithValidation, BlueprintCallable, Category = "Attacks")
 	void Multicast_PlayMontage(class UAnimMontage* MontageToPlay);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Animation")
+	void TryToPlayMulticastMontage(class UAnimMontage* MontageToPlay);
 
 	UFUNCTION(Server, Reliable, WithValidation, Category = "Recovery")
     void BoostPlayerStats(EBuffType Type, int32 value);

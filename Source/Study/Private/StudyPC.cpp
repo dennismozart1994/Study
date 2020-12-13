@@ -135,6 +135,7 @@ void AStudyPC::Server_CastSkill_Implementation(AStudyPC* Controller, int32 Skill
 				
 					PlayerRef->SkillMontage = PlayerRef->CurrentSkillCast[SkillIndex]->SkillDetails.MontageToPlay;
 					PlayerRef->Multicast_PlayMontage(PlayerRef->SkillMontage);
+					PlayerRef->TryToPlayMulticastMontage(PlayerRef->SkillMontage);
 					// Need to find a way of passing the UI Ref in here (Maybe the Index?)
 					UE_LOG(LogTemp, Log, TEXT("CoolDown on Slot %s"), *FString::FromInt(SkillIndex));
 					PlayerRef->CurrentSkillCast[SkillIndex]->CoolDown();

@@ -63,7 +63,7 @@ void ABuffSkill::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLif
    DOREPLIFETIME(ABuffSkill, _BuffTimer);
 }
 
-void ABuffSkill::Multicast_BuffCountDown_Implementation()
+void ABuffSkill::Server_BuffCountDown_Implementation()
 {
    const UWorld* World = GetWorld();
    AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
@@ -85,9 +85,14 @@ void ABuffSkill::Multicast_BuffCountDown_Implementation()
    }
 }
 
-bool ABuffSkill::Multicast_BuffCountDown_Validate()
+bool ABuffSkill::Server_BuffCountDown_Validate()
 {
    return true;
+}
+
+void ABuffSkill::Client_BuffCountDown_Implementation()
+{
+   Server_BuffCountDown();
 }
 
 // Reset buf to default values
@@ -95,7 +100,13 @@ void ABuffSkill::BuffTimeout()
 {
    AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
    if(PlayerRef) PlayerRef->BoostPlayerStats(SkillDetails.BuffType, SkillDetails.BuffingValue * -1);
-   Multicast_BuffCountDown();
+   if(GetLocalRole() == ROLE_Authority)
+   {
+      Server_BuffCountDown();
+   } else
+   {
+      Client_BuffCountDown();
+   }
 }
 
 void ABuffSkill::OnTimelineUpdate()
