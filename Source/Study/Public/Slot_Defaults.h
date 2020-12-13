@@ -73,7 +73,8 @@ protected:
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	virtual void NativeOnDragEnter(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
 	virtual void NativeOnDragLeave(const FDragDropEvent& InDragDropEvent, UDragDropOperation* InOperation) override;
-
+	virtual bool Initialize() override;
+	
 	///////////////////////////////////////////// Components Delegates ///////////////////////////////////////////
 	// Button Events
 	UFUNCTION()
@@ -82,8 +83,8 @@ protected:
 	void OnSlotHovered();
 	UFUNCTION()
 	void OnSlotUnHovered();
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Slot Items")
-	UButton* SlotButton;
+	UPROPERTY(BlueprintReadWrite, meta = (BindWidget))
+	UButton* Slot_btn;
 
 	//////////////////////////////////////////////////// FUNCTIONS ////////////////////////////////////////////////////////////
 	// Get Custom pointers

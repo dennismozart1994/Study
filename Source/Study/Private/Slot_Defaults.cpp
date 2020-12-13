@@ -21,6 +21,17 @@
 #include "Engine/Classes/Kismet/KismetMathLibrary.h"
 #include "Engine/Engine.h"
 
+bool USlot_Defaults::Initialize()
+{
+	bool success = Super::Initialize();
+	if(!success) return false;
+
+	if(!ensure(Slot_btn != nullptr)) return false;
+	Slot_btn->OnClicked.AddDynamic(this, &USlot_Defaults::OnSlotClicked);
+	Slot_btn->OnHovered.AddDynamic(this, &USlot_Defaults::OnSlotHovered);
+	Slot_btn->OnUnhovered.AddDynamic(this, &USlot_Defaults::OnSlotUnHovered);
+	return success;
+}
 
 void USlot_Defaults::SetDefaultStyle(UButton* Button)
 {
@@ -56,31 +67,13 @@ void USlot_Defaults::NativeConstruct()
 	Super::NativeConstruct();
 	TArray<UWidget*> ChildWidgets;
 	// Bind delegates here
-	if (WidgetTree)
+	if (Slot_btn)
 	{
-		if (WidgetTree->RootWidget)
-		{
-			SlotButton = Cast<UButton>(WidgetTree->RootWidget);
-			if (SlotButton)
-			{
-				SlotButton->OnClicked.AddDynamic(this, &USlot_Defaults::OnSlotClicked);
-				SlotButton->OnHovered.AddDynamic(this, &USlot_Defaults::OnSlotHovered);
-				SlotButton->OnUnhovered.AddDynamic(this, &USlot_Defaults::OnSlotUnHovered);
-
-				SetDefaultStyle(SlotButton);
-			}
-			// WidgetTree->GetChildWidgets(WidgetTree->RootWidget, ChildWidgets);
-			// UE_LOG(LogTemp, Warning, TEXT("Get all childs from the root"));
-			// GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, UKismetSystemLibrary::GetDisplayName(WidgetTree->RootWidget));
-		}
-		else
-		{
-			UE_LOG(LogTemp, Warning, TEXT("WidgetTree Found, but no WidgetRoot found"));
-		}
+		SetDefaultStyle(Slot_btn);
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No WidgetTree found"));
+		UE_LOG(LogTemp, Warning, TEXT("No Slot Button Found"));
 	}
 	
 }
@@ -185,18 +178,18 @@ bool USlot_Defaults::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEv
 void USlot_Defaults::NativeOnDragEnter(const FGeometry & InGeometry, const FDragDropEvent & InDragDropEvent, UDragDropOperation * InOperation)
 {
 	Super::NativeOnDragEnter(InGeometry, InDragDropEvent, InOperation);
-	if (SlotButton)
+	if (Slot_btn)
 	{
-		SlotButton->SetStyle(DragStyle);
+		Slot_btn->SetStyle(DragStyle);
 	}
 }
 
 void USlot_Defaults::NativeOnDragLeave(const FDragDropEvent & InDragDropEvent, UDragDropOperation * InOperation)
 {
 	Super::NativeOnDragLeave(InDragDropEvent, InOperation);
-	if (SlotButton)
+	if (Slot_btn)
 	{
-		SetDefaultStyle(SlotButton);
+		SetDefaultStyle(Slot_btn);
 	}
 }
 
