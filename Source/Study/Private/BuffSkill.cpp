@@ -6,6 +6,7 @@
 #include "StudyCharacter.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Net/UnrealNetwork.h"
 
 ABuffSkill::ABuffSkill()
 {
@@ -55,33 +56,47 @@ void ABuffSkill::CoolDown()
    }
 }
 
-// Reset buf to default values
-void ABuffSkill::BuffTimeout()
+void ABuffSkill::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
+{
+   Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+   DOREPLIFETIME(ABuffSkill, BuffCountDown);
+   DOREPLIFETIME(ABuffSkill, _BuffTimer);
+}
+
+void ABuffSkill::Multicast_BuffCountDown_Implementation()
 {
    const UWorld* World = GetWorld();
    AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
 
    if(World && PlayerRef)
    {
-      if(GetLocalRole() == ROLE_Authority)
+      if(BuffCountDown <= 0)
       {
-         if(BuffCountDown <= 0)
-         {
-            PlayerRef->BoostPlayerStats(SkillDetails.BuffType, SkillDetails.BuffingValue * -1);
-            BuffCountDown = SkillDetails.BuffingTime;
-            World->GetTimerManager().ClearTimer(_BuffTimer);
-            World->GetTimerManager().ClearAllTimersForObject(this);
-            UE_LOG(LogTemp, Log, TEXT("Reset Buff to it's default value and Cleared out timers"))
-         } else
-         {
-            UE_LOG(LogTemp, Log, TEXT("Buff is still operating, countdown on %s"), *FString::SanitizeFloat(BuffCountDown))
-            BuffCountDown -= 1.f;
-            World->GetTimerManager().SetTimer(_BuffTimer, this, &ABuffSkill::BuffTimeout, 1.f, false);
-         }
+         BuffCountDown = SkillDetails.BuffingTime;
+         World->GetTimerManager().ClearTimer(_BuffTimer);
+         World->GetTimerManager().ClearAllTimersForObject(this);
+         UE_LOG(LogTemp, Log, TEXT("Reset Buff to it's default value and Cleared out timers"))
+      } else
+      {
+         UE_LOG(LogTemp, Log, TEXT("Buff is still operating, countdown on %s"), *FString::SanitizeFloat(BuffCountDown))
+         BuffCountDown -= 1.f;
+         World->GetTimerManager().SetTimer(_BuffTimer, this, &ABuffSkill::BuffTimeout, 1.f, false);
       }
    }
 }
 
+bool ABuffSkill::Multicast_BuffCountDown_Validate()
+{
+   return true;
+}
+
+// Reset buf to default values
+void ABuffSkill::BuffTimeout()
+{
+   AStudyCharacter* PlayerRef = Cast<AStudyCharacter>(GetOwner());
+   if(PlayerRef) PlayerRef->BoostPlayerStats(SkillDetails.BuffType, SkillDetails.BuffingValue * -1);
+   Multicast_BuffCountDown();
+}
 
 void ABuffSkill::OnTimelineUpdate()
 {

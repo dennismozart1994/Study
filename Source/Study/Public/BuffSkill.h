@@ -20,15 +20,16 @@ class STUDY_API ABuffSkill : public AMasterSkill
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Components", meta = (AllowProvateAccess = "true"))
 	class UParticleSystemComponent* ParticleComponent;
 
-	UPROPERTY(BlueprintReadOnly, Category = "BuffTime")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "BuffTime")
 	FTimerHandle _BuffTimer;
 
-	UPROPERTY(BlueprintReadOnly, Category = "BuffTime")
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "BuffTime")
 	float BuffCountDown;
 
 	protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void BuffTimeout();
 
@@ -36,5 +37,7 @@ class STUDY_API ABuffSkill : public AMasterSkill
 	virtual void CoolDown() override;
 	virtual void OnTimelineUpdate() override;
 	virtual void OnTimelineFinished() override;
-	
+
+	UFUNCTION(NetMulticast, Reliable, WithValidation, BlueprintCallable, Category = "Networking")
+	void Multicast_BuffCountDown();
 };

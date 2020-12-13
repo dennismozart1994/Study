@@ -21,6 +21,12 @@ public:
 	
 	UPROPERTY(Replicated, VisibleAnywhere, BlueprintReadWrite, Category="TimeLine", meta = (AllowPrivateAccess = "true"))
 	class UTimelineComponent* CoolDownTimeLine;
+
+	UPROPERTY(Replicated)
+	float coolDownPercentage;
+
+	UPROPERTY(Replicated)
+	FText coolDownInSeconds;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Skill Info")
     FSkilDataTable SkillInfo;
@@ -42,6 +48,30 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Networking")
+	void Server_SetupCoolDown();
+
+	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "Networking")
+    void Client_SetupCoolDown();
+
+	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Networking")
+    void Server_CalculateCoolDownPercentage();
+
+	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "Networking")
+    void Client_CalculateCoolDownPercentage();
+
+	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Networking")
+    void Server_GetCoolDownText();
+
+	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "Networking")
+    void Client_GetCoolDownText();
+
+	UFUNCTION(Server, Reliable, WithValidation, BlueprintCallable, Category = "Networking")
+    void Server_PlayCoolDownFromStart();
+
+	UFUNCTION(Client, Reliable, BlueprintCallable, Category = "Networking")
+    void Client_PlayCoolDownFromStart();
 
 public:
 	UFUNCTION()

@@ -25,6 +25,7 @@ AMasterSkill::AMasterSkill()
 	UpdateTimelineDelegate.BindUFunction(this, FName("OnTimelineUpdate"));
 	FinishTimelineDelegate.BindUFunction(this, FName("OnTimelineFinished"));
 	SkillSlotIndex = 0;
+	coolDownPercentage = 0.f;
 }
 
 void AMasterSkill::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutLifetimeProps) const
@@ -33,12 +34,20 @@ void AMasterSkill::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > & OutL
 	DOREPLIFETIME(AMasterSkill, SkillDetails);
 	DOREPLIFETIME(AMasterSkill, SkillSlotIndex);
 	DOREPLIFETIME(AMasterSkill, CoolDownTimeLine);
+	DOREPLIFETIME(AMasterSkill, coolDownPercentage);
+	DOREPLIFETIME(AMasterSkill, coolDownInSeconds);
 }
 
 // Called when the game starts or when spawned
 void AMasterSkill::BeginPlay()
 {
 	Super::BeginPlay();
+	Server_SetupCoolDown();
+	UE_LOG(LogTemp, Log, TEXT("Skill Owner: %s"), *UKismetSystemLibrary::GetDisplayName(GetOwner()))
+}
+
+void AMasterSkill::Server_SetupCoolDown_Implementation()
+{
 	if(GetLocalRole() == ROLE_Authority)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Server is the Skill Owner"))
@@ -53,10 +62,20 @@ void AMasterSkill::BeginPlay()
 		}
 	} else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Role is not authority for Cool Down Begin Play"))
+		Client_SetupCoolDown();
 	}
-	UE_LOG(LogTemp, Log, TEXT("Skill Owner: %s"), *UKismetSystemLibrary::GetDisplayName(GetOwner()))
 }
+
+bool AMasterSkill::Server_SetupCoolDown_Validate()
+{
+	return true;
+}
+
+void AMasterSkill::Client_SetupCoolDown_Implementation()
+{
+	Server_SetupCoolDown();
+}
+
 
 void AMasterSkill::OnTimelineUpdate()
 {
@@ -66,26 +85,10 @@ void AMasterSkill::OnTimelineUpdate()
 		USkillTreeComponent* Component = Cast<USkillTreeComponent>(PlayerRef->FindComponentByClass(USkillTreeComponent::StaticClass()));
 		if(Component)
 		{
-			FText coolDownInSeconds;
-			float coolDownPercentage;
-			if(GetLocalRole() == ROLE_Authority)
-			{
-				// Calculated the CoolDown percentage based on it's current position/lenght
-				float playbackPosition = CoolDownTimeLine->GetPlaybackPosition();
-				float timelineLength = CoolDownTimeLine->GetTimelineLength();
-				coolDownPercentage = 1.f - (playbackPosition/timelineLength);
-
-				// Calculate CoolDown in seconds based on his length - his current value
-				const TEnumAsByte<ERoundingMode> RoundingMode = ERoundingMode::HalfToEven;
-				coolDownInSeconds = UKismetTextLibrary::Conv_FloatToText(
-                    (CoolDownTimeLine->GetTimelineLength()-CoolDownTimeLine->GetPlaybackPosition()),
-                    RoundingMode, false,false, 1, 324,
-                    0, 0);
-			} else
-			{
-				UE_LOG(LogTemp, Error, TEXT("Role is not authority for Update Cool Down Timeline"))
-			}
-			
+			// Calculate Cool Down and returns it as a Text
+			Server_GetCoolDownText();
+			// Calculated the CoolDown percentage based on it's current position/lenght
+			Server_CalculateCoolDownPercentage();
 			Component->CoolDownUpdate(SkillSlotIndex, coolDownPercentage, coolDownInSeconds);
 		} else
 		{
@@ -96,6 +99,61 @@ void AMasterSkill::OnTimelineUpdate()
 		UE_LOG(LogTemp, Warning, TEXT("Fail to Cast to Player Character on Master Skill"))
 	}
 }
+
+void AMasterSkill::Server_CalculateCoolDownPercentage_Implementation()
+{
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		// Calculated the CoolDown percentage based on it's current position/lenght
+		float playbackPosition = CoolDownTimeLine->GetPlaybackPosition();
+		float timelineLength = CoolDownTimeLine->GetTimelineLength();
+		coolDownPercentage = 1.f - (playbackPosition/timelineLength);
+	} else
+	{
+		Client_CalculateCoolDownPercentage();
+	}
+}
+
+
+bool AMasterSkill::Server_CalculateCoolDownPercentage_Validate()
+{
+	return true;
+}
+
+
+void AMasterSkill::Client_CalculateCoolDownPercentage_Implementation()
+{
+	Server_CalculateCoolDownPercentage();
+}
+
+void AMasterSkill::Server_GetCoolDownText_Implementation()
+{
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		// Calculate CoolDown in seconds based on his length - his current value
+		const TEnumAsByte<ERoundingMode> RoundingMode = ERoundingMode::HalfToEven;
+		coolDownInSeconds = UKismetTextLibrary::Conv_FloatToText(
+            (CoolDownTimeLine->GetTimelineLength()-CoolDownTimeLine->GetPlaybackPosition()),
+            RoundingMode, false,false, 1, 324,
+            0, 0);
+	} else
+	{
+		Client_GetCoolDownText();
+	}
+}
+
+
+bool AMasterSkill::Server_GetCoolDownText_Validate()
+{
+	return true;
+}
+
+
+void AMasterSkill::Client_GetCoolDownText_Implementation()
+{
+	Server_GetCoolDownText();
+}
+
 
 void AMasterSkill::OnTimelineFinished()
 {
@@ -126,20 +184,7 @@ void AMasterSkill::CoolDown()
 		if(Component)
 		{
 			Component->CoolDown(SkillSlotIndex);
-			if(GetLocalRole() == ROLE_Authority)
-			{
-				if(CoolDownTimeLine)
-				{
-					CoolDownTimeLine->PlayFromStart();
-					UE_LOG(LogTemp, Log, TEXT("Cool Down Timeline start"))
-				} else
-				{
-					UE_LOG(LogTemp, Error, TEXT("Unable to grab the CoolDownTimeLine"));
-				}
-			} else
-			{
-				UE_LOG(LogTemp, Error, TEXT("Role is not authority to start Cool Down"))
-			}
+			Server_PlayCoolDownFromStart();
 		} else
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Failed to Cast to Component on Master Skill"))
@@ -148,4 +193,34 @@ void AMasterSkill::CoolDown()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Fail to Cast to Player Character on Master Skill"))
 	}
+}
+
+void AMasterSkill::Server_PlayCoolDownFromStart_Implementation()
+{
+	if(GetLocalRole() == ROLE_Authority)
+	{
+		if(CoolDownTimeLine)
+		{
+			CoolDownTimeLine->PlayFromStart();
+			UE_LOG(LogTemp, Log, TEXT("Cool Down Timeline start"))
+		} else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Unable to grab the CoolDownTimeLine"));
+		}
+	} else
+	{
+		Client_PlayCoolDownFromStart();
+	}
+}
+
+
+bool AMasterSkill::Server_PlayCoolDownFromStart_Validate()
+{
+	return true;
+}
+
+
+void AMasterSkill::Client_PlayCoolDownFromStart_Implementation()
+{
+	Server_PlayCoolDownFromStart();
 }
